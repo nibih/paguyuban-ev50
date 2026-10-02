@@ -7,6 +7,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from './src/context/AppContext';
 
 // Screens
+import LoginScreen from './src/screens/LoginScreen';
 import MemberDashboard from './src/screens/MemberDashboard';
 import MemberIuran from './src/screens/MemberIuran';
 import MemberTalangan from './src/screens/MemberTalangan';
@@ -15,31 +16,45 @@ import MemberKasTerbuka from './src/screens/MemberKasTerbuka';
 import AdminDashboard from './src/screens/AdminDashboard';
 
 // Icons
-import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw } from 'lucide-react-native';
+import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw, LogOut } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 
 function MainNavigation() {
-  const { role, setRole, toast } = useApp();
+  const { isAuthenticated, logout, role, setRole, toast } = useApp();
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0B2F64' }} edges={['top']}>
       <StatusBar style="light" backgroundColor="#0B2F64" />
 
-      {/* Top Universal Control Bar with Role Toggle */}
+      {/* Top Universal Control Bar with Role Toggle & Logout */}
       <View style={styles.topBar}>
         <View>
           <Text style={styles.topLogo}>PAGUYUBAN EV50</Text>
           <Text style={styles.topSub}>TRANSBUSWAY CAWANG</Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.roleToggle}
-          onPress={() => setRole(role === 'member' ? 'admin' : 'member')}
-        >
-          <RefreshCw size={12} color="#00A896" />
-          <Text style={styles.roleText}>{role === 'member' ? 'Mode: Pramudi' : 'Mode: Pengurus'}</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity 
+            style={styles.roleToggle}
+            onPress={() => setRole(role === 'member' ? 'admin' : 'member')}
+          >
+            <RefreshCw size={12} color="#00A896" />
+            <Text style={styles.roleText}>{role === 'member' ? 'Pramudi' : 'Pengurus'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.logoutBtn}
+            onPress={logout}
+            title="Keluar Akun"
+          >
+            <LogOut size={14} color="#FCA5A5" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Navigation View */}
@@ -146,6 +161,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 168, 150, 0.3)'
   },
   roleText: { color: '#00A896', fontSize: 11, fontWeight: 'bold' },
+  logoutBtn: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    padding: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.4)'
+  },
   toast: {
     position: 'absolute',
     bottom: 80,

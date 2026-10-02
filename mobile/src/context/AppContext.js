@@ -6,7 +6,8 @@ import { collection, doc, setDoc, onSnapshot, updateDoc } from 'firebase/firesto
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Current active driver & role
+  // Authentication & active driver
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState('member'); // 'member' or 'admin'
   const [activeNik, setActiveNik] = useState('17001137'); // A Sutriadi default
   const [users, setUsers] = useState(seedData.users);
@@ -67,6 +68,21 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const loginWithNik = (nik) => {
+    const user = users.find(u => u.nik === nik);
+    if (!user) return false;
+    setActiveNik(nik);
+    setRole(user.role === 'admin' ? 'admin' : 'member');
+    setIsAuthenticated(true);
+    showToast(`Selamat datang, ${user.name}! (${user.position || user.role})`);
+    return true;
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    showToast('Berhasil keluar dari akun.');
+  };
+
   const currentUser = users.find(u => u.nik === (role === 'admin' ? '17001589' : activeNik)) || users[0];
 
   // Pay Iuran
@@ -123,6 +139,9 @@ export const AppProvider = ({ children }) => {
 
   return (
     <AppContext.Provider value={{
+      isAuthenticated,
+      loginWithNik,
+      logout,
       role, setRole,
       activeNik, setActiveNik,
       currentUser,
