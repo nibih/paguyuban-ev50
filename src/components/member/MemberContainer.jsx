@@ -50,7 +50,7 @@ export const MemberContainer = () => {
     { id: 'M1', label: 'Beranda', icon: Home },
     { id: 'M2', label: 'Iuran', icon: CreditCard },
     { id: 'M3', label: 'Talangan', icon: Wallet, badge: hasDebt },
-    { id: 'M4', label: 'Lapor Bodi', icon: Wrench },
+    { id: 'M4', label: 'Lapor Perbaikan', icon: Wrench },
     { id: 'M5', label: 'Kas Terbuka', icon: TrendingUp },
   ];
 

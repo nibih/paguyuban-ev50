@@ -220,7 +220,7 @@ export const ScreenM1Dashboard = () => {
             <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 group-hover:bg-teal-600 group-hover:text-white transition">
               <Wrench className="w-5 h-5" />
             </div>
-            <span className="text-[11px] font-bold text-slate-700 leading-tight">Lapor Bodi</span>
+            <span className="text-[11px] font-bold text-slate-700 leading-tight">Lapor Perbaikan</span>
           </button>
 
           <button
