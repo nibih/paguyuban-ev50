@@ -1,0 +1,1216 @@
+{
+  "users": [
+    {
+      "nik": "17001137",
+      "name": "A Sutriadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001342",
+      "name": "Abdul Rochman",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000495",
+      "name": "Ade Muhibudin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000537",
+      "name": "Ade Tisna",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001589",
+      "name": "Afrizal Firmansyah",
+      "role": "admin",
+      "position": "Ketua/Admin Kas",
+      "status": "active"
+    },
+    {
+      "nik": "17001473",
+      "name": "Agus Hariyanto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001101",
+      "name": "Agus Sukmana",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001814",
+      "name": "Aguswandi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000849",
+      "name": "Ahmad Gustomi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001005",
+      "name": "Akbar",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001818",
+      "name": "Anang Maulana Awaludin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001469",
+      "name": "Andhy Sururi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001128",
+      "name": "Argent Dyego Saragi Napitu",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001819",
+      "name": "Arqom komari",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001544",
+      "name": "Bambang irawan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000839",
+      "name": "Bayu Dyan Sukmana",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001825",
+      "name": "Bayu Warastopo",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000436",
+      "name": "Beni S.W",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000389",
+      "name": "Budi Prasetyo",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000346",
+      "name": "Dede Erik",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "7213120708",
+      "name": "Defi Andri",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001328",
+      "name": "Deni Permadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001832",
+      "name": "Dodi Cahyadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000838",
+      "name": "Dodo Wilmar Panjaitan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000427",
+      "name": "Edy Susanto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000441",
+      "name": "Efendi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001418",
+      "name": "Fahrul Rozi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001576",
+      "name": "Fajar Miftahudin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001844",
+      "name": "Fatah Fathuroji",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001536",
+      "name": "Fernando Triokto Lumbanraja",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001802",
+      "name": "Firman Hari",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001852",
+      "name": "Gilang Rengga s",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001449",
+      "name": "Gokman S",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001324",
+      "name": "Gumilar Aziz Cahyadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000798",
+      "name": "Hafid",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001603",
+      "name": "Hermawansyah",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001488",
+      "name": "Hilmi Sanusi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000691",
+      "name": "Hulman Sihotang",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001293",
+      "name": "Ilham Ihda Maulana",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000510",
+      "name": "Imam Kharis",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001028",
+      "name": "Imam Kuspendi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "8615121388",
+      "name": "Imron Asmara",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001070",
+      "name": "Indra Pinayung Sitompul",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000598",
+      "name": "Ishak Oma",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000909",
+      "name": "Iwan Setiawan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001502",
+      "name": "Iwan Wibowo",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001578",
+      "name": "Japahotin sihombing",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "790110747",
+      "name": "Joko Santoso",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001022",
+      "name": "Jonaemson Gultom",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001511",
+      "name": "Kiswanto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000590",
+      "name": "Kusnadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001361",
+      "name": "Lilik Damayanti",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001862",
+      "name": "Lomo Hasudungan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001790",
+      "name": "lukman khakim",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001458",
+      "name": "M. Iskak Munandar",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000884",
+      "name": "M. Muslimin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001504",
+      "name": "M. Sapli",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000595",
+      "name": "Maman",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001477",
+      "name": "Manat Hasugian",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000994",
+      "name": "Mardongan H",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000971",
+      "name": "Mashuri",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001078",
+      "name": "Milyadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000603",
+      "name": "Moch Jenni",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000699",
+      "name": "Moh. Abdul Kholiq",
+      "role": "admin",
+      "position": "Bendahara Kas Kecil",
+      "status": "active"
+    },
+    {
+      "nik": "17000778",
+      "name": "Muflih",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001611",
+      "name": "Muh Viky Ardian Priambodo",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001156",
+      "name": "Muhalik",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001109",
+      "name": "Muhamad Hasan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001552",
+      "name": "Muhammad Faezal Aprianur",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001527",
+      "name": "Muslimin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001876",
+      "name": "Nelson Erick Pesurnay",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "831111895",
+      "name": "Nofrial",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001459",
+      "name": "Novan Rahmat Fajri",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "820811526",
+      "name": "Nur Rohim",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001170",
+      "name": "Pardamean Sihombing",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000868",
+      "name": "Parlindungan s",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000422",
+      "name": "Pipin Avrianto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000864",
+      "name": "Posman H",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000557",
+      "name": "Putra Pranata",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001883",
+      "name": "Ralim",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001150",
+      "name": "Remondo H",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001344",
+      "name": "Rezaldy Putra",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001885",
+      "name": "Rhiyan Yulian Fadhilah",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001407",
+      "name": "Roni P",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001362",
+      "name": "Rudi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001891",
+      "name": "Rudolf herbert p siahaan",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000821",
+      "name": "Samsudin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "7709120211",
+      "name": "Samuji",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "7812120066",
+      "name": "Sangidul Mansyur .A",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001363",
+      "name": "Sibi Aryono",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000795",
+      "name": "Sobur",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001018",
+      "name": "Sony Bin Sakam",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000899",
+      "name": "Sugianto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000737",
+      "name": "Sugiman",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "7813120477",
+      "name": "Suhendi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001009",
+      "name": "Suherman",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001364",
+      "name": "Sujeni",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000738",
+      "name": "Sukarno",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001053",
+      "name": "Sumardi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "720510945",
+      "name": "SUPARDI",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000670",
+      "name": "Tagor Harahap",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001033",
+      "name": "Taufik",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000894",
+      "name": "Thorikin",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "699710205",
+      "name": "Timbul Sinaga",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000827",
+      "name": "Tjahya Adrianto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001365",
+      "name": "Toni Ichtiar",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001616",
+      "name": "Ude",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001566",
+      "name": "Usman Soleh",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001355",
+      "name": "Uus Rusdi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001049",
+      "name": "Wiji Gunadi",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000546",
+      "name": "Winaryo",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000790",
+      "name": "Yohanes T",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001905",
+      "name": "Yopik Pratama Putra",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001068",
+      "name": "Yosi Febrian S",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17000883",
+      "name": "Yulianto",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001584",
+      "name": "Yusi M Komalasari",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001529",
+      "name": "Zeva Welian",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002080",
+      "name": "GUGUN JUANDA",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002078",
+      "name": "MARISA",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002087",
+      "name": "WAHYU NUGROHO",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002107",
+      "name": "ASEP SAEPUL UYUN",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002100",
+      "name": "NENENG SRI RAHAYU",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17002098",
+      "name": "ROSARI WULAN PRASASTI",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001509",
+      "name": "APIPUDIN",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001447",
+      "name": "HERMAN",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    },
+    {
+      "nik": "17001903",
+      "name": "WAHYUDI",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
+    }
+  ],
+  "debts": [
+    {
+      "id": "DEBT-M_SAPLI_",
+      "nik": "17002084",
+      "name": "M SAPLI",
+      "incident": "LAKA DI 6H SEREMPET TRUK DI TOLL JORR ll lebak bulus",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 200000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-BAYU_DYAN_",
+      "nik": "17006487",
+      "name": "BAYU DYAN SUKMNA",
+      "incident": "LAKA SEREMBET MOTOR D KOLIDOR 7F",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 300000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-MARISA",
+      "nik": "17002078",
+      "name": "MARISA",
+      "incident": "LAKA JMJ TABRAK TJ DI 6H",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 700000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-Afrizal_p",
+      "nik": "17004964",
+      "name": "Afrizal pirmansyah sm",
+      "incident": "angsuran ke dua",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 850000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-M_HASAN_",
+      "nik": "17001189",
+      "name": "M Hasan",
+      "incident": "LAKA DI 6 H",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 250000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-viky_",
+      "nik": "17001611",
+      "name": "viky",
+      "incident": "LAKA NABRAK MOBIL PRIBADI DANA TALANG",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 350000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-ARGENT_SARAGI_",
+      "nik": "17008423",
+      "name": "Argent saragi napitu",
+      "incident": "Dana talang kordinasi tidak lewat bus stop",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 200000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-AGUS_TRIONO",
+      "nik": "17005792",
+      "name": "AGUS TRIONO",
+      "incident": "Laka Saat Langsir",
+      "startDate": "2026-09-01",
+      "tenor": "4 BULAN",
+      "amount": 750000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-SHANDY",
+      "nik": "17003266",
+      "name": "SHANDY",
+      "incident": "Pinjaman Anak Sakit",
+      "startDate": "2026-09-01",
+      "tenor": "1 Bulan",
+      "amount": 300000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-HAPID",
+      "nik": "17000798",
+      "name": "HAFID",
+      "incident": "Laka Menabrak Gerbang Toll",
+      "startDate": "2026-09-01",
+      "tenor": "2 BULAN",
+      "amount": 615000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-NICHOLAS",
+      "nik": "17003645",
+      "name": "NICHOLAS",
+      "incident": "Laka Menabrak Mobil MAC",
+      "startDate": "2026-09-01",
+      "tenor": "2 BULAN",
+      "amount": 910000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-LUTFI",
+      "nik": "17003433",
+      "name": "LUTFI",
+      "incident": "Angsuran Pertama",
+      "startDate": "2026-09-01",
+      "tenor": "2 BULAN",
+      "amount": 300000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    },
+    {
+      "id": "DEBT-REZALDY",
+      "nik": "17001344",
+      "name": "REZALDY",
+      "incident": "Angsuran Pertama",
+      "startDate": "2026-09-01",
+      "tenor": "1 BULAN",
+      "amount": 200000,
+      "paid": 0,
+      "status": "Belum Mengangsur",
+      "body": "Armada EV Cawang",
+      "disbursedBy": "Bendahara Kholiq / Afrizal"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "EXP-01",
+      "date": "2026-09-01",
+      "title": "Dana Talangan Bayu (koordinasi)",
+      "category": "Talangan",
+      "amount": 300000,
+      "pic": "Bayu Dyan",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-02",
+      "date": "2026-09-04",
+      "title": "Suket M. Hasan Body 270",
+      "category": "Bantuan Laka / Suket",
+      "amount": 500000,
+      "pic": "M. Hasan",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "Body 270"
+    },
+    {
+      "id": "EXP-03",
+      "date": "2026-09-04",
+      "title": "Penggantian Mekanik KLI (Tol & Makan)",
+      "category": "Konsumsi & Atensi",
+      "amount": 151000,
+      "pic": "Mekanik KLI",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-04",
+      "date": "2026-09-04",
+      "title": "Biaya Konsumsi Perbaikan Body 242 oleh Mekanik Uday",
+      "category": "Konsumsi & Atensi",
+      "amount": 200000,
+      "pic": "Mekanik Uday",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "Body 242"
+    },
+    {
+      "id": "EXP-05",
+      "date": "2026-09-05",
+      "title": "Pembelian Sparepart KLI Dorris Mandela (Cicilan 1)",
+      "category": "Sparepart",
+      "amount": 502500,
+      "pic": "Dorris Mandela",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-06",
+      "date": "2026-09-05",
+      "title": "Penggantian Pembelian Sticker Warna Biru (Mekanik KLI)",
+      "category": "Belanja Teknik",
+      "amount": 91000,
+      "pic": "Mekanik KLI",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-07",
+      "date": "2026-09-05",
+      "title": "Dana Talangan OPS Sandi",
+      "category": "Talangan",
+      "amount": 1000000,
+      "pic": "Sandi",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-08",
+      "date": "2026-09-06",
+      "title": "Pembelian Cat, Tinner, dll + Transport",
+      "category": "Belanja Teknik",
+      "amount": 965500,
+      "pic": "Teknik Depo",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-09",
+      "date": "2026-09-08",
+      "title": "Bansos an. Effendi Laka Pulang Kerja",
+      "category": "Bansos",
+      "amount": 302500,
+      "pic": "Effendi",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-10",
+      "date": "2026-09-10",
+      "title": "Bansos an. Jonaemson G (Sakit)",
+      "category": "Bansos",
+      "amount": 300000,
+      "pic": "Jonaemson Gultom",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-11",
+      "date": "2026-09-11",
+      "title": "Dana Talangan Laka an. Zeva",
+      "category": "Talangan",
+      "amount": 300000,
+      "pic": "Zeva Welian",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-12",
+      "date": "2026-09-11",
+      "title": "Pembayaran Spare Part KLI bln Mei #via Afrizal",
+      "category": "Sparepart",
+      "amount": 500000,
+      "pic": "Afrizal Firmansyah",
+      "source": "Debet Rekening BSI Paguyuban",
+      "body": "-"
+    },
+    {
+      "id": "EXP-13",
+      "date": "2026-09-15",
+      "title": "Dana Talangan Laka M. Sapli",
+      "category": "Talangan",
+      "amount": 200000,
+      "pic": "M. Sapli (Body 6H Tol JORR)",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "Body 270"
+    },
+    {
+      "id": "EXP-14",
+      "date": "2026-09-16",
+      "title": "Bansos Muflih (Sakit)",
+      "category": "Bansos",
+      "amount": 302500,
+      "pic": "Muflih",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    },
+    {
+      "id": "EXP-15",
+      "date": "2026-09-19",
+      "title": "Attensi Mekanik KLI & Afrizal",
+      "category": "Konsumsi & Atensi",
+      "amount": 50000,
+      "pic": "Mekanik KLI",
+      "source": "Kas Kecil Tunai (Kholiq)",
+      "body": "-"
+    }
+  ],
+  "vault": {
+    "bsiBalance": 12450000,
+    "pettyCash": 131500,
+    "accountNo": "720510945",
+    "bankName": "Bank Syariah Indonesia (BSI)",
+    "accountHolder": "PAGUYUBAN EV 50 CAWANG"
+  }
+}
