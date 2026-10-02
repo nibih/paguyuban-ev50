@@ -881,6 +881,13 @@
       "role": "member",
       "position": "Pramudi EV 50 Cawang",
       "status": "active"
+    },
+    {
+      "nik": "17002197",
+      "name": "Nicholas",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang",
+      "status": "active"
     }
   ],
   "debts": [
@@ -1016,7 +1023,7 @@
     },
     {
       "id": "DEBT-NICHOLAS",
-      "nik": "17003645",
+      "nik": "17002197",
       "name": "NICHOLAS",
       "incident": "Laka Menabrak Mobil MAC",
       "startDate": "2026-09-01",

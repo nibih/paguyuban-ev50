@@ -20,6 +20,7 @@ export default function LoginScreen({ onLoginSuccess }) {
 
   // Preset demo test accounts
   const DEMO_ACCOUNTS = [
+    { nik: '17002197', name: 'Nicholas', role: 'Pramudi (Laka Tabrak Mobil MAC Rp910k)', defaultPin: '2197' },
     { nik: '17001137', name: 'A Sutriadi', role: 'Pramudi (Lunas Kas & Bersih)', defaultPin: '1137' },
     { nik: '17001504', name: 'M. Sapli', role: 'Pramudi (Ada Hutang Laka Rp200k)', defaultPin: '1504' },
     { nik: '17001109', name: 'M. Hasan', role: 'Pramudi (Hutang Suket Rp500k)', defaultPin: '1109' },
