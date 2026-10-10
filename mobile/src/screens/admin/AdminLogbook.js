@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Modal,
+  View, Text, Image, StyleSheet, TouchableOpacity, Modal,
   ScrollView, ActivityIndicator
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
-import { Bus, X, Trash2, Check } from 'lucide-react-native';
+import { Bus, X, Trash2, Check, Camera, ImageOff } from 'lucide-react-native';
 
 const STATUSES = ['Laporan Baru Masuk', 'Sedang Dikerjakan Mekanik', 'Selesai'];
 const STATUS_SHORT = { 'Laporan Baru Masuk': 'BARU', 'Sedang Dikerjakan Mekanik': 'PROSES', 'Selesai': 'SELESAI' };
@@ -13,6 +13,39 @@ const STATUS_COLOR = {
   'Sedang Dikerjakan Mekanik': { bg: '#DBEAFE', fg: '#1D4ED8', bar: '#3B82F6' },
   'Selesai': { bg: '#D1FAE5', fg: '#047857', bar: '#10B981' }
 };
+
+// Reports are stored as { body, driver, damage, ... } — not title/description.
+// Compose a readable header from the fields that actually exist.
+const incTitle = (inc) => `${inc.body || 'Tanpa Body'} — ${inc.damage || 'Tanpa Rincian'}`;
+
+// Photos ride along on the incident document as base64 thumbnails, because the
+// Firebase project has no Cloud Storage bucket. Guard against records saved
+// before photos existed so old cards never render a broken image.
+function PhotoStrip({ photos, large }) {
+  if (!Array.isArray(photos) || photos.length === 0) return null;
+  const size = large ? 84 : 58;
+  return (
+    <View style={styles.photoRow}>
+      {photos.map((p, i) => (
+        <Image
+          key={i}
+          source={{ uri: p?.uri || (p?.base64 ? `data:image/jpeg;base64,${p.base64}` : null) }}
+          style={[styles.photoThumb, { width: size, height: size }]}
+          resizeMode="cover"
+        />
+      ))}
+    </View>
+  );
+}
+
+function PhotoEmpty() {
+  return (
+    <View style={styles.photoEmpty}>
+      <ImageOff size={13} color="#94A3B8" />
+      <Text style={styles.photoEmptyText}>Tidak ada foto kerusakan</Text>
+    </View>
+  );
+}
 
 // A5: the body-shop board. Reports arrive from members and move left to right;
 // the admin is the one who advances them and assigns a mechanic.
@@ -83,16 +116,19 @@ export default function AdminLogbook() {
                 >
                   <View style={styles.cardTop}>
                     <Bus size={14} color="#0B2F64" />
-                    <Text style={styles.cardTitle} numberOfLines={2}>{inc.title}</Text>
+                    <Text style={styles.cardTitle} numberOfLines={2}>
+                      {inc.body} — {inc.damage}
+                    </Text>
                   </View>
-                  <Text style={styles.cardDesc} numberOfLines={2}>{inc.description}</Text>
+                  <Text style={styles.cardDesc} numberOfLines={2}>{inc.location}</Text>
                   <View style={styles.cardFooter}>
-                    <Text style={styles.cardMeta}>{inc.reporterName}</Text>
+                    <Text style={styles.cardMeta}>{inc.driver} · {inc.nik}</Text>
                     <Text style={styles.cardMeta}>{inc.date}</Text>
                   </View>
-                  {inc.costEstimate ? (
-                    <Text style={styles.cardCost}>Estimasi Rp{Number(inc.costEstimate).toLocaleString('id-ID')}</Text>
-                  ) : null}
+                  {inc.suketStatus && !String(inc.suketStatus).includes('Tidak Perlu') && (
+                    <Text style={styles.cardCost}>{inc.suketStatus}</Text>
+                  )}
+                  <PhotoStrip photos={inc.photos} />
                 </TouchableOpacity>
               ))
             )}
@@ -115,16 +151,18 @@ export default function AdminLogbook() {
                 </View>
 
                 <View style={styles.detailCard}>
-                  <Text style={styles.detailTitle}>{selected.title}</Text>
-                  <Text style={styles.detailDesc}>{selected.description}</Text>
-                  <Text style={styles.detailMeta}>Pelapor: {selected.reporterName} (NIK {selected.reporterNik})</Text>
+                  <Text style={styles.detailTitle}>{incTitle(selected)}</Text>
+                  <Text style={styles.detailDesc}>{selected.damage}</Text>
+                  <Text style={styles.detailMeta}>Pelapor: {selected.driver} (NIK {selected.nik})</Text>
+                  <Text style={styles.detailMeta}>Body armada: {selected.body}</Text>
+                  <Text style={styles.detailMeta}>Lokasi: {selected.location}</Text>
                   <Text style={styles.detailMeta}>Tanggal: {selected.date}</Text>
-                  <Text style={styles.detailMeta}>Suku cadang: {selected.partsNeeded || '-'}</Text>
-                  {selected.costEstimate ? (
-                    <Text style={styles.detailCost}>
-                      Estimasi biaya Rp{Number(selected.costEstimate).toLocaleString('id-ID')}
-                    </Text>
+                  <Text style={styles.detailMeta}>Suket: {selected.suketStatus || '-'}</Text>
+                  {selected.notes ? (
+                    <Text style={styles.detailNotes}>Catatan: {selected.notes}</Text>
                   ) : null}
+                  <PhotoStrip photos={selected.photos} large />
+                  {(!Array.isArray(selected.photos) || selected.photos.length === 0) && <PhotoEmpty />}
                 </View>
 
                 <Text style={styles.label}>Status Pengerjaan</Text>
@@ -254,6 +292,17 @@ const styles = StyleSheet.create({
   detailDesc: { fontSize: 11, color: '#475569', marginTop: 8, lineHeight: 17 },
   detailMeta: { fontSize: 10, color: '#64748B', marginTop: 6 },
   detailCost: { fontSize: 13, fontWeight: '900', color: '#B45309', marginTop: 10 },
+  detailNotes: { fontSize: 11, color: '#475569', marginTop: 8, lineHeight: 16 },
+
+  photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  photoThumb: { borderRadius: 10, backgroundColor: '#F1F5F9' },
+  photoEmpty: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    marginTop: 12, paddingVertical: 10, paddingHorizontal: 12,
+    borderRadius: 11, backgroundColor: '#F8FAFC', borderWidth: 1,
+    borderStyle: 'dashed', borderColor: '#E2E8F0'
+  },
+  photoEmptyText: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
 
   label: { fontSize: 10, fontWeight: '900', color: '#475569', marginTop: 16, marginBottom: 8 },
   statusWrap: { flexDirection: 'row', gap: 7 },

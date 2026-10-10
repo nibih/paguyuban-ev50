@@ -147,12 +147,20 @@ export const AppProvider = ({ children }) => {
   // Optimistic local update keeps the UI snappy; on a failed write we roll
   // back and tell the driver the payment did NOT sync, rather than letting
   // them believe money was recorded when it wasn't.
-  const payIuran = async (nik, months, method = 'Midtrans QRIS') => {
+  const payIuran = async (nik, months, method = 'Midtrans QRIS', receipt = null) => {
     if (!months?.length) return false;
 
     const total = months.length * IURAN_FEE;
     const today = todayId();
-    const payment = { status: 'lunas', nominal: IURAN_FEE, date: today, method };
+    // `receipt` is an optional base64 thumbnail of the bank transfer proof,
+    // stored inline because the project has no Cloud Storage bucket.
+    const payment = {
+      status: 'lunas',
+      nominal: IURAN_FEE,
+      date: today,
+      method,
+      ...(receipt?.base64 ? { receipt: receipt.base64 } : {})
+    };
 
     const prevForNik = iuranRecords[nik] || {};
 

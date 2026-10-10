@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch, ActivityIndicator, Alert } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { Wrench, Bus, MapPin, Send, CheckSquare } from 'lucide-react-native';
+import { Wrench, Send, Camera, X, ImagePlus } from 'lucide-react-native';
+import { captureThumbnail, MAX_PHOTOS, MAX_BASE64_BYTES } from '../utils/thumbnails';
 
 export default function MemberLaporPerbaikan({ navigation }) {
   const { currentUser, addIncident } = useApp();
@@ -10,10 +11,28 @@ export default function MemberLaporPerbaikan({ navigation }) {
   const [damage, setDamage] = useState('Bemper kanan baret');
   const [needSuket, setNeedSuket] = useState(false);
   const [needMechanic, setNeedMechanic] = useState(true);
+  const [photos, setPhotos] = useState([]);
+  const [picking, setPicking] = useState(false);
+
+  const addPhoto = async (source) => {
+    if (photos.length >= MAX_PHOTOS) {
+      Alert.alert('Batas foto', `Maksimal ${MAX_PHOTOS} foto per laporan.`);
+      return;
+    }
+    setPicking(true);
+    try {
+      const shot = await captureThumbnail(source);
+      if (shot) setPhotos(prev => [...prev, shot]);
+    } catch (e) {
+      Alert.alert('Foto gagal', e.message || 'Coba lagi.');
+    } finally {
+      setPicking(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!location) {
-      alert('Mohon isi lokasi kejadian insiden');
+      Alert.alert('Lokasi kosong', 'Mohon isi lokasi kejadian insiden.');
       return;
     }
     // Only leave the form once the report is confirmed stored; on failure
@@ -25,7 +44,8 @@ export default function MemberLaporPerbaikan({ navigation }) {
       damage,
       location,
       suketStatus: needSuket ? 'Suket Kepolisian Diproses' : 'Tidak Perlu Suket',
-      needMechanic
+      needMechanic,
+      photos
     });
     if (ok) navigation.navigate('Beranda');
   };
@@ -59,6 +79,53 @@ export default function MemberLaporPerbaikan({ navigation }) {
           multiline 
           placeholder="Jelaskan baret bemper, spion pecah, atau senggolan..."
         />
+
+        {/* Photo evidence — MVP stores downscaled thumbnails on the record */}
+        <Text style={styles.label}>Foto Kerusakan Bodi (opsional):</Text>
+        <Text style={styles.photoHint}>
+          Maksimal {MAX_PHOTOS} foto, otomatis dikompres agar ringan diunduh mekanik.
+        </Text>
+
+        <View style={styles.photoRow}>
+          {photos.map((p, i) => (
+            <View key={i} style={styles.photoWrap}>
+              <Image source={{ uri: p.uri }} style={styles.photoThumb} />
+              <TouchableOpacity
+                style={styles.photoRemove}
+                onPress={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <X size={12} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          ))}
+
+          {photos.length < MAX_PHOTOS && (
+            <TouchableOpacity
+              style={[styles.photoAdd, picking && { opacity: 0.5 }]}
+              onPress={() => addPhoto('camera')}
+              disabled={picking}
+              activeOpacity={0.8}
+            >
+              {picking
+                ? <ActivityIndicator size="small" color="#00A896" />
+                : <Camera size={18} color="#00A896" />}
+              <Text style={styles.photoAddText}>Kamera</Text>
+            </TouchableOpacity>
+          )}
+
+          {photos.length < MAX_PHOTOS && (
+            <TouchableOpacity
+              style={[styles.photoAdd, picking && { opacity: 0.5 }]}
+              onPress={() => addPhoto('library')}
+              disabled={picking}
+              activeOpacity={0.8}
+            >
+              <ImagePlus size={18} color="#00A896" />
+              <Text style={styles.photoAddText}>Galeri</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* Toggles */}
         <View style={styles.toggleRow}>
@@ -128,6 +195,25 @@ const styles = StyleSheet.create({
   },
   toggleTitle: { fontSize: 13, fontWeight: 'bold', color: '#0F172A' },
   toggleSub: { fontSize: 10, color: '#64748B', marginTop: 2 },
+
+  photoHint: { fontSize: 10, color: '#94A3B8', marginBottom: 10, marginTop: -2 },
+  photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  photoWrap: { position: 'relative' },
+  photoThumb: { width: 74, height: 74, borderRadius: 12, backgroundColor: '#F1F5F9' },
+  photoRemove: {
+    position: 'absolute', top: -6, right: -6,
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: '#EF4444',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#FFFFFF'
+  },
+  photoAdd: {
+    width: 74, height: 74, borderRadius: 12,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#99F6E4',
+    backgroundColor: '#F0FDFA',
+    alignItems: 'center', justifyContent: 'center', gap: 3
+  },
+  photoAddText: { fontSize: 9, fontWeight: 'bold', color: '#0F766E' },
   sendBtn: {
     flexDirection: 'row',
     alignItems: 'center',
