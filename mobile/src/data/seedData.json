@@ -884,7 +884,14 @@
     },
     {
       "nik": "17002197",
-      "name": "Nicholas",
+      "name": "NICHOLAS",
+      "role": "member",
+      "position": "Pramudi EV 50 Cawang (Akun Demo)",
+      "status": "active"
+    },
+    {
+      "nik": "17002176",
+      "name": "LUTFI",
       "role": "member",
       "position": "Pramudi EV 50 Cawang",
       "status": "active"
@@ -893,7 +900,7 @@
   "debts": [
     {
       "id": "DEBT-M_SAPLI_",
-      "nik": "17002084",
+      "nik": "17001504",
       "name": "M SAPLI",
       "incident": "LAKA DI 6H SEREMPET TRUK DI TOLL JORR ll lebak bulus",
       "startDate": "2026-09-01",
@@ -902,11 +909,12 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "exact"
     },
     {
       "id": "DEBT-BAYU_DYAN_",
-      "nik": "17006487",
+      "nik": "17000839",
       "name": "BAYU DYAN SUKMNA",
       "incident": "LAKA SEREMBET MOTOR D KOLIDOR 7F",
       "startDate": "2026-09-01",
@@ -915,7 +923,8 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "fuzzy(0.14)"
     },
     {
       "id": "DEBT-MARISA",
@@ -928,24 +937,26 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "exact"
     },
     {
       "id": "DEBT-Afrizal_p",
-      "nik": "17004964",
+      "nik": null,
       "name": "Afrizal pirmansyah sm",
-      "incident": "angsuran ke dua",
+      "incident": "laka lantas di toll jagorawi km 23",
       "startDate": "2026-09-01",
       "tenor": "1 BULAN",
       "amount": 850000,
-      "paid": 0,
-      "status": "Belum Mengangsur",
+      "paid": 850000,
+      "status": "Lunas",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "needsReview": true
     },
     {
       "id": "DEBT-M_HASAN_",
-      "nik": "17001189",
+      "nik": "17001109",
       "name": "M Hasan",
       "incident": "LAKA DI 6 H",
       "startDate": "2026-09-01",
@@ -954,7 +965,8 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "tokens"
     },
     {
       "id": "DEBT-viky_",
@@ -967,46 +979,50 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "substring"
     },
     {
       "id": "DEBT-ARGENT_SARAGI_",
-      "nik": "17008423",
+      "nik": "17001128",
       "name": "Argent saragi napitu",
       "incident": "Dana talang kordinasi tidak lewat bus stop",
       "startDate": "2026-09-01",
       "tenor": "1 BULAN",
-      "amount": 200000,
+      "amount": 50000,
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "tokens"
     },
     {
       "id": "DEBT-AGUS_TRIONO",
-      "nik": "17005792",
+      "nik": null,
       "name": "AGUS TRIONO",
       "incident": "Laka Saat Langsir",
       "startDate": "2026-09-01",
       "tenor": "4 BULAN",
-      "amount": 750000,
-      "paid": 0,
-      "status": "Belum Mengangsur",
+      "amount": 1000000,
+      "paid": 250000,
+      "status": "Sedang Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "needsReview": true
     },
     {
       "id": "DEBT-SHANDY",
-      "nik": "17003266",
+      "nik": null,
       "name": "SHANDY",
       "incident": "Pinjaman Anak Sakit",
       "startDate": "2026-09-01",
-      "tenor": "1 Bulan",
-      "amount": 300000,
-      "paid": 0,
-      "status": "Belum Mengangsur",
+      "tenor": "1 BULAN",
+      "amount": 1000000,
+      "paid": 1000000,
+      "status": "Lunas",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "needsReview": true
     },
     {
       "id": "DEBT-HAPID",
@@ -1019,7 +1035,8 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "explicit-field"
     },
     {
       "id": "DEBT-NICHOLAS",
@@ -1032,33 +1049,36 @@
       "paid": 0,
       "status": "Belum Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "explicit-field(not-in-roster)"
     },
     {
       "id": "DEBT-LUTFI",
-      "nik": "17003433",
+      "nik": "17002176",
       "name": "LUTFI",
-      "incident": "Angsuran Pertama",
+      "incident": "Laka Menabrak Separator",
       "startDate": "2026-09-01",
       "tenor": "2 BULAN",
-      "amount": 300000,
-      "paid": 0,
-      "status": "Belum Mengangsur",
+      "amount": 650000,
+      "paid": 350000,
+      "status": "Sedang Mengangsur",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "explicit-field(not-in-roster)"
     },
     {
       "id": "DEBT-REZALDY",
       "nik": "17001344",
       "name": "REZALDY",
-      "incident": "Angsuran Pertama",
+      "incident": "Anak masuk rumah sakit urgent",
       "startDate": "2026-09-01",
       "tenor": "1 BULAN",
       "amount": 200000,
-      "paid": 0,
-      "status": "Belum Mengangsur",
+      "paid": 200000,
+      "status": "Lunas",
       "body": "Armada EV Cawang",
-      "disbursedBy": "Bendahara Kholiq / Afrizal"
+      "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "substring"
     }
   ],
   "expenses": [
@@ -1211,6 +1231,3960 @@
       "pic": "Mekanik KLI",
       "source": "Kas Kecil Tunai (Kholiq)",
       "body": "-"
+    }
+  ],
+  "iuran": [
+    {
+      "nik": "17000346",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000389",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000422",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000427",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000436",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000441",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000495",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000510",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000537",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000546",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000557",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000590",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000595",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000598",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000603",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000670",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000691",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000699",
+      "months": {
+        "Mei": {
+          "status": "partial",
+          "nominal": 50000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "partial",
+          "nominal": 50000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000737",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000738",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000778",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000790",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000795",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000798",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 400000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000821",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000838",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000839",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000849",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000864",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000868",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000883",
+      "months": {
+        "Mei": {
+          "status": "partial",
+          "nominal": 50000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000884",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000894",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000899",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000909",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000971",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000994",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001005",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001009",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001018",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001022",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001028",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001033",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001049",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001053",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001068",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001070",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001078",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001101",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001109",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001128",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001137",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001150",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001156",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001170",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001293",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001324",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001328",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001342",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001344",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001355",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001361",
+      "months": {
+        "Mei": {
+          "status": "partial",
+          "nominal": 50000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001362",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001363",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001364",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001365",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001407",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001418",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001449",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001458",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001459",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001469",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001473",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001477",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001488",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001502",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001504",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001511",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001527",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001529",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001536",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001544",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001552",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001566",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001576",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001578",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001584",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001589",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 500000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 150000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001603",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001611",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 300000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001616",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001790",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001802",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001814",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001818",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001819",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001825",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001832",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001844",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001852",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001862",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001876",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001883",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001885",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001891",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001905",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002078",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002080",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002087",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002098",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002100",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002107",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "699710205",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "720510945",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 200000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "790110747",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "820811526",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "831111895",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "7213120708",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "8615121388",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "7709120211",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "7812120066",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "7813120477",
+      "months": {
+        "Mei": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juni": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Juli": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "Agustus": {
+          "status": "lunas",
+          "nominal": 100000,
+          "method": "Transfer BSI",
+          "source": "Laporan Uang Masuk"
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17000827",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001509",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001447",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17001903",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002197",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    },
+    {
+      "nik": "17002176",
+      "months": {
+        "Mei": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juni": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Juli": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "Agustus": {
+          "status": "unpaid",
+          "nominal": 0
+        },
+        "September": {
+          "status": "unpaid",
+          "nominal": 0
+        }
+      }
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-01",
+      "body": "Body 248",
+      "driver": "A Sutriadi",
+      "nik": "17001137",
+      "damage": "Bemper kanan baret kena trotoar",
+      "location": "Halte Bulungan",
+      "date": "02/09/2026",
+      "status": "Selesai",
+      "mechanic": "Mekanik KLI",
+      "suketStatus": "Tidak Perlu Suket",
+      "needMechanic": true,
+      "notes": "Sudah diperbaiki stiker biru KLI."
+    },
+    {
+      "id": "INC-02",
+      "body": "Body 270",
+      "driver": "M. Hasan",
+      "nik": "17001109",
+      "damage": "Serempetan laka lantas Tol JORR",
+      "location": "Tol JORR",
+      "date": "04/09/2026",
+      "status": "Sedang Dikerjakan Mekanik",
+      "mechanic": "Mekanik KLI",
+      "suketStatus": "Suket Selesai (Biaya Rp500.000)",
+      "needMechanic": true,
+      "notes": "Klaim laka Polres proses."
     }
   ],
   "vault": {

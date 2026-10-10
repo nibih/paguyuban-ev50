@@ -30,51 +30,17 @@ export const AppProvider = ({ children }) => {
   const [expenses, setExpenses] = useState(seedData.expenses);
   const [vault, setVault] = useState(seedData.vault);
   
-  // Iuran Records (Month tracking for 126 drivers)
-  const [iuranRecords, setIuranRecords] = useState({
-    "17001137": {
-      Mei: { status: "lunas", nominal: 100000, date: "02/05/2026", method: "Transfer BSI" },
-      Juni: { status: "lunas", nominal: 100000, date: "03/06/2026", method: "Transfer BSI" },
-      Juli: { status: "lunas", nominal: 100000, date: "01/07/2026", method: "Transfer BSI" },
-      Agustus: { status: "lunas", nominal: 100000, date: "05/08/2026", method: "Transfer BSI" },
-      September: { status: "lunas", nominal: 100000, date: "02/09/2026", method: "Midtrans QRIS" }
-    },
-    "17001504": {
-      Mei: { status: "unpaid", nominal: 0 },
-      Juni: { status: "unpaid", nominal: 0 },
-      Juli: { status: "unpaid", nominal: 0 },
-      Agustus: { status: "unpaid", nominal: 0 },
-      September: { status: "unpaid", nominal: 0 }
-    }
-  });
+  // Iuran records for all 128 drivers, parsed from the official
+  // "Laporan Uang Masuk" reference PDF rather than hand-written here.
+  const [iuranRecords, setIuranRecords] = useState(() =>
+    (seedData.iuran || []).reduce((acc, r) => {
+      acc[r.nik] = r.months || {};
+      return acc;
+    }, {})
+  );
 
-  // Incidents & Damage Logbook
-  const [incidents, setIncidents] = useState([
-    {
-      id: "INC-01",
-      body: "Body 248",
-      driver: "A Sutriadi",
-      nik: "17001137",
-      damage: "Bemper kanan baret kena trotoar",
-      date: "02/09/2026",
-      status: "Selesai",
-      mechanic: "Mekanik KLI",
-      suketStatus: "Tidak Perlu Suket",
-      notes: "Sudah diperbaiki stiker biru KLI."
-    },
-    {
-      id: "INC-02",
-      body: "Body 270",
-      driver: "M. Hasan",
-      nik: "17001109",
-      damage: "Serempetan laka lantas Tol JORR",
-      date: "04/09/2026",
-      status: "Sedang Dikerjakan Mekanik",
-      mechanic: "Mekanik KLI",
-      suketStatus: "Suket Selesai (Biaya Rp500.000)",
-      notes: "Klaim laka Polres proses."
-    }
-  ]);
+  // Incidents & Damage Logbook, from the parsed reference data.
+  const [incidents, setIncidents] = useState(() => seedData.incidents || []);
 
   // Sync real-time with Firestore if connected
   useEffect(() => {
@@ -87,7 +53,12 @@ export const AppProvider = ({ children }) => {
         if (!snap.empty) {
           const list = [];
           snap.forEach(d => list.push(d.data()));
-          setDebts(list);
+          // Merge rather than replace: a backend seeded with only some
+          // cards must not make the others vanish from the UI.
+          setDebts(prev => {
+            const remoteIds = new Set(list.map(d => d.id));
+            return [...list, ...prev.filter(d => !remoteIds.has(d.id))];
+          });
         }
       }, () => {});
 
@@ -100,14 +71,18 @@ export const AppProvider = ({ children }) => {
       }, () => {});
 
       // Iuran: one doc per NIK holding a month -> payment map.
+      //
+      // Merge per driver rather than replacing the whole map. A replace
+      // means that as soon as ANYONE pays, every other driver's history
+      // disappears from the UI on a partially-seeded backend.
       const unsubIuran = onSnapshot(collection(db, 'iuran'), (snap) => {
         if (!snap.empty) {
-          const map = {};
+          const incoming = {};
           snap.forEach(d => {
             const data = d.data();
-            map[data.nik || d.id] = data.months || {};
+            incoming[data.nik || d.id] = data.months || {};
           });
-          setIuranRecords(map);
+          setIuranRecords(prev => ({ ...prev, ...incoming }));
         }
       }, () => {});
 

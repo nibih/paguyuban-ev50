@@ -14,34 +14,60 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function seedFirestore() {
-  console.log('Seeding initial operational data to Firestore paguyuban-ev50...');
-  
-  // 1. Vault
-  await setDoc(doc(db, 'system', 'vault'), seedData.vault);
-  console.log('✓ Vault data seeded.');
+// Write a list in bounded batches so 128 members don't stall on one
+// connection. Firestore caps us at 500 writes per batch anyway.
+const BATCH = 200;
 
-  // 2. Sample 10 active members to Firestore
-  for (const user of seedData.users.slice(0, 15)) {
-    await setDoc(doc(db, 'users', user.nik), user);
+async function writeAll(label, items, makeRef) {
+  for (let i = 0; i < items.length; i += BATCH) {
+    const chunk = items.slice(i, i + BATCH);
+    await Promise.all(chunk.map((item) => setDoc(makeRef(item), item)));
+    process.stdout.write(`\r  ${label}: ${Math.min(i + BATCH, items.length)}/${items.length}`);
   }
-  console.log('✓ Core users seeded.');
-
-  // 3. Debts
-  for (const debt of seedData.debts) {
-    await setDoc(doc(db, 'debts', debt.id), debt);
-  }
-  console.log(`✓ ${seedData.debts.length} debt cards seeded.`);
-
-  // 4. Expenses
-  for (const exp of seedData.expenses) {
-    await setDoc(doc(db, 'expenses', exp.id), exp);
-  }
-  console.log(`✓ ${seedData.expenses.length} expenses seeded.`);
-
-  console.log('All Firestore collections successfully seeded!');
+  process.stdout.write('\n');
 }
 
-seedFirestore().catch(err => {
-  console.log('Seed info (make sure Firestore Database is created in test mode on console):', err.message);
+async function seedFirestore() {
+  console.log('Seeding operational data to Firestore paguyuban-ev50...\n');
+
+  // 1. Vault (single doc)
+  await setDoc(doc(db, 'system', 'vault'), seedData.vault);
+  console.log('  ✓ system/vault');
+
+  // 2. ALL members — the previous revision sliced to 15, which silently
+  //    dropped the three documented test drivers (Nicholas, M. Sapli,
+  //    Muhamad Hasan) because the roster is alphabetical and they sort late.
+  await writeAll('users', seedData.users, (u) => doc(db, 'users', u.nik));
+  console.log(`  ✓ users (${seedData.users.length})`);
+
+  // 3. Debts
+  await writeAll('debts', seedData.debts, (d) => doc(db, 'debts', d.id));
+  console.log(`  ✓ debts (${seedData.debts.length})`);
+
+  // 4. Expenses
+  await writeAll('expenses', seedData.expenses, (e) => doc(db, 'expenses', e.id));
+  console.log(`  ✓ expenses (${seedData.expenses.length})`);
+
+  // 5. Iuran — one doc per NIK holding a month -> payment map. Absent until
+  //    now, so every payment the app recorded evaporated on reload.
+  await writeAll('iuran', seedData.iuran, (r) => doc(db, 'iuran', r.nik));
+  console.log(`  ✓ iuran (${seedData.iuran.length})`);
+
+  // 6. Incidents / damage logbook
+  await writeAll('incidents', seedData.incidents, (i) => doc(db, 'incidents', i.id));
+  console.log(`  ✓ incidents (${seedData.incidents.length})`);
+
+  console.log('\nAll Firestore collections seeded.');
+
+  const unresolved = seedData.debts.filter((d) => !d.nik);
+  if (unresolved.length) {
+    console.log(`\n${unresolved.length} debt card(s) have no resolved NIK and were`);
+    console.log('written with nik:null + needsReview:true. Assign them manually:');
+    unresolved.forEach((d) => console.log(`  - ${d.id}  "${d.name}"  Rp${d.amount.toLocaleString('id-ID')}`));
+  }
+}
+
+seedFirestore().catch((err) => {
+  console.error('\nSeed failed:', err.message);
+  process.exitCode = 1;
 });
