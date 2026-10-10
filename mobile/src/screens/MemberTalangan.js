@@ -21,11 +21,13 @@ export default function MemberTalangan() {
     setAmountInput(String(Math.min(100000, remaining)));
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     const val = parseInt(amountInput.replace(/\D/g, ''), 10);
     if (!val || val <= 0 || !selectedDebt) return;
-    repayDebt(selectedDebt.id, val, repayMethod);
-    setSelectedDebt(null);
+    // Keep the modal open on failure so the driver can retry; only a
+    // confirmed Firestore write dismisses it.
+    const ok = await repayDebt(selectedDebt.id, val, repayMethod);
+    if (ok) setSelectedDebt(null);
   };
 
   return (

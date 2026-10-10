@@ -22,10 +22,14 @@ export default function MemberIuran() {
     }
   };
 
-  const handleSimulateWebhook = () => {
-    payIuran(currentUser.nik, selectedMonths, paymentTab === 'qris' ? 'Midtrans QRIS' : 'BSI Virtual Account');
-    setModalVisible(false);
-    setSelectedMonths([]);
+  const handleSimulateWebhook = async () => {
+    // Only clear the selection once Firestore confirms the write, so a
+    // failed payment doesn't silently look successful.
+    const ok = await payIuran(currentUser.nik, selectedMonths, paymentTab === 'qris' ? 'Midtrans QRIS' : 'BSI Virtual Account');
+    if (ok) {
+      setModalVisible(false);
+      setSelectedMonths([]);
+    }
   };
 
   return (

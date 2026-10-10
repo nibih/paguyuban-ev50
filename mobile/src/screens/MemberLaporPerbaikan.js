@@ -11,12 +11,14 @@ export default function MemberLaporPerbaikan({ navigation }) {
   const [needSuket, setNeedSuket] = useState(false);
   const [needMechanic, setNeedMechanic] = useState(true);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!location) {
       alert('Mohon isi lokasi kejadian insiden');
       return;
     }
-    addIncident({
+    // Only leave the form once the report is confirmed stored; on failure
+    // the driver keeps their input and can retry.
+    const ok = await addIncident({
       body,
       driver: currentUser.name,
       nik: currentUser.nik,
@@ -25,7 +27,7 @@ export default function MemberLaporPerbaikan({ navigation }) {
       suketStatus: needSuket ? 'Suket Kepolisian Diproses' : 'Tidak Perlu Suket',
       needMechanic
     });
-    navigation.navigate('Beranda');
+    if (ok) navigation.navigate('Beranda');
   };
 
   return (

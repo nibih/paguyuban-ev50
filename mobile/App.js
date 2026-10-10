@@ -116,7 +116,7 @@ function MainNavigation() {
 
       {/* Global Interactive Toast Notification */}
       {toast && (
-        <View style={styles.toast}>
+        <View style={[styles.toast, toast.type === 'error' && styles.toastError]}>
           <Text style={styles.toastText}>{toast.message}</Text>
         </View>
       )}
@@ -183,5 +183,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8
   },
-  toastText: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' }
+  toastText: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
+  // Failed writes must not read as a success — red border + tinted fill.
+  toastError: {
+    backgroundColor: '#4C0519',
+    borderColor: '#EF4444'
+  }
 });
