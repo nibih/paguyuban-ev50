@@ -8,7 +8,9 @@ import { Search, Plus, X, Trash2, Receipt, Check } from 'lucide-react-native';
 
 const SOURCES = ['BSI (Bank)', 'Kas Kecil Tunai (Kholiq)'];
 const CATEGORIES = ['Bansos', 'Talangan', 'Servis & Sparepart', 'Konsumsi Kegiatan', 'Operasional Harian', 'Lain-lain'];
-const FILTERS = ['Semua', 'Bansos', 'Talangan', 'Operasional', 'Servis'];
+// The filter chips are derived from the records rather than hardcoded, because
+// the ledger's categories come from the parsed reference sheets and a fixed
+// list silently drifts out of sync — chips that match nothing look broken.
 
 // A3: the cash-out ledger. Creating a record debits the chosen account in the
 // same transaction; deleting refunds it. Both are confirmed, because a wrong
@@ -36,15 +38,37 @@ export default function AdminPengeluaran() {
     [expenses, formSource]
   );
 
+  // Derive the chips from whatever categories actually exist in this source,
+  // most frequent first. "Semua" is always available and always resets.
+  const FILTERS = useMemo(() => {
+    const counts = {};
+    sourceFiltered.forEach(e => {
+      const c = String(e.category || 'Lain-lain').trim();
+      counts[c] = (counts[c] || 0) + 1;
+    });
+    const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    return ['Semua', ...sorted];
+  }, [sourceFiltered]);
+
+  // Switching source can leave a chip that no longer exists in the new list.
+  const activeFilter = FILTERS.includes(filter) ? filter : 'Semua';
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
+    // The chips are categories, so match against `category` — not the title.
+    // Derived chips carry the full label, so an exact match is correct here.
+    const chip = activeFilter === 'Semua' ? null : activeFilter.toLowerCase();
     return sourceFiltered.filter(e => {
       const title = (e.title || '').toLowerCase();
-      if (q && !title.includes(q) && !String(e.pic || '').toLowerCase().includes(q)) return false;
-      if (filter !== 'Semua' && !title.includes(filter.toLowerCase().replace('operasional', 'operasional'))) return true;
+      const pic = String(e.pic || '').toLowerCase();
+      if (q && !title.includes(q) && !pic.includes(q)) return false;
+      if (chip) {
+        const category = String(e.category || '').toLowerCase();
+        if (category !== chip) return false;
+      }
       return true;
     });
-  }, [sourceFiltered, search, filter]);
+  }, [sourceFiltered, search, activeFilter]);
 
   const totalSource = sourceFiltered.reduce((a, b) => a + (b.amount || 0), 0);
 
@@ -149,15 +173,18 @@ export default function AdminPengeluaran() {
       </View>
 
       <View style={styles.filterRow}>
-        {FILTERS.map(f => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterChip, filter === f && styles.filterChipActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
-          </TouchableOpacity>
-        ))}
+        {FILTERS.map(f => {
+          const active = activeFilter === f;
+          return (
+            <TouchableOpacity
+              key={f}
+              style={[styles.filterChip, active && styles.filterChipActive]}
+              onPress={() => setFilter(f)}
+            >
+              <Text style={[styles.filterText, active && styles.filterTextActive]}>{f}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <Text style={styles.count}>
