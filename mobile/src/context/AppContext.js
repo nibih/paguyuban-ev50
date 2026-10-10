@@ -61,6 +61,39 @@ export const AppProvider = ({ children }) => {
     }
   ]);
 
+  // Sync real-time with Firestore if connected
+  useEffect(() => {
+    try {
+      const unsubVault = onSnapshot(doc(db, 'system', 'vault'), (snap) => {
+        if (snap.exists()) setVault(snap.data());
+      }, () => {});
+
+      const unsubDebts = onSnapshot(collection(db, 'debts'), (snap) => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push(d.data()));
+          setDebts(list);
+        }
+      }, () => {});
+
+      const unsubExpenses = onSnapshot(collection(db, 'expenses'), (snap) => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push(d.data()));
+          setExpenses(list);
+        }
+      }, () => {});
+
+      return () => {
+        unsubVault();
+        unsubDebts();
+        unsubExpenses();
+      };
+    } catch (e) {
+      console.log('Using local state cache');
+    }
+  }, []);
+
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => {
