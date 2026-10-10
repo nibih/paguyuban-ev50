@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import seedData from '../data/seedData.json';
 import { db } from '../services/firebase';
-import { collection, doc, setDoc, onSnapshot, runTransaction } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, onSnapshot, runTransaction } from 'firebase/firestore';
 
 const AppContext = createContext();
 
@@ -19,6 +19,13 @@ const fsError = (e) => FS_MESSAGES[e?.code] || e?.message || 'Gagal menyinkronka
 const IURAN_FEE = 100000;
 
 const todayId = () => new Date().toLocaleDateString('id-ID');
+
+// Loose name normalisation for matching a free-text PIC field to a driver.
+const normName = (s) => String(s || '')
+  .toLowerCase()
+  .replace(/[^a-z ]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
 export const AppProvider = ({ children }) => {
   // Authentication & active driver
@@ -285,6 +292,272 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  /* ---------------------------------------------------------------- *
+   * ADMIN / KASIR MUTATIONS
+   *
+   * Every one of these moves real money, so each is wrapped in a
+   * transaction against `system/vault` and the target document. The
+   * optimistic local update is always rolled back if the write fails —
+   * a cashier must never see a success state that Firestore rejected.
+   * ---------------------------------------------------------------- */
+
+  const vaultKeyFor = (source) => (source.includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
+
+  // A2: cashier ticks a driver's month as paid in cash.
+  const markIuranPaidCash = async (nik, month) => {
+    const fee = IURAN_FEE;
+    const payment = {
+      status: 'lunas',
+      nominal: fee,
+      date: todayId(),
+      method: 'Tunai Kasir',
+      markedBy: currentUser?.name || 'Kasir'
+    };
+
+    const before = iuranRecords[nik]?.[month];
+
+    setIuranRecords(prev => ({
+      ...prev,
+      [nik]: { ...(prev[nik] || {}), [month]: payment }
+    }));
+    setVault(v => ({ ...v, pettyCash: v.pettyCash + fee }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const iuranRef = doc(db, 'iuran', nik);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [iuranSnap, vaultSnap] = await Promise.all([tx.get(iuranRef), tx.get(vaultRef)]);
+
+        const months = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
+        // Refuse to double-count: if already lunas on the server, stop.
+        if (months[month]?.status === 'lunas') throw { code: 'already-paid' };
+
+        months[month] = payment;
+        tx.set(iuranRef, { nik, months }, { merge: true });
+
+        const cash = vaultSnap.exists() ? (vaultSnap.data().pettyCash || 0) : 0;
+        tx.set(vaultRef, { pettyCash: cash + fee }, { merge: true });
+      });
+
+      const name = users.find(u => u.nik === nik)?.name || nik;
+      showToast(`Iuran ${month} a.n ${name} ditandai Lunas Tunai (+Rp${fee.toLocaleString('id-ID')})`);
+      return true;
+    } catch (e) {
+      setIuranRecords(prev => {
+        const months = { ...(prev[nik] || {}) };
+        if (before) months[month] = before; else delete months[month];
+        return { ...prev, [nik]: months };
+      });
+      setVault(v => ({ ...v, pettyCash: v.pettyCash - fee }));
+      showToast(
+        e?.code === 'already-paid'
+          ? `Iuran ${month} sudah lunas tercatat di server.`
+          : `Iuran TIDAK tersimpan. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
+  // A3: record an outgoing expense, debiting the chosen cash account.
+  const addExpense = async (newExpense) => {
+    const amount = Number(newExpense.amount);
+    if (!amount || amount <= 0) {
+      showToast('Nominal pengeluaran tidak valid.', 'error');
+      return false;
+    }
+
+    const vaultKey = vaultKeyFor(newExpense.source || 'Kas Kecil');
+    const id = `EXP-${Date.now().toString().slice(-6)}`;
+    const item = { ...newExpense, id, amount };
+
+    // Find a debtor when this is a talangan, so the debt card grows with it.
+    const relatedNik = newExpense.relatedNik
+      || users.find(u => normName(u.name).includes(normName(newExpense.pic || '')))?.nik;
+    const relatedDebt = relatedNik ? debts.find(d => d.nik === relatedNik) : null;
+
+    setExpenses(prev => [item, ...prev]);
+    setVault(v => ({ ...v, [vaultKey]: v[vaultKey] - amount }));
+    if (relatedDebt) {
+      setDebts(prev => prev.map(d => (d.id === relatedDebt.id
+        ? { ...d, amount: d.amount + amount, status: 'Sedang Mengangsur' }
+        : d)));
+    }
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const expRef = doc(db, 'expenses', id);
+        const vaultRef = doc(db, 'system', 'vault');
+        const vaultSnap = await tx.get(vaultRef);
+        const current = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+
+        tx.set(expRef, item);
+
+        if (relatedDebt) {
+          const debtRef = doc(db, 'debts', relatedDebt.id);
+          const debtSnap = await tx.get(debtRef);
+          if (debtSnap.exists()) {
+            const d = debtSnap.data();
+            const newAmount = (d.amount || 0) + amount;
+            tx.update(debtRef, {
+              amount: newAmount,
+              status: newAmount - (d.paid || 0) <= 0 ? 'Lunas' : 'Sedang Mengangsur'
+            });
+          }
+        }
+
+        // Deliberately NOT clamped to zero: a real overdraft should show as a
+        // negative balance rather than silently swallowing the difference.
+        tx.set(vaultRef, { [vaultKey]: current - amount }, { merge: true });
+      });
+
+      showToast(`Pengeluaran Rp${amount.toLocaleString('id-ID')} (${newExpense.title}) berhasil dicatat!`);
+      return true;
+    } catch (e) {
+      setExpenses(prev => prev.filter(x => x.id !== id));
+      setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + amount }));
+      if (relatedDebt) {
+        setDebts(prev => prev.map(d => (d.id === relatedDebt.id
+          ? { ...d, amount: d.amount - amount }
+          : d)));
+      }
+      showToast(`Pengeluaran TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A3: delete an expense and refund the cash account it was drawn from.
+  const deleteExpense = async (expense) => {
+    const vaultKey = vaultKeyFor(expense.source || 'Kas Kecil');
+    const amount = Number(expense.amount) || 0;
+
+    setExpenses(prev => prev.filter(x => x.id !== expense.id));
+    setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + amount }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const vaultRef = doc(db, 'system', 'vault');
+        const vaultSnap = await tx.get(vaultRef);
+        const current = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        tx.delete(doc(db, 'expenses', expense.id));
+        tx.set(vaultRef, { [vaultKey]: current + amount }, { merge: true });
+      });
+      showToast(`Pengeluaran dihapus, Rp${amount.toLocaleString('id-ID')} dikembalikan ke kas.`);
+      return true;
+    } catch (e) {
+      setExpenses(prev => [expense, ...prev]);
+      setVault(v => ({ ...v, [vaultKey]: v[vaultKey] - amount }));
+      showToast(`Gagal menghapus. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A4: admin records a new talangan / loan.
+  const addDebt = async ({ nik, incident, amount, tenor = '1 BULAN', body = 'Armada EV Cawang' }) => {
+    const nominal = Number(amount);
+    const user = users.find(u => u.nik === nik);
+    if (!user) {
+      showToast('Pramudi tidak ditemukan.', 'error');
+      return false;
+    }
+    if (!nominal || nominal <= 0) {
+      showToast('Nominal talangan tidak valid.', 'error');
+      return false;
+    }
+
+    const id = `DEBT-${Date.now().toString().slice(-6)}`;
+    const item = {
+      id,
+      nik,
+      name: user.name,
+      incident: incident || 'Talangan Operasional Jalur',
+      startDate: todayId(),
+      tenor,
+      amount: nominal,
+      paid: 0,
+      status: 'Belum Mengangsur',
+      body,
+      disbursedBy: currentUser?.name || 'Bendahara'
+    };
+
+    setDebts(prev => [item, ...prev]);
+    setVault(v => ({ ...v, pettyCash: v.pettyCash - nominal }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const debtRef = doc(db, 'debts', id);
+        const vaultRef = doc(db, 'system', 'vault');
+        const vaultSnap = await tx.get(vaultRef);
+        const cash = vaultSnap.exists() ? (vaultSnap.data().pettyCash || 0) : 0;
+        tx.set(debtRef, item);
+        tx.set(vaultRef, { pettyCash: cash - nominal }, { merge: true });
+      });
+      showToast(`Talangan Rp${nominal.toLocaleString('id-ID')} untuk ${user.name} dicatat.`);
+      return true;
+    } catch (e) {
+      setDebts(prev => prev.filter(d => d.id !== id));
+      setVault(v => ({ ...v, pettyCash: v.pettyCash + nominal }));
+      showToast(`Talangan TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A4: discard a receivable card entirely (admin correction only).
+  const deleteDebt = async (debtId) => {
+    const before = debts.find(d => d.id === debtId);
+    if (!before) return false;
+
+    setDebts(prev => prev.filter(d => d.id !== debtId));
+    try {
+      await deleteDoc(doc(db, 'debts', debtId));
+      showToast(`Kartu piutang ${before.name} dihapus.`);
+      return true;
+    } catch (e) {
+      setDebts(prev => [before, ...prev]);
+      showToast(`Gagal menghapus kartu piutang. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A5: move a report between board columns / reassign the mechanic.
+  const updateIncidentStatus = async (incidentId, newStatus, newMechanic) => {
+    const before = incidents.find(i => i.id === incidentId);
+    if (!before) return false;
+
+    const status = newStatus || before.status;
+    const mechanic = newMechanic || before.mechanic;
+    if (status === before.status && mechanic === before.mechanic) return true;
+
+    setIncidents(prev => prev.map(i => (i.id === incidentId ? { ...i, status, mechanic } : i)));
+
+    try {
+      await setDoc(doc(db, 'incidents', incidentId), { ...before, status, mechanic }, { merge: true });
+      showToast('Status logbook armada diperbarui!');
+      return true;
+    } catch (e) {
+      setIncidents(prev => prev.map(i => (i.id === incidentId ? before : i)));
+      showToast(`Status TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A5: discard a report entirely.
+  const deleteIncident = async (incidentId) => {
+    const before = incidents.find(i => i.id === incidentId);
+    if (!before) return false;
+
+    setIncidents(prev => prev.filter(i => i.id !== incidentId));
+    try {
+      await deleteDoc(doc(db, 'incidents', incidentId));
+      showToast(`Laporan ${before.id} dihapus.`);
+      return true;
+    } catch (e) {
+      setIncidents(prev => [before, ...prev]);
+      showToast(`Gagal menghapus laporan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       isAuthenticated,
@@ -303,7 +576,15 @@ export const AppProvider = ({ children }) => {
       showToast,
       payIuran,
       repayDebt,
-      addIncident
+      addIncident,
+      // Admin / kasir
+      markIuranPaidCash,
+      addExpense,
+      deleteExpense,
+      addDebt,
+      deleteDebt,
+      updateIncidentStatus,
+      deleteIncident
     }}>
       {children}
     </AppContext.Provider>

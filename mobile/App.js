@@ -13,7 +13,7 @@ import MemberIuran from './src/screens/MemberIuran';
 import MemberTalangan from './src/screens/MemberTalangan';
 import MemberLaporPerbaikan from './src/screens/MemberLaporPerbaikan';
 import MemberKasTerbuka from './src/screens/MemberKasTerbuka';
-import AdminDashboard from './src/screens/AdminDashboard';
+import AdminContainer from './src/screens/admin/AdminContainer';
 
 // Icons
 import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw, LogOut } from 'lucide-react-native';
@@ -111,7 +111,7 @@ function MainNavigation() {
           />
         </Tab.Navigator>
       ) : (
-        <AdminDashboard />
+        <AdminContainer />
       )}
 
       {/* Global Interactive Toast Notification */}
