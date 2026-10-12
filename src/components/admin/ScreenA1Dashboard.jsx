@@ -1,47 +1,160 @@
-import React from 'react';
-import { 
-  DollarSign, 
-  CreditCard, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  AlertCircle, 
-  Plus, 
-  CheckCheck, 
-  Printer, 
-  PieChart, 
-  Activity,
-  Layers,
-  Sparkles
+import React, { useMemo, useState } from 'react';
+import {
+  TrendingUp,
+  TrendingDown,
+  FileSpreadsheet,
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-export const ScreenA1Dashboard = ({ onOpenExpenseModal, onOpenVerifyModal }) => {
-  const { pettyCash, bsiBalance, expenses, debts, setAdminTab } = useApp();
+const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 
-  const totalExpense = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalDebts = debts.reduce((acc, curr) => acc + (curr.amount - curr.paid), 0);
+// Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
+// month name. Map one to the other so a per-month row can line them up.
+const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: '09' };
 
-  // Allocation categories breakdown calculation
-  const allocation = [
-    { label: "Dana Talangan / Laka", amount: 2300000, percentage: "40.6%", color: "bg-amber-500" },
-    { label: "Sparepart & Perbaikan KLI", amount: 1002500, percentage: "17.7%", color: "bg-blue-600" },
-    { label: "Belanja Cat, Tinner & Stiker", amount: 1056500, percentage: "18.7%", color: "bg-teal-500" },
-    { label: "Bansos Sosial & Sakit", amount: 905000, percentage: "16.0%", color: "bg-rose-500" },
-    { label: "Konsumsi & Atensi Mekanik", amount: 401000, percentage: "7.0%", color: "bg-emerald-500" }
-  ];
+const rp = (n) => `Rp${(Number(n) || 0).toLocaleString('id-ID')}`;
+
+// A1: the money in and the money out.
+//
+// This screen used to lead with the vault — total aset, kas kecil, rekening
+// BSI, piutang, an operational summary, four different ways of describing the
+// same balance — and answered none of the question a cashier actually opens
+// the panel with: did we take in more than we spent?
+//
+// The vault balance is deliberately NOT shown. It is a stored figure that the
+// seeded history never fed, so presenting it beside the income totals invites
+// a comparison that cannot be reconciled from this data. A2 carries that
+// reconciliation, with its gaps stated.
+export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
+  const { users, iuranRecords, expenses, setAdminTab } = useApp();
+  const [exporting, setExporting] = useState(null);
+
+  // Pemasukan: every iuran marked lunas, whichever route it arrived by.
+  // Pending claims are excluded — they are not money yet.
+  const finance = useMemo(() => {
+    const perMonth = {};
+    MONTHS.forEach((m) => { perMonth[m] = { in: 0, out: 0 }; });
+
+    let income = 0;
+    let pending = 0;
+
+    users.forEach((u) => {
+      const rec = iuranRecords[u.nik] || {};
+      MONTHS.forEach((m) => {
+        const d = rec[m];
+        if (!d) return;
+        const nominal = Number(d.nominal) || 0;
+        if (d.status === 'lunas') {
+          income += nominal;
+          perMonth[m].in += nominal;
+        } else if (d.status === 'pending') {
+          pending += nominal;
+        }
+      });
+    });
+
+    let expense = 0;
+    expenses.forEach((e) => {
+      const amt = e.amount || 0;
+      expense += amt;
+      const no = String(e.date || '').slice(5, 7);
+      const m = MONTHS.find((k) => MONTH_NO[k] === no);
+      if (m) perMonth[m].out += amt;
+    });
+
+    return { perMonth, income, expense, pending };
+  }, [users, iuranRecords, expenses]);
+
+  const net = finance.income - finance.expense;
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  // CSV download. The web has no share sheet, so this is a plain blob link —
+  // the same columns the phone exports, for the monthly DAMRI meeting.
+  const downloadCsv = (rows, filename) => {
+    const csv = rows.map((r) => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportIuran = () => {
+    setExporting('iuran');
+    try {
+      const rows = [['No', 'NIK', 'Nama Pramudi', ...MONTHS]];
+      users.forEach((u, i) => {
+        const rec = iuranRecords[u.nik] || {};
+        rows.push([
+          i + 1,
+          `"${u.nik}"`,
+          `"${u.name}"`,
+          ...MONTHS.map((m) => (rec[m]?.status === 'lunas' ? 'Lunas' : rec[m]?.status === 'pending' ? 'Menunggu' : 'Belum Bayar'))
+        ]);
+      });
+      downloadCsv(rows, `iuran-paguyuban-${stamp}.csv`);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const exportExpenses = () => {
+    setExporting('expenses');
+    try {
+      const rows = [['ID', 'Tanggal', 'Uraian', 'Kategori', 'PIC', 'Sumber', 'Nominal']];
+      expenses.forEach((e) => {
+        rows.push([
+          e.id || '',
+          e.date || '',
+          `"${String(e.title || '').replace(/"/g, '""')}"`,
+          `"${e.category || ''}"`,
+          `"${e.pic || ''}"`,
+          `"${e.source || ''}"`,
+          e.amount || 0
+        ]);
+      });
+      downloadCsv(rows, `pengeluaran-${stamp}.csv`);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const Figure = ({ tone, icon: Icon, label, value, sub }) => {
+    const isIn = tone === 'in';
+    return (
+      <div className={`flex-1 rounded-2xl p-5 border shadow-sm ${isIn ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+        <div className="flex items-center gap-2">
+          <Icon className={`w-4 h-4 ${isIn ? 'text-emerald-600' : 'text-rose-600'}`} />
+          <span className={`text-[11px] font-black uppercase tracking-widest ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
+            {label}
+          </span>
+        </div>
+        <div className={`text-3xl font-black font-mono mt-2 tracking-tight ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
+          {value}
+        </div>
+        <div className="text-[11px] text-slate-500 mt-1">{sub}</div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
-      
-      {/* 1. Top Status Bar */}
+
+      {/* Header + actions */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <h2 className="text-lg font-bold text-slate-900">Executive Financial KPI Paguyuban</h2>
+            <h2 className="text-lg font-bold text-slate-900">Kas: Pemasukan &amp; Pengeluaran</h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Petugas Kasir On-Duty: <span className="font-semibold text-slate-800">Afrizal Pirmansyah (Admin Kas)</span> • Update Realtime SBU Cawang
+            Petugas kasir jaga: <span className="font-semibold text-slate-800">Afrizal Firmansyah (Admin Kas)</span> • Data langsung dari Firestore
           </p>
         </div>
 
@@ -51,181 +164,133 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal, onOpenVerifyModal }) => 
             className="px-3.5 py-2 bg-[#0B2F64] hover:bg-[#123e7e] text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Catat Pengeluaran Baru</span>
+            <span>Catat Pengeluaran</span>
           </button>
 
           <button
             onClick={() => setAdminTab('A2')}
             className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
           >
-            <CheckCheck className="w-4 h-4" />
-            <span>Verifikasi Kas Masuk</span>
+            <AlertCircle className="w-4 h-4" />
+            <span>Buka Antrean Verifikasi</span>
+          </button>
+        </div>
+      </div>
+
+      {/* The two figures */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Figure
+          tone="in"
+          icon={TrendingUp}
+          label="Pemasukan"
+          value={rp(finance.income)}
+          sub="iuran masuk"
+        />
+        <Figure
+          tone="out"
+          icon={TrendingDown}
+          label="Pengeluaran"
+          value={rp(finance.expense)}
+          sub={`${expenses.length} transaksi`}
+        />
+      </div>
+
+      {/* Selisih */}
+      <div className={`bg-white rounded-2xl p-5 border shadow-sm text-center ${net < 0 ? 'border-rose-200 bg-rose-50/50' : 'border-slate-200'}`}>
+        <div className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+          Selisih (Masuk − Keluar)
+        </div>
+        <div className={`text-3xl font-black font-mono mt-1 ${net < 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+          {net < 0 ? '−' : '+'}{rp(Math.abs(net))}
+        </div>
+      </div>
+
+      {finance.pending > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-black">{rp(finance.pending)}</span> masih menunggu verifikasi
+            dan belum dihitung sebagai pemasukan. Buka antrean di tab Iuran untuk memeriksanya
+            terhadap mutasi rekening.
+          </p>
+        </div>
+      )}
+
+      {/* Per-month */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100">
+          <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Per Bulan</h3>
+        </div>
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+              <th className="py-2.5 px-5 text-left">Bulan</th>
+              <th className="py-2.5 px-5 text-right">Masuk</th>
+              <th className="py-2.5 px-5 text-right">Keluar</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {MONTHS.map((m) => {
+              const r = finance.perMonth[m];
+              return (
+                <tr key={m} className="hover:bg-slate-50/60">
+                  <td className="py-2.5 px-5 font-bold text-slate-800">{m}</td>
+                  <td className="py-2.5 px-5 text-right font-mono text-emerald-700">{rp(r.in)}</td>
+                  <td className="py-2.5 px-5 text-right font-mono text-rose-700">{rp(r.out)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-slate-200 bg-slate-50/80">
+              <td className="py-3 px-5 font-black text-slate-900">Total</td>
+              <td className="py-3 px-5 text-right font-mono font-black text-emerald-700">{rp(finance.income)}</td>
+              <td className="py-3 px-5 text-right font-mono font-black text-rose-700">{rp(finance.expense)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div className="px-5 py-3 text-[10px] text-slate-400 leading-relaxed border-t border-slate-100">
+          Pengeluaran baru tercatat mulai September, jadi bulan sebelumnya memang kosong.
+        </div>
+      </div>
+
+      {/* CSV export */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900 mb-1">
+          Export Laporan CSV (Rapat Bulanan Damri)
+        </h3>
+        <p className="text-[11px] text-slate-500 mb-4 leading-relaxed">
+          Berkas .csv langsung bisa dibuka di Excel.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={exportIuran}
+            disabled={!!exporting}
+            className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition text-left disabled:opacity-60"
+          >
+            <span className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+              <FileSpreadsheet className="w-4 h-4 text-[#0B2F64]" />
+            </span>
+            <span className="flex-1">
+              <span className="block text-xs font-bold text-slate-900">Matriks Iuran</span>
+              <span className="block text-[11px] text-slate-500">{users.length} pramudi × {MONTHS.length} bulan</span>
+            </span>
           </button>
 
           <button
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition"
+            onClick={exportExpenses}
+            disabled={!!exporting}
+            className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition text-left disabled:opacity-60"
           >
-            <Printer className="w-4 h-4 text-slate-500" />
-            <span>Cetak Rekap PDF</span>
+            <span className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+              <FileSpreadsheet className="w-4 h-4 text-[#0B2F64]" />
+            </span>
+            <span className="flex-1">
+              <span className="block text-xs font-bold text-slate-900">Buku Pengeluaran</span>
+              <span className="block text-[11px] text-slate-500">{expenses.length} transaksi</span>
+            </span>
           </button>
         </div>
-      </div>
-
-      {/* 2. High-Impact Metric Cards (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* Card 1: Saldo Kas Kecil */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Saldo Kas Kecil Tunai</span>
-            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black font-mono text-slate-900">
-            Rp{pettyCash.toLocaleString('id-ID')}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1 leading-snug">
-            Sisa dari total kas Rp5.796.500 setelah 15 pengeluaran September.
-          </div>
-        </div>
-
-        {/* Card 2: Rekening Penampung BSI */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Rekening Bank BSI</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <CreditCard className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black font-mono text-[#0B2F64]">
-            Rp{bsiBalance.toLocaleString('id-ID')}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            Rekening BSI: <span className="font-mono font-semibold">720510945</span> a.n Paguyuban EV50
-          </div>
-        </div>
-
-        {/* Card 3: Total Pengeluaran Bulan Berjalan */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Total Pengeluaran Sept</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-              <ArrowDownRight className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black font-mono text-rose-600">
-            Rp{totalExpense.toLocaleString('id-ID')}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            {expenses.length} transaksi disbursement terbukukan sah.
-          </div>
-        </div>
-
-        {/* Card 4: Total Piutang Dana Paguyuban */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Piutang Talangan Beredar</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black font-mono text-amber-600">
-            Rp{totalDebts.toLocaleString('id-ID')}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            5 anggota aktif berhutang (Sandi, Hasan, Bayu, Zeva, Sapli).
-          </div>
-        </div>
-
-      </div>
-
-      {/* 3. Visual Analytical Breakdowns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left: Alokasi Pengeluaran September 2026 */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-[#0B2F64]" />
-              <h3 className="font-bold text-slate-900 text-sm">
-                Alokasi Pengeluaran Kas September 2026
-              </h3>
-            </div>
-            <span className="text-xs font-bold font-mono text-slate-500">
-              Total: Rp{totalExpense.toLocaleString('id-ID')}
-            </span>
-          </div>
-
-          {/* Stacked Progress Bar */}
-          <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden flex mb-6">
-            <div style={{ width: '40.6%' }} className="bg-amber-500 h-full" title="Talangan 40.6%" />
-            <div style={{ width: '18.7%' }} className="bg-teal-500 h-full" title="Belanja Cat 18.7%" />
-            <div style={{ width: '17.7%' }} className="bg-blue-600 h-full" title="Sparepart 17.7%" />
-            <div style={{ width: '16.0%' }} className="bg-rose-500 h-full" title="Bansos 16.0%" />
-            <div style={{ width: '7.0%' }} className="bg-emerald-500 h-full" title="Konsumsi 7.0%" />
-          </div>
-
-          {/* Breakdown Items List */}
-          <div className="space-y-3">
-            {allocation.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100">
-                <div className="flex items-center gap-3">
-                  <span className={`w-3.5 h-3.5 rounded-md ${item.color} shrink-0`} />
-                  <span className="font-semibold text-slate-800">{item.label}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-slate-400 font-mono">{item.percentage}</span>
-                  <span className="font-mono font-bold text-slate-900 w-28 text-right">
-                    Rp{item.amount.toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Recent Activity Feed */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="w-5 h-5 text-teal-600" />
-              <h3 className="font-bold text-slate-900 text-sm">
-                Aktivitas Kasir & Jalur Terkini
-              </h3>
-            </div>
-
-            <div className="space-y-3.5">
-              {[
-                { text: "Pencairan Attensi Mekanik KLI & Afrizal", time: "19 Sep 2026", user: "Afrizal P", nominal: "- Rp50.000" },
-                { text: "Bansos rawat Muflih (Sakit)", time: "16 Sep 2026", user: "Kholiq", nominal: "- Rp302.500" },
-                { text: "Pencairan Dana Talang Laka M. Sapli Tol JORR", time: "15 Sep 2026", user: "Kholiq", nominal: "- Rp200.000" },
-                { text: "Pembayaran Sparepart KLI bln Mei via BSI", time: "11 Sep 2026", user: "Afrizal P", nominal: "- Rp500.000" },
-                { text: "Suket M. Hasan Body 270 Laka Lantas", time: "04 Sep 2026", user: "Kholiq", nominal: "- Rp500.000" }
-              ].map((act, i) => (
-                <div key={i} className="border-l-2 border-teal-500 pl-3 py-0.5 text-xs">
-                  <div className="font-semibold text-slate-800 leading-snug">{act.text}</div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
-                    <span>{act.time} • PJ: {act.user}</span>
-                    <span className="font-mono font-bold text-rose-600">{act.nominal}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500">Log sinkronisasi live</span>
-            <button 
-              onClick={() => setAdminTab('A3')}
-              className="text-blue-600 font-bold hover:underline"
-            >
-              Lihat Semua Buku Kas &rarr;
-            </button>
-          </div>
-        </div>
-
       </div>
 
     </div>

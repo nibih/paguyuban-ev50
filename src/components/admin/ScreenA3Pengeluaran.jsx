@@ -15,7 +15,9 @@ import {
 import { useApp } from '../../context/AppContext';
 
 export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
-  const { expenses, addExpense, pettyCash, bsiBalance } = useApp();
+  const { expenses, addExpense, vault } = useApp();
+  const pettyCash = vault?.pettyCash ?? 0;
+  const bsiBalance = vault?.bsiBalance ?? 0;
   const [activeTab, setActiveTab] = useState('Semua');
   const [search, setSearch] = useState('');
   const [viewReceiptItem, setViewReceiptItem] = useState(null);

@@ -25,3 +25,10 @@ dist-ssr
 
 # Vercel
 .vercel
+
+# Local env files. VITE_* values are read at build time and end up in the
+# public JS bundle, so anything holding a real secret must stay out of git.
+# `.env.local` matches the *.local rule below; `.env` is excluded too.
+.env
+.env*.local
+*.local
