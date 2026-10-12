@@ -1,6 +1,6 @@
 # 📋 SYSTEM EXECUTION & CURRENT STATE OVERVIEW (CURRENT_ACTIVITY.md)
 
-**Aplikasi:** PAGUYUBAN EV50 CAWANG (SBU Transbusway Area Cawang - Perum DAMRI)  
+**Aplikasi:** PAGUYUBAN EV50 — DAMRI SBU Transbusway Cawang EV 50
 **Status Terkini:** Proyek Web (React + Vite) & Proyek Mobile (React Native + Expo SDK 52 + Firebase) aktif. Seluruh CRUD admin sudah tertulis ke Firestore, bukan state lokal.  
 **Commit Terakhir:** `d4adf99` — *fix(seeder): make additive, add read-only Firestore inspector*  
 **Repository:** [github.com/nibih/paguyuban-ev50](https://github.com/nibih/paguyuban-ev50)

@@ -36,7 +36,7 @@ function MainNavigation() {
       <View style={styles.topBar}>
         <View>
           <Text style={styles.topLogo}>PAGUYUBAN EV50</Text>
-          <Text style={styles.topSub}>TRANSBUSWAY CAWANG</Text>
+          <Text style={styles.topSub}>DAMRI SBU TRANSBUSWAY CAWANG</Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

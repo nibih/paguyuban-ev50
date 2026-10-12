@@ -6,7 +6,7 @@ Panduan ini ditujukan bagi programmer baru atau AI coding agent yang mengambil a
 
 ## 1. PENGENALAN SISTEM & DOMAIN BISNIS
 
-Aplikasi ini mendigitalkan paguyuban pengemudi bus listrik Transjakarta (EV50) di bawah naungan operator Perum DAMRI (Depo Cawang).
+Aplikasi ini mendigitalkan paguyuban pengemudi bus listrik DAMRI SBU Transbusway Cawang EV 50 (Depo Cawang).
 
 ### 3 Domain Operasional Inti:
 1. **Iuran Kas Bulanan:** Setiap pramudi wajib membayar kas Rp100.000/bulan untuk dana sosial, perlindungan operasional, dan kas bersama. Saldo ditampung di Bank Syariah Indonesia (BSI) No. Rek `720510945` a.n **PAGUYUBAN EV 50 CAWANG**.

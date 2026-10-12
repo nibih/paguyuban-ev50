@@ -62,7 +62,7 @@ export default function LoginScreen({ onLoginSuccess }) {
             <Bus size={32} color="#00A896" />
           </View>
           <Text style={styles.brandTitle}>PAGUYUBAN EV50</Text>
-          <Text style={styles.brandSub}>SBU TRANSBUSWAY AREA CAWANG</Text>
+          <Text style={styles.brandSub}>DAMRI SBU TRANSBUSWAY CAWANG EV 50</Text>
           <Text style={styles.instruction}>
             Portal Manajemen Iuran, Dana Talang & Perbaikan Armada EV
           </Text>

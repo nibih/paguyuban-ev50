@@ -84,7 +84,7 @@ Tidak menghambat penggunaan aplikasi di lapangan:
 2. **Integrasi WhatsApp Bot / OTP:** notifikasi tagihan otomatis via WhatsApp API.
 3. **Cetak Surat Perjanjian Utang ke PDF:** kop surat resmi bertanda tangan (`expo-print`).
 4. **GPS Tracking Kerusakan Jalur:** deteksi koordinat insiden otomatis.
-5. **Multi-Depo / Multi-Koridor:** ekspansi ke rute selain SBU Transbusway Area Cawang EV50.
+5. **Multi-Depo / Multi-Koridor:** ekspansi ke rute selain DAMRI SBU Transbusway Cawang EV 50.
 6. **Firebase Storage untuk foto resolusi penuh:** saat ini thumbnail base64 di dokumen karena Storage belum diaktifkan — solusi sementara, dibatasi 1 MiB per dokumen Firestore.
 
 ---

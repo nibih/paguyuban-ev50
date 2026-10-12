@@ -86,7 +86,7 @@ export const LoginGate = ({ children }) => {
             PAGUYUBAN EV50
           </h1>
           <p className="text-xs text-blue-300 font-medium mt-1">
-            Panel Pengurus • SBU Transbusway Area Cawang
+            Panel Pengurus • DAMRI SBU Transbusway Cawang EV 50
           </p>
         </div>
 

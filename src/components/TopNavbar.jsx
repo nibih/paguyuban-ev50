@@ -58,7 +58,7 @@ export const TopNavbar = () => {
             </span>
           </div>
           <p className="text-[11px] text-blue-200 font-medium hidden sm:block">
-            SBU TRANSBUSWAY AREA CAWANG • KAS &amp; IURAN PRAMUDI
+            DAMRI SBU TRANSBUSWAY CAWANG EV 50 • KAS &amp; IURAN PRAMUDI
           </p>
         </div>
       </div>

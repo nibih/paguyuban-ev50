@@ -80,7 +80,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Buku Kas Pengeluaran & Pembelanjaan</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Daftar 15 mutasi resmi pengeluaran kas Paguyuban EV50 Cawang periode September 2026
+            Daftar mutasi resmi pengeluaran kas Paguyuban EV50 — DAMRI SBU Transbusway Cawang EV 50, periode September 2026
           </p>
         </div>
 
@@ -354,7 +354,8 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
             <div className="my-4 p-4 bg-slate-50 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1.5">
               <div className="text-center font-bold pb-2 border-b border-dashed border-slate-300">
                 BUKTI KAS KELUAR RESMI<br/>
-                PAGUYUBAN TRANSBUSWAY EV50
+                PAGUYUBAN EV50<br/>
+                <span className="font-normal">DAMRI SBU TRANSBUSWAY CAWANG</span>
               </div>
               <div className="flex justify-between">
                 <span>Ref ID:</span>
