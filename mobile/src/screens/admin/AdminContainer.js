@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useApp } from '../../context/AppContext';
-import { BarChart3, Table2, Receipt, Wallet, Bus } from 'lucide-react-native';
+import { BarChart3, Table2, Receipt, Wallet, Bus, Users } from 'lucide-react-native';
 
 import AdminKas from './AdminKas';
 import AdminIuran from './AdminIuran';
 import AdminPengeluaran from './AdminPengeluaran';
 import AdminPiutang from './AdminPiutang';
 import AdminLogbook from './AdminLogbook';
+import AdminAnggota from './AdminAnggota';
 
 const NAV = [
   { id: 'A1', label: 'Kas', icon: BarChart3, Screen: AdminKas },
   { id: 'A2', label: 'Iuran', icon: Table2, Screen: AdminIuran },
   { id: 'A3', label: 'Keluar', icon: Receipt, Screen: AdminPengeluaran },
   { id: 'A4', label: 'Piutang', icon: Wallet, Screen: AdminPiutang },
-  { id: 'A5', label: 'Bodi', icon: Bus, Screen: AdminLogbook }
+  { id: 'A5', label: 'Bodi', icon: Bus, Screen: AdminLogbook },
+  { id: 'A6', label: 'Anggota', icon: Users, Screen: AdminAnggota }
 ];
 
 export default function AdminContainer() {
@@ -24,6 +26,8 @@ export default function AdminContainer() {
   const badgeFor = (id) => {
     if (id === 'A4') return debts.filter(d => (d.amount - d.paid) > 0).length;
     if (id === 'A5') return incidents.filter(i => !String(i.status).includes('Selesai')).length;
+    // No badge on A6: a roster count is just the size of the roster, which
+    // tells the cashier nothing actionable.
     return null;
   };
 

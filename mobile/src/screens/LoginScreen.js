@@ -34,12 +34,13 @@ export default function LoginScreen({ onLoginSuccess }) {
       return;
     }
 
-    const success = loginWithNik(targetNik);
-    if (success) {
+    // loginWithNik returns null on success, or a reason string on failure.
+    const error = loginWithNik(targetNik, pinInput.trim());
+    if (!error) {
       setErrorMsg('');
       if (onLoginSuccess) onLoginSuccess();
     } else {
-      setErrorMsg('NIK tidak terdaftar dalam paguyuban');
+      setErrorMsg(error);
     }
   };
 

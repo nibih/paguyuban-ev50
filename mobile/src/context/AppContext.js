@@ -102,12 +102,26 @@ export const AppProvider = ({ children }) => {
         }
       }, () => {});
 
+      // Roster. Merge per NIK like the debts listener: a backend seeded with
+      // only some drivers must not erase the rest from the login screen.
+      const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ ...d.data(), nik: d.data().nik || d.id }));
+          setUsers(prev => {
+            const remoteNiks = new Set(list.map(u => u.nik));
+            return [...list, ...prev.filter(u => !remoteNiks.has(u.nik))];
+          });
+        }
+      }, () => {});
+
       return () => {
         unsubVault();
         unsubDebts();
         unsubExpenses();
         unsubIuran();
         unsubIncidents();
+        unsubUsers();
       };
     } catch (e) {
       console.log('Using local state cache');
@@ -121,14 +135,32 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const loginWithNik = (nik) => {
+  // Login by NIK + PIN.
+  //
+  // Returns null on success, or a human-readable reason on failure so the
+  // login screen can tell "unknown NIK" apart from "wrong PIN" — collapsing
+  // them into one message would tell an attacker which NIKs exist.
+  //
+  // The PIN defaults to the last 4 digits of the NIK for accounts that have
+  // never set one, which is what the seed roster and the demo cards assume.
+  const loginWithNik = (nik, pin) => {
     const user = users.find(u => u.nik === nik);
-    if (!user) return false;
+    if (!user) return 'NIK tidak terdaftar dalam paguyuban';
+
+    if (String(user.status || 'active') === 'inactive') {
+      return 'Akun ini dinonaktifkan. Hubungi pengurus kas.';
+    }
+
+    const expected = String(user.pin || nik.slice(-4));
+    if (pin !== undefined && pin !== null && String(pin) !== expected) {
+      return 'PIN salah. Coba lagi.';
+    }
+
     setActiveNik(nik);
     setRole(user.role === 'admin' ? 'admin' : 'member');
     setIsAuthenticated(true);
     showToast(`Selamat datang, ${user.name}! (${user.position || user.role})`);
-    return true;
+    return null;
   };
 
   const logout = () => {
@@ -566,6 +598,140 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  /* ---------------------------------------------------------------- *
+   * MEMBER / ROSTER MANAGEMENT
+   *
+   * Members are never hard-deleted. A driver with a debt card or a
+   * settled iuran history is part of the paguyuban's financial record,
+   * and removing the roster entry would orphan that money. Deactivation
+   * is the only "delete" this app performs.
+   * ---------------------------------------------------------------- */
+
+  const PIN_DIGITS = 4;
+
+  // Normalise and validate a roster entry. Returns { ok } or { ok:false, error }.
+  const validateMember = (fields, { isEdit = false, ignoreNik = null } = {}) => {
+    const nik = String(fields.nik || '').trim();
+    const name = String(fields.name || '').trim();
+    const pin = fields.pin === undefined || fields.pin === null ? '' : String(fields.pin).trim();
+
+    if (!nik) return { ok: false, error: 'NIK wajib diisi.' };
+    if (!/^\d+$/.test(nik)) return { ok: false, error: 'NIK hanya boleh berisi angka.' };
+    if (nik.length < 6 || nik.length > 16) return { ok: false, error: 'NIK harus 6–16 digit.' };
+    if (!name) return { ok: false, error: 'Nama pramudi wajib diisi.' };
+    if (name.length < 2) return { ok: false, error: 'Nama terlalu pendek.' };
+    if (pin && !new RegExp(`^\\d{${PIN_DIGITS}}$`).test(pin)) {
+      return { ok: false, error: `PIN harus tepat ${PIN_DIGITS} angka.` };
+    }
+
+    if (!isEdit) {
+      const taken = users.some(u => u.nik === nik && u.nik !== ignoreNik);
+      if (taken) return { ok: false, error: `NIK ${nik} sudah terdaftar.` };
+    }
+
+    return { ok: true, nik, name, pin };
+  };
+
+  // A6: register a new pramudi.
+  const addMember = async (fields) => {
+    const v = validateMember(fields);
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    const item = {
+      nik: v.nik,
+      name: v.name,
+      role: fields.role === 'admin' ? 'admin' : 'member',
+      position: String(fields.position || '').trim() || 'Pramudi EV 50 Cawang',
+      status: 'active',
+      // Only persist an explicit PIN. Leaving it empty keeps the documented
+      // last-4-of-NIK default so existing accounts are unaffected.
+      ...(v.pin ? { pin: v.pin } : {}),
+      createdAt: todayId(),
+      createdBy: currentUser?.name || 'Pengurus'
+    };
+
+    // Optimistic insert at the top so the roster reflects the tap at once.
+    setUsers(prev => [item, ...prev]);
+
+    try {
+      await setDoc(doc(db, 'users', item.nik), item);
+      showToast(`${item.name} ditambahkan ke daftar pramudi (NIK ${item.nik}).`);
+      return true;
+    } catch (e) {
+      setUsers(prev => prev.filter(u => u.nik !== item.nik));
+      showToast(`Pramudi TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A6: edit name, position, role, or reset the PIN.
+  const updateMember = async (nik, fields) => {
+    const before = users.find(u => u.nik === nik);
+    if (!before) return false;
+
+    const v = validateMember({ ...before, ...fields, nik }, { isEdit: true, ignoreNik: nik });
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    // An empty PIN means "leave it as it is", not "clear it".
+    const patch = {
+      name: v.name,
+      position: String(fields.position ?? before.position ?? '').trim(),
+      role: (fields.role ?? before.role) === 'admin' ? 'admin' : 'member',
+      ...(v.pin ? { pin: v.pin } : {})
+    };
+
+    const next = { ...before, ...patch };
+    setUsers(prev => prev.map(u => (u.nik === nik ? next : u)));
+
+    try {
+      await setDoc(doc(db, 'users', nik), patch, { merge: true });
+      showToast(`Data ${patch.name} diperbarui.`);
+      return true;
+    } catch (e) {
+      setUsers(prev => prev.map(u => (u.nik === nik ? before : u)));
+      showToast(`Perubahan TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A6: deactivate without deleting, preserving the financial history.
+  const setMemberActive = async (nik, active) => {
+    const before = users.find(u => u.nik === nik);
+    if (!before) return false;
+
+    // The last active admin must never be locked out of their own system.
+    const adminsLeft = users.filter(
+      u => u.role === 'admin' && u.status !== 'inactive' && u.nik !== nik
+    );
+    if (!active && before.role === 'admin' && adminsLeft.length === 0) {
+      showToast('Tidak bisa menonaktifkan admin terakhir.', 'error');
+      return false;
+    }
+
+    const status = active ? 'active' : 'inactive';
+    setUsers(prev => prev.map(u => (u.nik === nik ? { ...u, status } : u)));
+
+    try {
+      await setDoc(doc(db, 'users', nik), { status }, { merge: true });
+      showToast(
+        active
+          ? `${before.name} diaktifkan kembali.`
+          : `${before.name} dinonaktifkan. Riwayat keuangannya tetap tersimpan.`
+      );
+      return true;
+    } catch (e) {
+      setUsers(prev => prev.map(u => (u.nik === nik ? before : u)));
+      showToast(`Status TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       isAuthenticated,
@@ -592,7 +758,11 @@ export const AppProvider = ({ children }) => {
       addDebt,
       deleteDebt,
       updateIncidentStatus,
-      deleteIncident
+      deleteIncident,
+      // Member / roster management
+      addMember,
+      updateMember,
+      setMemberActive
     }}>
       {children}
     </AppContext.Provider>
