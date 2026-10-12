@@ -1,24 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useApp } from '../../context/AppContext';
-import { FileSpreadsheet } from 'lucide-react-native';
+import { FileSpreadsheet, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { iuranCsv, expenseCsv, debtCsv, incidentCsv, exportCsv } from '../../utils/csvExport';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+// Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
+// month name. Map one to the other so a per-month row can line them up.
+const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: '09' };
 
-// A1: cash position at a glance. Read-only — the other tabs do the writing.
+// A1: the money in and the money out. Read-only — the other tabs do the
+// writing.
+//
+// This screen used to lead with the vault: total aset, kas kecil, rekening
+// BSI, piutang, bank account, an operational summary. That was four different
+// ways of describing the same balance, and none of them answered the question
+// a cashier actually opens the app with — did we take in more than we spent?
+//
+// The vault balance is deliberately NOT shown here. It is a stored figure that
+// the seeded history never fed, so presenting it beside the income totals
+// invites a comparison that cannot be reconciled from this data. The iuran
+// tab carries that reconciliation, with its gaps stated.
 export default function AdminKas() {
-  const { vault, expenses, debts, users, incidents, iuranRecords } = useApp();
+  const { expenses, debts, users, incidents, iuranRecords } = useApp();
   const [exporting, setExporting] = useState(null);
 
-  const totalExpense = expenses.reduce((a, b) => a + (b.amount || 0), 0);
-  const outstanding = debts.reduce((a, b) => a + (b.amount - b.paid), 0);
-  const activeDebts = debts.filter(d => (d.amount - d.paid) > 0).length;
-  const openIncidents = incidents.filter(i => !String(i.status).includes('Selesai')).length;
+  // Pemasukan: every iuran marked lunas, whichever route it arrived by.
+  // Pending claims are excluded — they are not money yet.
+  const finance = useMemo(() => {
+    const perMonth = {};
+    MONTHS.forEach(m => { perMonth[m] = { in: 0, out: 0 }; });
 
-  // Cash on hand is what the paguyuban actually controls; the BSI balance is
-  // the bank-held half. Both are shown because drivers ask about both.
-  const cashOnHand = vault.pettyCash + vault.bsiBalance;
+    let income = 0;
+    let pending = 0;
+
+    users.forEach(u => {
+      const rec = iuranRecords[u.nik] || {};
+      MONTHS.forEach(m => {
+        const d = rec[m];
+        if (!d) return;
+        const nominal = Number(d.nominal) || 0;
+        if (d.status === 'lunas') {
+          income += nominal;
+          perMonth[m].in += nominal;
+        } else if (d.status === 'pending') {
+          pending += nominal;
+        }
+      });
+    });
+
+    let expense = 0;
+    expenses.forEach(e => {
+      const amt = e.amount || 0;
+      expense += amt;
+      const no = String(e.date || '').slice(5, 7);
+      const m = MONTHS.find(k => MONTH_NO[k] === no);
+      if (m) perMonth[m].out += amt;
+    });
+
+    return { perMonth, income, expense, pending };
+  }, [users, iuranRecords, expenses]);
+
+  const net = finance.income - finance.expense;
 
   const stamp = new Date().toISOString().slice(0, 10);
 
@@ -66,53 +109,85 @@ export default function AdminKas() {
     { key: 'incidents', label: 'Logbook Armada', sub: `${incidents.length} laporan bodi` }
   ];
 
-  const KPIS = [
-    { label: 'KAS KECIL TUNAI', value: vault.pettyCash, color: '#0F172A', sub: 'PJ: Moh Abdul Kholiq' },
-    { label: 'REKENING BSI', value: vault.bsiBalance, color: '#0B2F64', sub: `No. Rek ${vault.accountNo}` },
-    { label: 'PENGELUARAN SEPT', value: totalExpense, color: '#E11D48', sub: `${expenses.length} Transaksi` },
-    { label: 'PIUTANG TALANGAN', value: outstanding, color: '#D97706', sub: `${activeDebts} Anggota Berhutang` }
-  ];
-
   return (
     <View>
-      {/* Total position banner */}
-      <View style={styles.totalBanner}>
-        <Text style={styles.totalLabel}>TOTAL ASET KAS PAGUYUBAN</Text>
-        <Text style={styles.totalValue}>Rp{cashOnHand.toLocaleString('id-ID')}</Text>
-        <Text style={styles.totalSub}>
-          Tunai Rp{vault.pettyCash.toLocaleString('id-ID')} + Bank Rp{vault.bsiBalance.toLocaleString('id-ID')}
+      {/* Two figures, side by side */}
+      <View style={styles.pair}>
+        <View style={[styles.figure, styles.figureIn]}>
+          <View style={styles.figureHead}>
+            <TrendingUp size={13} color="#059669" />
+            <Text style={[styles.figureLabel, { color: '#059669' }]}>PEMASUKAN</Text>
+          </View>
+          <Text style={[styles.figureVal, { color: '#047857' }]}>
+            Rp{finance.income.toLocaleString('id-ID')}
+          </Text>
+          <Text style={styles.figureSub}>iuran masuk</Text>
+        </View>
+
+        <View style={[styles.figure, styles.figureOut]}>
+          <View style={styles.figureHead}>
+            <TrendingDown size={13} color="#E11D48" />
+            <Text style={[styles.figureLabel, { color: '#E11D48' }]}>PENGELUARAN</Text>
+          </View>
+          <Text style={[styles.figureVal, { color: '#B91C1C' }]}>
+            Rp{finance.expense.toLocaleString('id-ID')}
+          </Text>
+          <Text style={styles.figureSub}>{expenses.length} transaksi</Text>
+        </View>
+      </View>
+
+      {/* Net */}
+      <View style={[styles.netBox, net < 0 && styles.netBoxNeg]}>
+        <Text style={styles.netLabel}>SELISIH (MASUK − KELUAR)</Text>
+        <Text style={[styles.netVal, { color: net < 0 ? '#B91C1C' : '#047857' }]}>
+          {net < 0 ? '−' : '+'}Rp{Math.abs(net).toLocaleString('id-ID')}
         </Text>
       </View>
 
-      <View style={styles.kpiGrid}>
-        {KPIS.map(k => (
-          <View key={k.label} style={styles.kpiBox}>
-            <Text style={styles.kpiLabel}>{k.label}</Text>
-            <Text style={[styles.kpiVal, { color: k.color }]}>
-              Rp{k.value.toLocaleString('id-ID')}
-            </Text>
-            <Text style={styles.kpiSub}>{k.sub}</Text>
-          </View>
-        ))}
-      </View>
+      {finance.pending > 0 && (
+        <View style={styles.pendingBox}>
+          <Text style={styles.pendingText}>
+            Rp{finance.pending.toLocaleString('id-ID')} masih menunggu verifikasi dan belum dihitung
+            sebagai pemasukan.
+          </Text>
+        </View>
+      )}
 
+      {/* Per-month */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>RINGKASAN OPERASIONAL</Text>
-        <Row label="Pramudi terdaftar" value={`${users.length} orang`} />
-        <Row label="Kartu piutang aktif" value={`${activeDebts} dari ${debts.length} kartu`} />
-        <Row label="Laporan bodi belum selesai" value={`${openIncidents} laporan`} />
-        <Row
-          label="Rasio piutang terhadap kas"
-          value={cashOnHand > 0 ? `${Math.round((outstanding / cashOnHand) * 100)}%` : '—'}
-          last
-        />
-      </View>
+        <Text style={styles.cardTitle}>PER BULAN</Text>
+        <View style={styles.tableHead}>
+          <Text style={[styles.th, { flex: 1 }]}>Bulan</Text>
+          <Text style={[styles.th, { textAlign: 'right' }]}>Masuk</Text>
+          <Text style={[styles.th, { textAlign: 'right' }]}>Keluar</Text>
+        </View>
+        {MONTHS.map(m => {
+          const r = finance.perMonth[m];
+          return (
+            <View key={m} style={styles.tr}>
+              <Text style={[styles.td, { flex: 1, fontWeight: 'bold' }]}>{m}</Text>
+              <Text style={[styles.td, { textAlign: 'right', color: '#047857' }]}>
+                Rp{r.in.toLocaleString('id-ID')}
+              </Text>
+              <Text style={[styles.td, { textAlign: 'right', color: '#B91C1C' }]}>
+                Rp{r.out.toLocaleString('id-ID')}
+              </Text>
+            </View>
+          );
+        })}
+        <View style={styles.totalRow}>
+          <Text style={[styles.td, { flex: 1, fontWeight: '900' }]}>Total</Text>
+          <Text style={[styles.td, { textAlign: 'right', fontWeight: '900', color: '#047857' }]}>
+            Rp{finance.income.toLocaleString('id-ID')}
+          </Text>
+          <Text style={[styles.td, { textAlign: 'right', fontWeight: '900', color: '#B91C1C' }]}>
+            Rp{finance.expense.toLocaleString('id-ID')}
+          </Text>
+        </View>
 
-      <View style={[styles.card, { marginTop: 12 }]}>
-        <Text style={styles.cardTitle}>REKENING PENAMPUNG RESMI</Text>
-        <Text style={styles.bankName}>{vault.bankName}</Text>
-        <Text style={styles.bankNo}>No. Rek {vault.accountNo}</Text>
-        <Text style={styles.bankHolder}>a.n {vault.accountHolder}</Text>
+        <Text style={styles.tableNote}>
+          Pengeluaran baru tercatat mulai September, jadi bulan sebelumnya memang kosong.
+        </Text>
       </View>
 
       <View style={[styles.card, { marginTop: 12 }]}>
@@ -147,38 +222,44 @@ export default function AdminKas() {
   );
 }
 
-function Row({ label, value, last }) {
-  return (
-    <View style={[styles.row, !last && styles.rowBorder]}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  totalBanner: {
-    backgroundColor: '#0B2F64',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14
-  },
-  totalLabel: { color: '#00A896', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  totalValue: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', marginVertical: 4 },
-  totalSub: { color: '#94A3B8', fontSize: 11 },
-
-  kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
-  kpiBox: {
-    width: '48%',
+  pair: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  figure: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 14,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0'
+    borderWidth: 1
   },
-  kpiLabel: { fontSize: 9, fontWeight: '900', color: '#64748B' },
-  kpiVal: { fontSize: 15, fontWeight: '900', marginVertical: 4 },
-  kpiSub: { fontSize: 10, color: '#94A3B8' },
+  figureIn: { borderColor: '#BBF7D0', backgroundColor: '#F0FDF4' },
+  figureOut: { borderColor: '#FECDD3', backgroundColor: '#FFF1F2' },
+  figureHead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  figureLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
+  figureVal: { fontSize: 16, fontWeight: '900', marginTop: 6, fontVariant: ['tabular-nums'] },
+  figureSub: { fontSize: 10, color: '#94A3B8', marginTop: 2 },
+
+  netBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    marginBottom: 12,
+    alignItems: 'center'
+  },
+  netBoxNeg: { borderColor: '#FECDD3', backgroundColor: '#FFF8F8' },
+  netLabel: { fontSize: 9, fontWeight: '900', color: '#64748B', letterSpacing: 0.6 },
+  netVal: { fontSize: 22, fontWeight: '900', marginTop: 4, fontVariant: ['tabular-nums'] },
+
+  pendingBox: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 12,
+    padding: 11,
+    marginBottom: 12
+  },
+  pendingText: { fontSize: 10, color: '#92400E', lineHeight: 15 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -188,14 +269,29 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0'
   },
   cardTitle: { fontSize: 10, fontWeight: '900', color: '#0F172A', letterSpacing: 0.8, marginBottom: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 9 },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  rowLabel: { fontSize: 12, color: '#64748B' },
-  rowValue: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
 
-  bankName: { fontSize: 13, fontWeight: 'bold', color: '#0F172A' },
-  bankNo: { fontSize: 12, color: '#475569', marginTop: 2, fontVariant: ['tabular-nums'] },
-  bankHolder: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  tableHead: {
+    flexDirection: 'row',
+    paddingBottom: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9'
+  },
+  th: { fontSize: 9, fontWeight: '900', color: '#94A3B8', letterSpacing: 0.4 },
+  tr: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC'
+  },
+  td: { fontSize: 11, color: '#475569', fontVariant: ['tabular-nums'] },
+  totalRow: {
+    flexDirection: 'row',
+    paddingTop: 9,
+    marginTop: 2,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0'
+  },
+  tableNote: { fontSize: 9, color: '#CBD5E1', marginTop: 10, lineHeight: 13 },
 
   exportHint: { fontSize: 10, color: '#94A3B8', marginBottom: 10, lineHeight: 15 },
   exportRow: {
