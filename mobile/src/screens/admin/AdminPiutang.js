@@ -4,19 +4,25 @@ import {
   FlatList, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
-import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle } from 'lucide-react-native';
+import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock } from 'lucide-react-native';
 
 const METHODS = ['Cash ke Admin', 'Transfer BSI', 'Potong Gaji'];
 
-// A4: the receivables book. Installments credit the card and the petty cash
-// tin in one transaction; new talangan cards debit the tin up front.
+// A4: the receivables book.
+//
+// Recording an installment QUEUES it — it does not credit the card or the
+// tin. A bendahara clears the queue after matching the money against the
+// BSI statement or the counted kas kecil; only `verifyInstallment` moves
+// funds. New talangan cards still debit the tin up front, because that is a
+// disbursement, not a receipt.
 export default function AdminPiutang() {
-  const { debts, users, repayDebt, addDebt, deleteDebt } = useApp();
+  const { debts, users, repayDebt, addDebt, deleteDebt, verifyInstallment, rejectInstallment } = useApp();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
   const [selected, setSelected] = useState(null);
   const [openAdd, setOpenAdd] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [busyIns, setBusyIns] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
 
   // Installment form
@@ -32,6 +38,29 @@ export default function AdminPiutang() {
 
   const totalOutstanding = debts.reduce((a, b) => a + (b.amount - b.paid), 0);
   const activeCount = debts.filter(d => (d.amount - d.paid) > 0).length;
+
+  // Every installment sitting in the queue across all cards.
+  const queue = useMemo(() => {
+    const out = [];
+    debts.forEach(d => {
+      (d.pendingInstallments || []).forEach(p => {
+        out.push({ ...p, debtId: d.id, debtName: d.name, key: `${d.id}:${p.id}` });
+      });
+    });
+    return out.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }, [debts]);
+  const queueTotal = queue.reduce((s, q) => s + (Number(q.amount) || 0), 0);
+
+  const runVerify = async (item) => {
+    setBusyIns(item.key);
+    await verifyInstallment(item.debtId, item.id);
+    setBusyIns(null);
+  };
+  const runReject = async (item) => {
+    setBusyIns(item.key);
+    await rejectInstallment(item.debtId, item.id);
+    setBusyIns(null);
+  };
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -101,6 +130,7 @@ export default function AdminPiutang() {
     const sisa = item.amount - item.paid;
     const pct = item.amount > 0 ? Math.min(100, Math.round((item.paid / item.amount) * 100)) : 0;
     const isLunas = sisa <= 0;
+    const queued = (item.pendingInstallments || []).reduce((a, p) => a + (Number(p.amount) || 0), 0);
     return (
       <TouchableOpacity
         style={styles.debtCard}
@@ -131,12 +161,59 @@ export default function AdminPiutang() {
             Sisa Rp{sisa.toLocaleString('id-ID')}
           </Text>
         </View>
+
+        {queued > 0 && (
+          <View style={styles.pendingStrip}>
+            <Clock size={11} color="#D97706" />
+            <Text style={styles.pendingText}>
+              Rp{queued.toLocaleString('id-ID')} menunggu verifikasi
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={{ flex: 1 }}>
+      {queue.length > 0 && (
+        <View style={styles.queueCard}>
+          <View style={styles.queueHead}>
+            <Clock size={14} color="#D97706" />
+            <Text style={styles.queueTitle}>ANGSURAN MENUNGGU VERIFIKASI ({queue.length})</Text>
+            <Text style={styles.queueTotal}>Rp{queueTotal.toLocaleString('id-ID')}</Text>
+          </View>
+          <Text style={styles.queueNote}>
+            Belum mengurangi hutang dan belum masuk kas. Cocokkan dengan mutasi BSI / kas kecil dulu.
+          </Text>
+          {queue.slice(0, 25).map(q => (
+            <View key={q.key} style={styles.queueRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.queueName}>{q.debtName}</Text>
+                <Text style={styles.queueMeta}>
+                  Rp{(Number(q.amount) || 0).toLocaleString('id-ID')} · {q.method} · {q.date}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.qBtn, styles.qBtnOk, busyIns === q.key && styles.qBtnDisabled]}
+                disabled={busyIns === q.key}
+                onPress={() => runVerify(q)}
+              >
+                <Check size={13} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.qBtn, styles.qBtnNo, busyIns === q.key && styles.qBtnDisabled]}
+                disabled={busyIns === q.key}
+                onPress={() => runReject(q)}
+              >
+                <X size={13} color="#E11D48" />
+              </TouchableOpacity>
+            </View>
+          ))}
+          {queue.length > 25 && <Text style={styles.queueMore}>+{queue.length - 25} antrean lainnya</Text>}
+        </View>
+      )}
+
       <View style={styles.kpiRow}>
         <View style={[styles.kpiBox, { backgroundColor: '#FEF3C7' }]}>
           <Text style={styles.kpiLabel}>TOTAL PIUTANG</Text>
@@ -254,7 +331,7 @@ export default function AdminPiutang() {
                       disabled={busy}
                       activeOpacity={0.85}
                     >
-                      {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitText}>CATAT ANGSURAN</Text>}
+                      {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitText}>ANTREKAN ANGSURAN</Text>}
                     </TouchableOpacity>
                   </>
                 )}
@@ -406,6 +483,51 @@ export default function AdminPiutang() {
 }
 
 const styles = StyleSheet.create({
+  queueCard: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    padding: 12,
+    marginBottom: 12
+  },
+  queueHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  queueTitle: { flex: 1, fontSize: 10, fontWeight: '900', color: '#92400E' },
+  queueTotal: { fontSize: 11, fontWeight: '900', color: '#92400E', fontVariant: ['tabular-nums'] },
+  queueNote: { fontSize: 9, color: '#B45309', marginTop: 3, marginBottom: 8, lineHeight: 13 },
+  queueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    padding: 8,
+    marginBottom: 6
+  },
+  queueName: { fontSize: 11, fontWeight: 'bold', color: '#0F172A' },
+  queueMeta: { fontSize: 9, color: '#94A3B8', marginTop: 1 },
+  queueMore: { fontSize: 9, color: '#B45309', marginTop: 2 },
+  qBtn: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  qBtnOk: { backgroundColor: '#059669' },
+  qBtnNo: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA' },
+  qBtnDisabled: { opacity: 0.4 },
+
+  pendingStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 8
+  },
+  pendingText: { fontSize: 9, fontWeight: '700', color: '#92400E' },
+
   kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   kpiBox: { flex: 1, padding: 13, borderRadius: 15 },
   kpiLabel: { fontSize: 9, fontWeight: '900', color: '#64748B' },

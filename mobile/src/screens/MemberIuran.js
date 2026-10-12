@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Alert } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { Check, QrCode, Building, X, Camera, Copy, ImagePlus } from 'lucide-react-native';
+import { Check, Building, X, Camera, Copy, ImagePlus, Clock } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { captureThumbnail } from '../utils/thumbnails';
 
@@ -13,7 +13,6 @@ export default function MemberIuran() {
   const { currentUser, iuranRecords, payIuran, vault } = useApp();
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [paymentTab, setPaymentTab] = useState('qris');
   const [receipt, setReceipt] = useState(null);
   const [picking, setPicking] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,15 +51,14 @@ export default function MemberIuran() {
   };
 
   const handlePay = async () => {
-    // A manual bank transfer is unverifiable without the receipt, so refuse
-    // rather than marking months paid on an unproven claim.
-    if (paymentTab === 'bsi' && !receipt) {
+    // Only a real bank transfer produces evidence a cashier can match, so
+    // the receipt is mandatory and there is no QR/other path to fall back on.
+    if (!receipt) {
       Alert.alert('Bukti transfer wajib', 'Foto bukti transfer BSI diperlukan agar kasir bisa memverifikasi.');
       return;
     }
     setSaving(true);
-    const method = paymentTab === 'qris' ? 'Midtrans QRIS' : 'Transfer BSI';
-    const ok = await payIuran(currentUser.nik, selectedMonths, method, paymentTab === 'bsi' ? receipt : null);
+    const ok = await payIuran(currentUser.nik, selectedMonths, 'Transfer BSI', receipt);
     setSaving(false);
     if (ok) {
       closeModal();
@@ -79,6 +77,7 @@ export default function MemberIuran() {
         <View style={styles.list}>
           {MONTHS.map(m => {
             const isLunas = userIuran[m]?.status === 'lunas';
+            const isPending = userIuran[m]?.status === 'pending';
             const isSelected = selectedMonths.includes(m);
 
             return (
@@ -87,10 +86,11 @@ export default function MemberIuran() {
                 style={[
                   styles.monthCard,
                   isLunas && styles.monthCardLunas,
+                  isPending && styles.monthCardPending,
                   isSelected && styles.monthCardSelected
                 ]}
                 onPress={() => toggleMonth(m)}
-                disabled={isLunas}
+                disabled={isLunas || isPending}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={[styles.checkbox, isLunas && styles.checkboxLunas, isSelected && styles.checkboxSelected]}>
@@ -108,6 +108,10 @@ export default function MemberIuran() {
                     <View style={styles.statusLunas}>
                       <Text style={styles.statusLunasText}>Lunas</Text>
                     </View>
+                  ) : isPending ? (
+                    <View style={styles.statusPending}>
+                      <Text style={styles.statusPendingText}>Menunggu Verifikasi</Text>
+                    </View>
                   ) : (
                     <View style={styles.statusUnpaid}>
                       <Text style={styles.statusUnpaidText}>Belum Bayar</Text>
@@ -117,6 +121,14 @@ export default function MemberIuran() {
               </TouchableOpacity>
             );
           })}
+
+          <View style={styles.verifyNote}>
+            <Clock size={13} color="#D97706" />
+            <Text style={styles.verifyNoteText}>
+              Pembayaran baru dihitung LUNAS setelah bendahara mencocokkannya dengan mutasi BSI.
+              Sebelum itu statusnya "Menunggu Verifikasi" dan uang belum masuk kas.
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -128,7 +140,7 @@ export default function MemberIuran() {
             <Text style={styles.bottomTotal}>Rp{(selectedMonths.length * 100000).toLocaleString('id-ID')}</Text>
           </View>
           <TouchableOpacity style={styles.checkoutBtn} onPress={() => setModalVisible(true)}>
-            <Text style={styles.checkoutText}>Bayar via Midtrans</Text>
+            <Text style={styles.checkoutText}>Transfer BSI</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -150,81 +162,59 @@ export default function MemberIuran() {
               <Text style={styles.modalMonths}>{selectedMonths.join(', ')} 2026</Text>
             </View>
 
-            {/* Payment method tabs */}
-            <View style={styles.tabRow}>
-              <TouchableOpacity
-                style={[styles.tab, paymentTab === 'qris' && styles.tabActive]}
-                onPress={() => setPaymentTab('qris')}
-              >
-                <QrCode size={15} color={paymentTab === 'qris' ? '#FFFFFF' : '#64748B'} />
-                <Text style={[styles.tabText, paymentTab === 'qris' && styles.tabTextActive]}>QRIS</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tab, paymentTab === 'bsi' && styles.tabActive]}
-                onPress={() => setPaymentTab('bsi')}
-              >
-                <Building size={15} color={paymentTab === 'bsi' ? '#FFFFFF' : '#64748B'} />
-                <Text style={[styles.tabText, paymentTab === 'bsi' && styles.tabTextActive]}>Transfer BSI</Text>
-              </TouchableOpacity>
+            {/* Midtrans/QRIS is deliberately NOT offered. The gateway was never
+                live — the QR path could only ever fake a success — and a fake
+                success is exactly how test payments ended up in the books.
+                Transfer BSI is the only route that produces evidence a cashier
+                can actually match. */}
+            <View style={styles.methodHeader}>
+              <Building size={15} color="#0B2F64" />
+              <Text style={styles.methodHeaderText}>Transfer ke Rekening BSI Paguyuban</Text>
             </View>
 
-            {paymentTab === 'qris' ? (
-              <>
-                <View style={styles.qrWrapper}>
-                  <QrCode size={150} color="#0B2F64" />
-                  <Text style={styles.qrSub}>NMID: ID10202619082390 • Paguyuban EV50</Text>
-                </View>
-                <Text style={styles.simNote}>
-                  Mode demo: QRIS Midtrans belum berbayar. Gunakan Transfer BSI untuk alur nyata.
-                </Text>
-              </>
-            ) : (
-              <>
-                <View style={styles.bankCard}>
-                  <Text style={styles.bankLabel}>REKENING RESMI PAGUYUBAN</Text>
-                  <Text style={styles.bankName}>{BSI_HOLDER}</Text>
-                  <View style={styles.bankNoRow}>
-                    <Text style={styles.bankNo}>BSI {BSI_ACCOUNT}</Text>
-                    <TouchableOpacity style={styles.copyBtn} onPress={copyAccount}>
-                      <Copy size={13} color="#0B2F64" />
-                      <Text style={styles.copyText}>Salin</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            <View style={styles.bankCard}>
+              <Text style={styles.bankLabel}>REKENING RESMI PAGUYUBAN</Text>
+              <Text style={styles.bankName}>{BSI_HOLDER}</Text>
+              <View style={styles.bankNoRow}>
+                <Text style={styles.bankNo}>BSI {BSI_ACCOUNT}</Text>
+                <TouchableOpacity style={styles.copyBtn} onPress={copyAccount}>
+                  <Copy size={13} color="#0B2F64" />
+                  <Text style={styles.copyText}>Salin</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-                <Text style={styles.receiptLabel}>Bukti Transfer (wajib)</Text>
-                {receipt ? (
-                  <View style={styles.receiptWrap}>
-                    <Image source={{ uri: receipt.uri }} style={styles.receiptThumb} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.receiptOk}>Bukti transfer terlampir</Text>
-                      <Text style={styles.receiptMeta}>{Math.round(receipt.bytes / 1024)} KB • siap dikirim ke kasir</Text>
-                      <TouchableOpacity style={styles.receiptChange} onPress={() => setReceipt(null)}>
-                        <Text style={styles.receiptChangeText}>Ganti foto</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.receiptRow}>
-                    <TouchableOpacity
-                      style={[styles.receiptAdd, picking && { opacity: 0.5 }]}
-                      onPress={() => addReceipt('camera')}
-                      disabled={picking}
-                    >
-                      {picking ? <ActivityIndicator size="small" color="#00A896" /> : <Camera size={17} color="#00A896" />}
-                      <Text style={styles.receiptAddText}>Kamera</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.receiptAdd, picking && { opacity: 0.5 }]}
-                      onPress={() => addReceipt('library')}
-                      disabled={picking}
-                    >
-                      <ImagePlus size={17} color="#00A896" />
-                      <Text style={styles.receiptAddText}>Galeri</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </>
+            <Text style={styles.receiptLabel}>Bukti Transfer (wajib)</Text>
+            {receipt ? (
+              <View style={styles.receiptWrap}>
+                <Image source={{ uri: receipt.uri }} style={styles.receiptThumb} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.receiptOk}>Bukti transfer terlampir</Text>
+                  <Text style={styles.receiptMeta}>{Math.round(receipt.bytes / 1024)} KB • siap dikirim ke kasir</Text>
+                  <TouchableOpacity style={styles.receiptChange} onPress={() => setReceipt(null)}>
+                    <Text style={styles.receiptChangeText}>Ganti foto</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.receiptRow}>
+                <TouchableOpacity
+                  style={[styles.receiptAdd, picking && { opacity: 0.5 }]}
+                  onPress={() => addReceipt('camera')}
+                  disabled={picking}
+                >
+                  {picking ? <ActivityIndicator size="small" color="#00A896" /> : <Camera size={17} color="#00A896" />}
+                  <Text style={styles.receiptAddText}>Kamera</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.receiptAdd, picking && { opacity: 0.5 }]}
+                  onPress={() => addReceipt('library')}
+                  disabled={picking}
+                >
+                  <ImagePlus size={17} color="#00A896" />
+                  <Text style={styles.receiptAddText}>Galeri</Text>
+                </TouchableOpacity>
+              </View>
             )}
 
             <TouchableOpacity
@@ -234,9 +224,7 @@ export default function MemberIuran() {
             >
               {saving
                 ? <ActivityIndicator color="#0B2F64" />
-                : <Text style={styles.webhookText}>
-                    {paymentTab === 'bsi' ? 'Kirim ke Kasir untuk Verifikasi' : 'Simulasikan Sukses Bayar'}
-                  </Text>}
+                : <Text style={styles.webhookText}>Kirim ke Kasir untuk Verifikasi</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -271,6 +259,15 @@ const styles = StyleSheet.create({
   monthFee: { fontSize: 12, color: '#64748B', marginTop: 2 },
   statusLunas: { backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   statusLunasText: { color: '#166534', fontSize: 11, fontWeight: 'bold' },
+  statusPending: { backgroundColor: '#FEF3C7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  statusPendingText: { fontSize: 10, fontWeight: '900', color: '#92400E' },
+  monthCardPending: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+  verifyNote: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A',
+    borderRadius: 12, padding: 12, marginTop: 4
+  },
+  verifyNoteText: { flex: 1, fontSize: 10, color: '#92400E', lineHeight: 15 },
   statusUnpaid: { backgroundColor: '#FFE4E6', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   statusUnpaidText: { color: '#9F1239', fontSize: 11, fontWeight: 'bold' },
   bottomBar: {
@@ -297,23 +294,16 @@ const styles = StyleSheet.create({
   modalTotalBox: { backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12, marginBottom: 16 },
   modalTotalLabel: { fontSize: 11, color: '#64748B' },
   modalTotalValue: { fontSize: 22, fontWeight: 'bold', color: '#0B2F64', marginTop: 2 },
-  qrWrapper: { alignItems: 'center', paddingVertical: 10 },
-  qrSub: { fontSize: 11, color: '#64748B', marginTop: 12 },
+  methodHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginBottom: 12
+  },
+  methodHeaderText: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
+
   webhookBtn: { backgroundColor: '#00A896', paddingVertical: 12, borderRadius: 14, alignItems: 'center', marginTop: 16 },
   webhookText: { color: '#0B2F64', fontWeight: 'bold', fontSize: 13 },
 
   modalMonths: { fontSize: 11, color: '#94A3B8', marginTop: 4 },
-
-  tabRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  tab: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 10, borderRadius: 12,
-    backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0'
-  },
-  tabActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
-  tabText: { fontSize: 12, fontWeight: 'bold', color: '#64748B' },
-  tabTextActive: { color: '#FFFFFF' },
-  simNote: { fontSize: 10, color: '#94A3B8', textAlign: 'center', marginTop: 8, lineHeight: 15 },
 
   bankCard: {
     backgroundColor: '#F0FDFA', borderRadius: 14,

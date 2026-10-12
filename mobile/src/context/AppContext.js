@@ -179,15 +179,23 @@ export const AppProvider = ({ children }) => {
   // Optimistic local update keeps the UI snappy; on a failed write we roll
   // back and tell the driver the payment did NOT sync, rather than letting
   // them believe money was recorded when it wasn't.
-  const payIuran = async (nik, months, method = 'Midtrans QRIS', receipt = null) => {
+  // No Midtrans/QRIS: the gateway was never live, so a QR "payment" could
+  // only ever fake a success. Every real payment is a BSI transfer with a
+  // receipt, which is the one thing a cashier can verify.
+  const payIuran = async (nik, months, method = 'Transfer BSI', receipt = null) => {
     if (!months?.length) return false;
 
-    const total = months.length * IURAN_FEE;
     const today = todayId();
     // `receipt` is an optional base64 thumbnail of the bank transfer proof,
     // stored inline because the project has no Cloud Storage bucket.
+    //
+    // The payment lands as `pending`, NOT `lunas`, and the vault is left
+    // alone. A driver tapping "pay" has made a claim about money, not proof
+    // of it — until a cashier matches it against the BSI statement the
+    // paguyuban cannot know the cash arrived. Confirming on tap is what let
+    // test payments become financial history.
     const payment = {
-      status: 'lunas',
+      status: 'pending',
       nominal: IURAN_FEE,
       date: today,
       method,
@@ -196,37 +204,28 @@ export const AppProvider = ({ children }) => {
 
     const prevForNik = iuranRecords[nik] || {};
 
-    // Optimistic update
+    // Optimistic update — no vault change, nothing to roll back there.
     setIuranRecords(prev => {
       const userRec = { ...(prev[nik] || {}) };
       months.forEach(m => { userRec[m] = payment; });
       return { ...prev, [nik]: userRec };
     });
-    setVault(v => ({ ...v, bsiBalance: v.bsiBalance + total }));
 
     try {
       await runTransaction(db, async (tx) => {
         const iuranRef = doc(db, 'iuran', nik);
-        const vaultRef = doc(db, 'system', 'vault');
-
-        const [iuranSnap, vaultSnap] = await Promise.all([
-          tx.get(iuranRef), tx.get(vaultRef)
-        ]);
+        const iuranSnap = await tx.get(iuranRef);
 
         const monthsMap = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
         months.forEach(m => { monthsMap[m] = payment; });
         tx.set(iuranRef, { nik, months: monthsMap }, { merge: true });
-
-        const currentBsi = vaultSnap.exists() ? (vaultSnap.data().bsiBalance || 0) : 0;
-        tx.set(vaultRef, { bsiBalance: currentBsi + total }, { merge: true });
       });
 
-      showToast(`Pembayaran iuran ${months.join(', ')} berhasil disinkronisasi ke Kas BSI!`);
+      showToast(`Iuran ${months.join(', ')} dicatat menunggu verifikasi bendahara.`);
       return true;
     } catch (e) {
       // Roll back the optimistic write so state matches the server again.
       setIuranRecords(prev => ({ ...prev, [nik]: prevForNik }));
-      setVault(v => ({ ...v, bsiBalance: v.bsiBalance - total }));
       showToast(`Iuran TIDAK tersimpan. ${fsError(e)}`, 'error');
       return false;
     }
@@ -237,6 +236,10 @@ export const AppProvider = ({ children }) => {
   // Atomic across the debt card and the cash vault: the driver's "sisa
   // hutang" and the paguyuban's cash are two views of the same money, so
   // they are updated in one transaction or not at all.
+  //
+  // The installment is queued in `pendingInstallments` rather than added to
+  // `paid`, and the vault is untouched. It only counts once a bendahara
+  // confirms the money actually exists — see `verifyInstallment`.
   //
   // `paid` is recomputed from the server document inside the transaction
   // rather than from React state, so two drivers depositing at once cannot
@@ -255,56 +258,54 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    // Guard against overpayment before touching anything.
+    // Guard against overpayment against the CONFIRMED total. Pending
+    // installments are excluded: unverified claims must not reserve money.
     const outstanding = before.amount - before.paid;
     if (amt > outstanding) {
       showToast(`Setoran melebihi sisa hutang (Rp${outstanding.toLocaleString('id-ID')}).`, 'error');
       return false;
     }
 
-    // Optimistic update
-    setDebts(prev => prev.map(d => {
-      if (d.id !== debtId) return d;
-      const newPaid = d.paid + amt;
-      const newRemaining = Math.max(0, d.amount - newPaid);
-      return {
-        ...d,
-        paid: newPaid,
-        status: newRemaining === 0 ? 'Lunas' : 'Sedang Mengangsur'
-      };
-    }));
-    setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + amt }));
+    const entry = {
+      id: `INS-${Date.now().toString().slice(-6)}`,
+      amount: amt,
+      method,
+      date: todayId(),
+      requestedBy: currentUser?.name || 'Pramudi'
+    };
+    const pendingBefore = before.pendingInstallments || [];
+
+    // Optimistic update — `paid` and status do not move yet.
+    setDebts(prev => prev.map(d => (d.id === debtId
+      ? { ...d, pendingInstallments: [...(d.pendingInstallments || []), entry] }
+      : d)));
 
     try {
       await runTransaction(db, async (tx) => {
         const debtRef = doc(db, 'debts', debtId);
-        const vaultRef = doc(db, 'system', 'vault');
-
-        const [debtSnap, vaultSnap] = await Promise.all([
-          tx.get(debtRef), tx.get(vaultRef)
-        ]);
+        const debtSnap = await tx.get(debtRef);
         if (!debtSnap.exists()) throw { code: 'not-found' };
 
         const d = debtSnap.data();
-        const newPaid = (d.paid || 0) + amt;
-        const newRemaining = Math.max(0, d.amount - newPaid);
+        // Re-check against the server's confirmed figure, not React state.
+        const serverOutstanding = (d.amount || 0) - (d.paid || 0);
+        if (amt > serverOutstanding) throw { code: 'overpaid' };
 
         tx.update(debtRef, {
-          paid: newPaid,
-          status: newRemaining === 0 ? 'Lunas' : 'Sedang Mengangsur'
+          pendingInstallments: [...(d.pendingInstallments || []), entry]
         });
-
-        const currentVault = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
-        tx.set(vaultRef, { [vaultKey]: currentVault + amt }, { merge: true });
       });
 
-      showToast(`Setoran cicilan Rp${amt.toLocaleString('id-ID')} berhasil dicatat!`);
+      showToast(`Cicilan Rp${amt.toLocaleString('id-ID')} menunggu verifikasi bendahara.`);
       return true;
     } catch (e) {
-      // Roll back so the progress bar doesn't show a payment that failed.
-      setDebts(prev => prev.map(d => (d.id === debtId ? before : d)));
-      setVault(v => ({ ...v, [vaultKey]: v[vaultKey] - amt }));
-      showToast(`Cicilan TIDAK tersimpan. ${fsError(e)}`, 'error');
+      setDebts(prev => prev.map(d => (d.id === debtId ? { ...d, pendingInstallments: pendingBefore } : d)));
+      showToast(
+        e?.code === 'overpaid'
+          ? 'Sisa hutang berubah — muat ulang dan periksa kembali.'
+          : `Cicilan TIDAK tersimpan. ${fsError(e)}`,
+        'error'
+      );
       return false;
     }
   };
@@ -344,10 +345,14 @@ export const AppProvider = ({ children }) => {
   const vaultKeyFor = (source) => (source.includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
 
   // A2: cashier ticks a driver's month as paid in cash.
+  //
+  // The tick records a CLAIM that cash changed hands. It does not move the
+  // tin — `verifyIuran` does that, once a bendahara has counted it against
+  // the physical kas kecil. A tap is not evidence of money.
   const markIuranPaidCash = async (nik, month) => {
     const fee = IURAN_FEE;
     const payment = {
-      status: 'lunas',
+      status: 'pending',
       nominal: fee,
       date: todayId(),
       method: 'Tunai Kasir',
@@ -360,7 +365,95 @@ export const AppProvider = ({ children }) => {
       ...prev,
       [nik]: { ...(prev[nik] || {}), [month]: payment }
     }));
-    setVault(v => ({ ...v, pettyCash: v.pettyCash + fee }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const iuranRef = doc(db, 'iuran', nik);
+        const iuranSnap = await tx.get(iuranRef);
+
+        const months = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
+        // Refuse to queue twice, and never touch a month already confirmed.
+        if (months[month]?.status === 'lunas') throw { code: 'already-paid' };
+        if (months[month]?.status === 'pending') throw { code: 'already-pending' };
+
+        months[month] = payment;
+        tx.set(iuranRef, { nik, months }, { merge: true });
+      });
+
+      const name = users.find(u => u.nik === nik)?.name || nik;
+      showToast(`Iuran ${month} a.n ${name} masuk antrean verifikasi.`);
+      return true;
+    } catch (e) {
+      setIuranRecords(prev => {
+        const months = { ...(prev[nik] || {}) };
+        if (before) months[month] = before; else delete months[month];
+        return { ...prev, [nik]: months };
+      });
+      showToast(
+        e?.code === 'already-paid'
+          ? `Iuran ${month} sudah lunas tercatat di server.`
+          : e?.code === 'already-pending'
+            ? `Iuran ${month} sudah menunggu verifikasi.`
+            : `Iuran TIDAK tersimpan. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
+  // ---------------------------------------------------------------- *
+   * PAYMENT VERIFICATION
+   *
+   * These are now the ONLY functions that move money into the vault from
+   * a payment. Nothing else credits it: `payIuran`, `repayDebt` and
+   * `markIuranPaidCash` all stop at `pending`.
+   *
+   * Why this exists: every payment made through the app before 12 Oct 2026
+   * was a test tap, none was checked against the bank, and the taps had
+   * already become financial history — Rp1.200.000 of iuran marked lunas
+   * and a vault that no longer matched the BSI statement. A button press is
+   * a claim about money, not proof of it.
+   * ---------------------------------------------------------------- */
+
+  // Which vault a confirmed payment belongs to. Cash handed to the cashier
+  // lives in the tin; anything arriving through the bank lives in BSI.
+  const vaultKeyForMethod = (method) => (
+    (method || '').includes('Tunai') ? 'pettyCash' : 'bsiBalance'
+  );
+
+  // A bendahara confirms one pending iuran month. Credits the matching vault.
+  const verifyIuran = async (nik, month) => {
+    const entry = iuranRecords[nik]?.[month];
+    if (!entry) {
+      showToast('Tidak ada pembayaran untuk bulan ini.', 'error');
+      return false;
+    }
+    if (entry.status === 'lunas') {
+      showToast(`Iuran ${month} sudah lunas.`, 'error');
+      return false;
+    }
+    if (entry.status !== 'pending') {
+      showToast(`Iuran ${month} bukan status tertunda.`, 'error');
+      return false;
+    }
+
+    const vaultKey = vaultKeyForMethod(entry.method);
+    const nominal = Number(entry.nominal) || IURAN_FEE;
+    const confirmed = {
+      ...entry,
+      status: 'lunas',
+      verifiedBy: currentUser?.name || 'Bendahara',
+      verifiedAt: todayId()
+    };
+
+    const before = iuranRecords[nik]?.[month];
+
+    // Optimistic update
+    setIuranRecords(prev => ({
+      ...prev,
+      [nik]: { ...(prev[nik] || {}), [month]: confirmed }
+    }));
+    setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + nominal }));
 
     try {
       await runTransaction(db, async (tx) => {
@@ -369,32 +462,171 @@ export const AppProvider = ({ children }) => {
         const [iuranSnap, vaultSnap] = await Promise.all([tx.get(iuranRef), tx.get(vaultRef)]);
 
         const months = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
-        // Refuse to double-count: if already lunas on the server, stop.
-        if (months[month]?.status === 'lunas') throw { code: 'already-paid' };
+        const current = months[month];
+        // Re-read inside the transaction: a second cashier may have already
+        // confirmed or rejected it since this screen loaded.
+        if (!current || current.status !== 'pending') throw { code: 'not-pending' };
 
-        months[month] = payment;
+        months[month] = { ...current, status: 'lunas', verifiedBy: confirmed.verifiedBy, verifiedAt: confirmed.verifiedAt };
         tx.set(iuranRef, { nik, months }, { merge: true });
 
-        const cash = vaultSnap.exists() ? (vaultSnap.data().pettyCash || 0) : 0;
-        tx.set(vaultRef, { pettyCash: cash + fee }, { merge: true });
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        tx.set(vaultRef, { [vaultKey]: cash + nominal }, { merge: true });
       });
 
       const name = users.find(u => u.nik === nik)?.name || nik;
-      showToast(`Iuran ${month} a.n ${name} ditandai Lunas Tunai (+Rp${fee.toLocaleString('id-ID')})`);
+      showToast(`Iuran ${month} a.n ${name} terverifikasi (+Rp${nominal.toLocaleString('id-ID')}).`);
       return true;
     } catch (e) {
       setIuranRecords(prev => {
         const months = { ...(prev[nik] || {}) };
-        if (before) months[month] = before; else delete months[month];
+        if (before) months[month] = before;
         return { ...prev, [nik]: months };
       });
-      setVault(v => ({ ...v, pettyCash: v.pettyCash - fee }));
+      setVault(v => ({ ...v, [vaultKey]: v[vaultKey] - nominal }));
       showToast(
-        e?.code === 'already-paid'
-          ? `Iuran ${month} sudah lunas tercatat di server.`
-          : `Iuran TIDAK tersimpan. ${fsError(e)}`,
+        e?.code === 'not-pending'
+          ? `Iuran ${month} sudah diproses pengurus lain. Muat ulang.`
+          : `Verifikasi GAGAL. ${fsError(e)}`,
         'error'
       );
+      return false;
+    }
+  };
+
+  // A bendahara rejects a pending iuran month. The claim is dropped; no
+  // money moves in either direction.
+  const rejectIuran = async (nik, month, note = '') => {
+    const before = iuranRecords[nik]?.[month];
+    if (!before || before.status !== 'pending') {
+      showToast('Hanya pembayaran tertunda yang bisa ditolak.', 'error');
+      return false;
+    }
+
+    setIuranRecords(prev => {
+      const months = { ...(prev[nik] || {}) };
+      delete months[month];
+      return { ...prev, [nik]: months };
+    });
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const iuranRef = doc(db, 'iuran', nik);
+        const snap = await tx.get(iuranRef);
+        const months = { ...(snap.exists() ? snap.data().months : {}) };
+        if (months[month]?.status !== 'pending') throw { code: 'not-pending' };
+        delete months[month];
+        tx.set(iuranRef, { nik, months }, { merge: true });
+      });
+
+      showToast(note ? `Pembayaran ${month} ditolak: ${note}` : `Pembayaran ${month} ditolak.`);
+      return true;
+    } catch (e) {
+      setIuranRecords(prev => ({ ...prev, [nik]: { ...(prev[nik] || {}), [month]: before } }));
+      showToast(`Tolak GAGAL. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // A bendahara confirms one queued installment: it moves into `paid`, the
+  // card's status is recomputed, and the cash lands in the matching vault.
+  const verifyInstallment = async (debtId, entryId) => {
+    const debt = debts.find(d => d.id === debtId);
+    const entry = debt?.pendingInstallments?.find(p => p.id === entryId);
+    if (!entry) {
+      showToast('Angsuran tidak ditemukan.', 'error');
+      return false;
+    }
+
+    const vaultKey = vaultKeyForMethod(entry.method);
+    const amt = Number(entry.amount);
+    const name = debt.name || debtId;
+
+    const before = debt;
+
+    // Optimistic update
+    setDebts(prev => prev.map(d => {
+      if (d.id !== debtId) return d;
+      const newPaid = (d.paid || 0) + amt;
+      const remaining = Math.max(0, d.amount - newPaid);
+      return {
+        ...d,
+        paid: newPaid,
+        status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
+        pendingInstallments: (d.pendingInstallments || []).filter(p => p.id !== entryId)
+      };
+    }));
+    setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + amt }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const debtRef = doc(db, 'debts', debtId);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [debtSnap, vaultSnap] = await Promise.all([tx.get(debtRef), tx.get(vaultRef)]);
+        if (!debtSnap.exists()) throw { code: 'not-found' };
+
+        const d = debtSnap.data();
+        const queue = d.pendingInstallments || [];
+        const found = queue.find(p => p.id === entryId);
+        if (!found) throw { code: 'not-found' };
+
+        const newPaid = (d.paid || 0) + found.amount;
+        const remaining = Math.max(0, d.amount - newPaid);
+
+        tx.update(debtRef, {
+          paid: newPaid,
+          status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
+          pendingInstallments: queue.filter(p => p.id !== entryId)
+        });
+
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        tx.set(vaultRef, { [vaultKey]: cash + found.amount }, { merge: true });
+      });
+
+      showToast(`Angsuran ${name} Rp${amt.toLocaleString('id-ID')} terverifikasi.`);
+      return true;
+    } catch (e) {
+      setDebts(prev => prev.map(d => (d.id === debtId ? before : d)));
+      setVault(v => ({ ...v, [vaultKey]: v[vaultKey] - amt }));
+      showToast(
+        e?.code === 'not-found'
+          ? 'Angsuran sudah diproses pengurus lain. Muat ulang.'
+          : `Verifikasi GAGAL. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
+  // A bendahara rejects a queued installment. No money moves.
+  const rejectInstallment = async (debtId, entryId) => {
+    const debt = debts.find(d => d.id === debtId);
+    const entry = debt?.pendingInstallments?.find(p => p.id === entryId);
+    if (!entry) {
+      showToast('Angsuran tidak ditemukan.', 'error');
+      return false;
+    }
+    const before = debt;
+
+    setDebts(prev => prev.map(d => (d.id === debtId
+      ? { ...d, pendingInstallments: (d.pendingInstallments || []).filter(p => p.id !== entryId) }
+      : d)));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const debtRef = doc(db, 'debts', debtId);
+        const snap = await tx.get(debtRef);
+        if (!snap.exists()) throw { code: 'not-found' };
+        const queue = snap.data().pendingInstallments || [];
+        if (!queue.some(p => p.id === entryId)) throw { code: 'not-found' };
+        tx.update(debtRef, { pendingInstallments: queue.filter(p => p.id !== entryId) });
+      });
+
+      showToast('Angsuran ditolak. Uang tidak dicatat.');
+      return true;
+    } catch (e) {
+      setDebts(prev => prev.map(d => (d.id === debtId ? before : d)));
+      showToast(`Tolak GAGAL. ${fsError(e)}`, 'error');
       return false;
     }
   };
@@ -753,6 +985,11 @@ export const AppProvider = ({ children }) => {
       addIncident,
       // Admin / kasir
       markIuranPaidCash,
+      // Payment verification — the only paths that credit the vault
+      verifyIuran,
+      rejectIuran,
+      verifyInstallment,
+      rejectInstallment,
       addExpense,
       deleteExpense,
       addDebt,

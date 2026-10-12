@@ -168,6 +168,7 @@ service cloud.firestore {
         && isNum(request.resource.data.paid, 0, request.resource.data.amount)
         && isStr(request.resource.data.name)
         && isStr(request.resource.data.status)
+        && validInstallments(request.resource.data)
         // An unresolved card carries an explicit null rather than a made-up
         // NIK, so `nik` may legitimately be null here.
         && ('nik' in request.resource.data
@@ -180,7 +181,8 @@ service cloud.firestore {
         // A card may be settled but never appear overpaid.
         && isNum(request.resource.data.paid, 0, request.resource.data.amount)
         && isStr(request.resource.data.name)
-        && isStr(request.resource.data.status);
+        && isStr(request.resource.data.status)
+        && validInstallments(request.resource.data);
 
       // Admin correction only — the app calls this deliberately.
       allow delete: if true;
@@ -262,12 +264,35 @@ function validMonthMap(months) {
 function validMonth(months, m) {
   return m in months
     ? (months[m] is map
-        && months[m].status in ['lunas', 'partial', 'unpaid']
+        && months[m].status in ['lunas', 'partial', 'unpaid', 'pending']
         && months[m].nominal is number
         && months[m].nominal >= 0
+        // `pending` is a claim awaiting a bendahara's confirmation. It is
+        // deliberately worth nothing on its own: no nominal may be zero, and
+        // the vault is not credited until the status flips to `lunas`.
         && (months[m].status == 'unpaid'
             || (months[m].nominal > 0 && months[m].method is string)))
     : true;
+}
+
+// Installments queued for verification. They are separate from `paid`
+// precisely so an unconfirmed claim cannot move the books: `paid` only ever
+// grows when a bendahara has seen the money.
+function validInstallments(data) {
+  return !('pendingInstallments' in data)
+    || (data.pendingInstallments is list
+        && data.pendingInstallments.size() <= 100
+        && validInstallmentList(data.pendingInstallments));
+}
+
+function validInstallmentList(list) {
+  return list.size() == 0
+    || (list[0] is map
+        && isStr(list[0].id)
+        && isNum(list[0].amount, 1, 1000000000000)
+        && isStr(list[0].method)
+        && isStr(list[0].date)
+        && validInstallmentList(list.subarray(1, list.size())));
 }
 
 // Optional `photos` array: at most 3 entries, each a map carrying a base64

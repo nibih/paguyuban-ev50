@@ -55,6 +55,7 @@ export default function MemberTalangan() {
         userDebts.map((debtItem, idx) => {
           const remaining = debtItem.amount - debtItem.paid;
           const isLunas = remaining <= 0;
+          const queued = (debtItem.pendingInstallments || []).reduce((a, p) => a + (Number(p.amount) || 0), 0);
 
           return (
             <View key={debtItem.id || idx} style={styles.itemCard}>
@@ -119,6 +120,16 @@ export default function MemberTalangan() {
                 <View style={styles.lunasNotice}>
                   <CheckCircle2 size={14} color="#059669" />
                   <Text style={styles.lunasNoticeText}>Pos ini telah lunas dibukukan kasir</Text>
+                </View>
+              )}
+
+              {queued > 0 && (
+                <View style={styles.pendingStrip}>
+                  <AlertCircle size={13} color="#D97706" />
+                  <Text style={styles.pendingText}>
+                    Rp{queued.toLocaleString('id-ID')} menunggu verifikasi bendahara — belum mengurangi
+                    sisa hutang.
+                  </Text>
                 </View>
               )}
             </View>
@@ -198,8 +209,12 @@ export default function MemberTalangan() {
                 </View>
 
                 <TouchableOpacity style={styles.submitBtn} onPress={handlePay}>
-                  <Text style={styles.submitBtnText}>Konfirmasi Setoran Pos Ini</Text>
+                  <Text style={styles.submitBtnText}>Kirim untuk Verifikasi Bendahara</Text>
                 </TouchableOpacity>
+                <Text style={styles.submitNote}>
+                  Setoran dicatat dulu sebagai ANTREAN. Sisa hutang baru berkurang setelah bendahara
+                  mencocokkan uangnya dengan mutasi BSI / kas kecil.
+                </Text>
               </>
             )}
           </View>
@@ -269,6 +284,19 @@ const styles = StyleSheet.create({
   payItemText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 12 },
   lunasNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 6 },
   lunasNoticeText: { color: '#059669', fontSize: 11, fontWeight: 'bold' },
+  pendingStrip: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 10,
+    padding: 8,
+    marginTop: 8
+  },
+  pendingText: { flex: 1, fontSize: 10, color: '#92400E', lineHeight: 14 },
+  submitNote: { fontSize: 10, color: '#64748B', marginTop: 8, lineHeight: 14, textAlign: 'center' },
   emptyBox: { backgroundColor: '#FFFFFF', padding: 24, borderRadius: 16, alignItems: 'center' },
   emptyText: { color: '#94A3B8', fontSize: 12 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 20 },

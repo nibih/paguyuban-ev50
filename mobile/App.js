@@ -12,11 +12,12 @@ import MemberDashboard from './src/screens/MemberDashboard';
 import MemberIuran from './src/screens/MemberIuran';
 import MemberTalangan from './src/screens/MemberTalangan';
 import MemberLaporPerbaikan from './src/screens/MemberLaporPerbaikan';
+import MemberHistoriBodi from './src/screens/MemberHistoriBodi';
 import MemberKasTerbuka from './src/screens/MemberKasTerbuka';
 import AdminContainer from './src/screens/admin/AdminContainer';
 
 // Icons
-import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw, LogOut } from 'lucide-react-native';
+import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw, LogOut, History } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -100,6 +101,13 @@ function MainNavigation() {
             component={MemberLaporPerbaikan} 
             options={{
               tabBarIcon: ({ color, size }) => <Wrench size={20} color={color} />
+            }}
+          />
+          <Tab.Screen 
+            name="Histori Bodi" 
+            component={MemberHistoriBodi} 
+            options={{
+              tabBarIcon: ({ color, size }) => <History size={20} color={color} />
             }}
           />
           <Tab.Screen 
