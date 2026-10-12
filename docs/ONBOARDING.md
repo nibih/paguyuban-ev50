@@ -13,6 +13,10 @@ Aplikasi ini mendigitalkan paguyuban pengemudi bus listrik Transjakarta (EV50) d
 2. **Dana Talangan / Piutang Anggota:** Dana pinjaman darurat jika terjadi laka lantas atau kebutuhan jalur mendesak. Pembayaran dicatat dalam "Kartu Utang" bertempo 1–3 bulan.
 3. **Lapor Perbaikan Bodi & Armada EV:** Kerusakan bodi bus (Body 237–285) seperti baret, gompal, atau spion pecah dilaporkan oleh pengemudi, dikoordinasikan dengan Mekanik KLI / Uday, serta pengurusan Surat Keterangan (Suket) kepolisian yang biayanya ditalangi paguyuban.
 
+### Peran Pengguna
+- **Pramudi (Member):** melihat iuran, kartu utang sendiri, melapor kerusakan, dan kas terbuka.
+- **Pengurus / Kasir (Admin):** tab **A1** KPI, **A2** matriks iuran, **A3** pengeluaran, **A4** piutang, **A5** logbook armada, **A6** manajemen anggota.
+
 ---
 
 ## 2. PANDUAN SETUP LOCAL ENVIRONMENT
@@ -24,45 +28,76 @@ Aplikasi ini mendigitalkan paguyuban pengemudi bus listrik Transjakarta (EV50) d
 
 ### Menjalankan Proyek Web (React + Vite):
 ```bash
-# Masuk ke root directory
 cd /home/oracle/nibih/paguyuban
-
-# Install dependencies (jika baru clone)
 npm install
-
-# Jalankan dev server
 npm run dev
 # Buka http://localhost:5173 di browser
 ```
 
 ### Menjalankan Proyek Mobile (React Native Expo):
 ```bash
-# Masuk ke folder mobile
 cd /home/oracle/nibih/paguyuban/mobile
-
-# Install dependencies
 npm install
-
-# Jalankan Metro Bundler
 npm start
-# Tekan 'w' untuk web preview, atau scan QR code via aplikasi Expo Go di smartphone Android/iOS.
+# 'w' untuk web preview, atau scan QR via Expo Go
 ```
+
+### Pemeriksaan yang AMAN dijalankan agent:
+```bash
+# ~90ms. Pemeriksaan impor statis (23 file saat ini).
+npm --prefix mobile run check:imports
+```
+
+> ⚠️ **JANGAN jalankan `eas build` atau `expo export`.** Keduanya menggantung sesi agent. Build APK dijalankan oleh pengguna di mesinnya sendiri.
 
 ---
 
 ## 3. PANDUAN FIREBASE (BACKEND)
 
-Kredensial Firebase sudah terkonfigurasi pada file [`/mobile/.env`](file:///home/oracle/nibih/paguyuban/mobile/.env) dan [`/mobile/src/services/firebase.js`](file:///home/oracle/nibih/paguyuban/mobile/src/services/firebase.js):
-
 - **Project ID:** `paguyuban-ev50`
 - **Firestore Console:** [console.firebase.google.com/project/paguyuban-ev50/firestore](https://console.firebase.google.com/project/paguyuban-ev50/firestore)
+- **Config di-hardcode** di [`/mobile/src/services/firebase.js`](file:///home/oracle/nibih/paguyuban/mobile/src/services/firebase.js). Aplikasi **tidak pernah** membaca `process.env.EXPO_PUBLIC_*`, jadi variabel lingkungan di dasbor EAS bersifat inert.
 
-### Menjalankan Ulang Seeding Data ke Firestore:
-Jika Anda ingin me-reset atau memperbarui data di Firestore dari dokumen Excel:
+### Struktur Koleksi
+
+| Koleksi | Kunci | Isi |
+|---|---|---|
+| `system/vault` | tetap | `bsiBalance`, `pettyCash`, `accountNo`, `bankName`, `accountHolder` |
+| `users` | `nik` | `name`, `role` (`member`/`admin`), `position`, `status` (`active`/`inactive`), `pin?`, `createdAt?`, `createdBy?` |
+| `iuran` | `nik` | `months`: peta bulan → `{status, nominal, method?, date?, markedBy?, source?}` |
+| `debts` | `id` | `nik`, `name`, `incident`, `amount`, `paid`, `status`, `tenor`, `startDate`, `body`, `disbursedBy` |
+| `expenses` | `id` | `date`, `title`, `category`, `amount`, `pic`, `source`, `body` |
+| `incidents` | `id` | `body`, `driver`, `nik`, `damage`, `location`, `status`, `photos?` |
+
+**Bentuk data penting:** insiden menyimpan `body`/`driver`/`nik`/`damage`/`location` — **bukan** `title`/`description`/`reporterName`. Ketidakcocokan ini pernah membuat layar kosong sementara bundel tetap hijau. Pemeriksaan impor **tidak** menangkap salah bentuk data.
+
+### Skrip Data
 ```bash
 cd /home/oracle/nibih/paguyuban/mobile
-node src/data/seedFirestore.mjs
+
+# Baca keadaan langsung & bandingkan dengan seed. Hanya baca.
+node src/data/inspectFirestore.mjs
+
+# Audit sisa pembayaran pengujian. Hanya baca.
+node src/data/auditTestPayments.mjs
+
+# Seeder ADITIF: hanya membuat dokumen yang belum ada,
+# tidak pernah menimpa, tidak pernah menyentuh vault.
+node src/data/seedFirestore.mjs --dry-run   # laporan saja
+node src/data/seedFirestore.mjs             # tulis
+
+# Perbaikan kartu utang. Selalu uji kering dulu.
+node src/data/repairDebtCards.mjs --dry-run
 ```
+
+### Security Rules
+Berkas [`firestore.rules`](file:///home/oracle/nibih/paguyuban/firestore.rules) ada di repo tapi **belum di-deploy**:
+```bash
+npm i -g firebase-tools && firebase login
+firebase deploy --only firestore:rules
+```
+
+Aturan menjamin **integritas data, bukan otorisasi**. Aplikasi tidak memakai Firebase Auth, jadi `request.auth` selalu null — aturan `if request.auth != null` akan mengunci keluar aplikasi sekaligus seeder.
 
 ---
 
@@ -70,11 +105,38 @@ node src/data/seedFirestore.mjs
 
 1. **Integritas Data Asli:**
    - Selalu pertahankan nama pengemudi asli, NIK, nomor body bus, dan nominal pengeluaran sesuai dokumen di folder `reference/`.
-   - Hindari membuat data acak (*dummy*) jika data aslinya ada di sheet Excel/PDF referensi.
-2. **Prinsip Dual-Platform:**
-   - Fitur baru yang ditambahkan di Web harus memiliki padanan alur di Mobile app (Expo), begitu juga sebaliknya.
-3. **Penamaan Fitur:**
-   - Istilah untuk pelaporan kerusakan adalah **"Lapor Perbaikan"** (bukan "Lapor Bodi").
-4. **Alur Commit & Push:**
-   - Commit harus jelas dan modular (menggunakan konvensi *Conventional Commits*: `feat:`, `fix:`, `refactor:`, `docs:`).
-   - Pastikan selalu mem-push ke branch `main` repositori GitHub.
+   - **Jangan pernah membuat NIK, nama, atau nominal acak.** Sebuah bug pernah melakukan `users.find(...) || \`1700${Math.floor(1000 + Math.random()*9000)}\`` — hasilnya 8 kartu utang menunjuk ke orang yang tidak ada. Bila tidak yakin, tulis `nik: null` dan `needsReview: true`.
+2. **Data Langsung Itu Keuangan Nyata:**
+   - Selalu `--dry-run` sebelum menulis ke Firestore langsung.
+   - Jangan menimpa saldo vault atau dokumen yang sudah ada tanpa konfirmasi eksplisit.
+   - Pembayaran yang belum diverifikasi harus **bukan** `lunas`.
+3. **Prinsip Dual-Platform:** fitur baru di Web harus punya padanan di Mobile dan sebaliknya. *Catatan: praktik ini belum konsisten — lihat `FEATURE_PLANNING.md` bagian 3 untuk pertanyaan terbuka soal masa depan Web.*
+4. **Penamaan Fitur:** istilah pelaporan kerusakan adalah **"Lapor Perbaikan"** (bukan "Lapor Bodi").
+5. **Anggota Tidak Pernah Dihapus:** hanya dinonaktifkan. Pemilik kartu utang atau riwayat iuran adalah bagian dari catatan keuangan. Admin aktif terakhir tidak boleh dinonaktifkan (agar tidak terkunci).
+6. **NIK Tidak Bisa Diubah** setelah dibuat — seluruh utang, iuran, dan insiden menunjuk ke NIK itu.
+7. **Pesan Galat Login Dibedakan:** NIK tak dikenal dan PIN salah harus memberi pesan berbeda. Pesan sama akan memberi tahu penyerang NIK mana yang ada.
+8. **Alur Commit & Push:** konvensi *Conventional Commits* (`feat:`, `fix:`, `refactor:`, `docs:`), commit modular dan jelas, selalu push ke `main`.
+   - Hati-hati: **backtick di pesan commit akan dieksekusi shell.** Gunakan `git commit -F -` dengan heredoc.
+
+---
+
+## 5. KEADAAN TERKINI & PEKERJAAN TERBUKA
+
+Baca [`HANDOFF.md`](file:///home/oracle/nibih/paguyuban/docs/HANDOFF.md) untuk changelog lengkap dan [`CURRENT_ACTIVITY.md`](file:///home/oracle/nibih/paguyuban/docs/CURRENT_ACTIVITY.md) untuk keadaan sistem.
+
+**Dua hal penting yang belum selesai:**
+
+1. **10 kartu utang rusak di Firestore langsung** — 8 menunjuk ke NIK tanpa dokumen anggota, 4 kehilangan riwayat pembayaran. Skrip perbaikan sudah ada dan lolos uji kering, belum dijalankan.
+2. **12 bulan iuran (Rp1.200.000) tercatat lunas dari pengujian** — semua pembayaran di aplikasi sejauh ini hanya uji coba dan tidak ada yang diverifikasi.
+
+Di balik keduanya ada **celah desain**: pembayaran dikonfirmasi seketika saat tombol ditekan, tanpa tahap verifikasi. Membersihkan data tanpa memperbaiki hal ini berarti kontaminasi akan terulang.
+
+### Akun Uji (PIN default = 4 digit terakhir NIK)
+
+| Nama | NIK | PIN | Skenario |
+|---|---|---|---|
+| Nicholas | `17002197` | `2197` | Hutang laka Rp910.000 — cocok untuk menguji ketahanan pembayaran |
+| A Sutriadi | `17001137` | `1137` | Bersih & lunas |
+| M. Sapli | `17001504` | `1504` | Hutang jalur Rp200.000 |
+| Muhamad Hasan | `17001109` | `1109` | Hutang suket Rp500.000 |
+| Afrizal Firmansyah | `17001589` | `1589` | Admin Kasir / Ketua |
