@@ -942,7 +942,7 @@
     },
     {
       "id": "DEBT-Afrizal_p",
-      "nik": null,
+      "nik": "17001589",
       "name": "Afrizal pirmansyah sm",
       "incident": "laka lantas di toll jagorawi km 23",
       "startDate": "2026-09-01",
@@ -952,7 +952,8 @@
       "status": "Lunas",
       "body": "Armada EV Cawang",
       "disbursedBy": "Bendahara Kholiq / Afrizal",
-      "needsReview": true
+      "matchConfidence": "manual(ketua-identity-chain)",
+      "matchNote": "Card says 'Afrizal pirmansyah sm'; roster has only one Afrizal, 17001589 'Afrizal Firmansyah', position Ketua/Admin Kas. Bank statement names the ketua in full: 'pengembalian dana chas ketua - TRF Dari - AFRIZAL PIRMANSYAH SUNJA MULYANA'. Card's debtor name and its Ketua signature both read 'AFRIZAL PIRMANSYAH S.M'. Technical report for 17001589 records laka unit 260 on 26/5; bank shows 'Laka 260 Jagorawi - TRF Ke - AFRIZAL PIRMANSYAH SUNJA MULYANA' on 27/5. F/P is a common Indonesian spelling variant. Confirmed by nibih 2026-10-12."
     },
     {
       "id": "DEBT-M_HASAN_",
@@ -1008,6 +1009,8 @@
       "status": "Sedang Mengangsur",
       "body": "Armada EV Cawang",
       "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "unresolved(not-in-roster)",
+      "matchNote": "Searched the 126-name DAFTAR NAMA PRAMUDI and all three reference workbooks. 'AGUS TRIONO' appears only on his own debt card; his card's NIK field is blank. Best roster match is 0.50, a tie between Agus Hariyanto (17001473) and Agus Sukmana (17001101) — both driven purely by the given name 'Agus', with no surname agreement. Below the 0.34 evidence bar for a financial record. Left as null rather than picking a driver at random. Resolve manually in A4 once a paguyuban officer identifies him.",
       "needsReview": true
     },
     {
@@ -1022,6 +1025,8 @@
       "status": "Lunas",
       "body": "Armada EV Cawang",
       "disbursedBy": "Bendahara Kholiq / Afrizal",
+      "matchConfidence": "unresolved(not-in-roster)",
+      "matchNote": "Searched the 126-name DAFTAR NAMA PRAMUDI and all three reference workbooks. 'SHANDY' appears only on his own debt card; his card's NIK field is blank. Best roster match is 0.21 (Agus Hariyanto) — no token overlap at all, effectively noise. No entry resembling Shandy/Sandy under any spelling. Left as null rather than guessing. Resolve manually in A4 once a paguyuban officer identifies him.",
       "needsReview": true
     },
     {
