@@ -62,6 +62,53 @@ function relativeExists(fromFile, specifier) {
 
 const IMPORT_RE = /(?:^|\n)\s*(?:import\s[^'"]*?from\s*|import\s*\(\s*|export\s[^'"]*?from\s*|require\s*\(\s*)['"]([^'"]+)['"]/g;
 
+// ---- phase 1: actually parse the code ---------------------------------
+//
+// The import scan below is a regex over text. It cannot tell a comment from
+// real code, so a file that does not even parse still "passes". That is not
+// theoretical: a malformed comment block once shipped here and only failed
+// when EAS ran the Metro bundler, wasting a full cloud build.
+//
+// `node --check` is no substitute — it cannot parse JSX, so it has to be run
+// in a mode that skips these files entirely, which is worse than useless
+// because it reports success. babel-preset-expo is the same transform Metro
+// uses, so anything it rejects will not bundle.
+let babel = null;
+try {
+  babel = (await import('@babel/core')).default;
+} catch {
+  console.log('note: @babel/core unavailable, skipping the parse check');
+}
+
+const parseErrors = [];
+
+if (babel) {
+  const allFiles = [...walk(SRC)];
+  const appJs = path.join(ROOT, 'App.js');
+  if (fs.existsSync(appJs)) allFiles.push(appJs);
+
+  for (const file of allFiles) {
+    try {
+      babel.transformFileSync(file, {
+        presets: ['babel-preset-expo'],
+        filename: file,
+        babelrc: false,
+        configFile: false
+      });
+    } catch (e) {
+      const loc = e?.loc?.line ? `:${e.loc.line}:${e.loc.column ?? 0}` : '';
+      const msg = String(e.message || e).split('\n')[0];
+      parseErrors.push(`${path.relative(ROOT, file)}${loc}  ${msg}`);
+    }
+  }
+}
+
+if (parseErrors.length) {
+  console.log(`SYNTAX ERRORS (${parseErrors.length}) — these will fail the EAS build:\n`);
+  for (const p of parseErrors) console.log('  ' + p);
+  process.exit(1);
+}
+
 for (const file of walk(SRC)) {
   const text = fs.readFileSync(file, 'utf8');
   let m;

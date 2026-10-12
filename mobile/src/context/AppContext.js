@@ -401,19 +401,19 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // ---------------------------------------------------------------- *
-   * PAYMENT VERIFICATION
-   *
-   * These are now the ONLY functions that move money into the vault from
-   * a payment. Nothing else credits it: `payIuran`, `repayDebt` and
-   * `markIuranPaidCash` all stop at `pending`.
-   *
-   * Why this exists: every payment made through the app before 12 Oct 2026
-   * was a test tap, none was checked against the bank, and the taps had
-   * already become financial history — Rp1.200.000 of iuran marked lunas
-   * and a vault that no longer matched the BSI statement. A button press is
-   * a claim about money, not proof of it.
-   * ---------------------------------------------------------------- */
+  // ------------------------------------------------------------------
+  // PAYMENT VERIFICATION
+  //
+  // These are now the ONLY functions that move money into the vault from
+  // a payment. Nothing else credits it: `payIuran`, `repayDebt` and
+  // `markIuranPaidCash` all stop at `pending`.
+  //
+  // Why this exists: every payment made through the app before 12 Oct 2026
+  // was a test tap, none was checked against the bank, and the taps had
+  // already become financial history — Rp1.200.000 of iuran marked lunas
+  // and a vault that no longer matched the BSI statement. A button press is
+  // a claim about money, not proof of it.
+  // ------------------------------------------------------------------
 
   // Which vault a confirmed payment belongs to. Cash handed to the cashier
   // lives in the tin; anything arriving through the bank lives in BSI.

@@ -278,21 +278,44 @@ function validMonth(months, m) {
 // Installments queued for verification. They are separate from `paid`
 // precisely so an unconfirmed claim cannot move the books: `paid` only ever
 // grows when a bendahara has seen the money.
+//
+// This is bounded and UNROLLED rather than recursive, because Firestore rules
+// have neither recursion nor list comprehension — the first draft of this
+// file used a self-calling list walker with subarray(), and it failed to
+// compile at deploy time. The bound is 10 slots because confirmed entries are
+// removed from this list as they move into `paid`: it holds only what is
+// still awaiting a bendahara, never a card's whole payment history.
 function validInstallments(data) {
   return !('pendingInstallments' in data)
     || (data.pendingInstallments is list
-        && data.pendingInstallments.size() <= 100
-        && validInstallmentList(data.pendingInstallments));
+        && data.pendingInstallments.size() <= 10
+        && validSlot(data.pendingInstallments, 0)
+        && validSlot(data.pendingInstallments, 1)
+        && validSlot(data.pendingInstallments, 2)
+        && validSlot(data.pendingInstallments, 3)
+        && validSlot(data.pendingInstallments, 4)
+        && validSlot(data.pendingInstallments, 5)
+        && validSlot(data.pendingInstallments, 6)
+        && validSlot(data.pendingInstallments, 7)
+        && validSlot(data.pendingInstallments, 8)
+        && validSlot(data.pendingInstallments, 9));
 }
 
-function validInstallmentList(list) {
-  return list.size() == 0
-    || (list[0] is map
-        && isStr(list[0].id)
-        && isNum(list[0].amount, 1, 1000000000000)
-        && isStr(list[0].method)
-        && isStr(list[0].date)
-        && validInstallmentList(list.subarray(1, list.size())));
+// A slot is valid when it is absent (the list is shorter than the bound) or
+// a well-formed claim awaiting confirmation.
+//
+// The type checks are inlined instead of calling the isStr/isNum helpers,
+// because those are defined inside the `match` block and are NOT visible from
+// service scope — calling them here produced "Invalid function name" at
+// deploy time.
+function validSlot(list, i) {
+  return i >= list.size()
+    || (list[i] is map
+        && 'id' in list[i] && list[i].id is string && list[i].id.size() > 0
+        && 'amount' in list[i] && list[i].amount is number
+            && list[i].amount >= 1 && list[i].amount <= 1000000000000
+        && 'method' in list[i] && list[i].method is string
+        && 'date' in list[i] && list[i].date is string);
 }
 
 // Optional `photos` array: at most 3 entries, each a map carrying a base64
