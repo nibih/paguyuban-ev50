@@ -1,5 +1,21 @@
+// Additive Firestore seeder.
+//
+// Creates documents that do not already exist. It never overwrites an
+// existing document and never touches the vault balances.
+//
+// The original version called setDoc unconditionally, which is destructive
+// once the app is live: the vault had moved to Rp12.850.000 / Rp281.500 from
+// the Rp12.450.000 / Rp131.500 in seedData, and drivers had created debts,
+// expenses and an incident through the app. Re-running that version would
+// have silently reset real money to stale figures and clobbered live records.
+//
+//   node src/data/seedFirestore.mjs           # seed missing docs only
+//   node src/data/seedFirestore.mjs --dry-run # report, write nothing
+
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import {
+  getFirestore, doc, setDoc, getDoc, getDocs, collection
+} from 'firebase/firestore';
 import seedData from './seedData.json' with { type: 'json' };
 
 const firebaseConfig = {
@@ -14,56 +30,76 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Write a list in bounded batches so 128 members don't stall on one
-// connection. Firestore caps us at 500 writes per batch anyway.
-const BATCH = 200;
+const DRY = process.argv.includes('--dry-run');
+const BATCH = 40; // concurrent reads/writes; keeps the socket healthy
 
-async function writeAll(label, items, makeRef) {
-  for (let i = 0; i < items.length; i += BATCH) {
-    const chunk = items.slice(i, i + BATCH);
-    await Promise.all(chunk.map((item) => setDoc(makeRef(item), item)));
-    process.stdout.write(`\r  ${label}: ${Math.min(i + BATCH, items.length)}/${items.length}`);
+async function inBatches(items, size, fn) {
+  const out = [];
+  for (let i = 0; i < items.length; i += size) {
+    out.push(...await Promise.all(items.slice(i, i + size).map(fn)));
+    const done = Math.min(i + size, items.length);
+    process.stdout.write(`\r  scanning ${done}/${items.length}`);
   }
-  process.stdout.write('\n');
+  process.stdout.write('\r');
+  return out;
+}
+
+// Additive write: only create what is genuinely absent.
+async function seedCollection(label, items, makeRef, keyOf) {
+  const existing = new Set();
+  const snap = await getDocs(collection(db, label));
+  snap.forEach((d) => existing.add(d.id));
+
+  const todo = items.filter((item) => !existing.has(String(keyOf(item))));
+  const skipped = items.length - todo.length;
+
+  if (todo.length === 0) {
+    console.log(`  ✓ ${label.padEnd(10)} nothing to do (${items.length} already present)`);
+    return 0;
+  }
+
+  if (DRY) {
+    console.log(`  ~ ${label.padEnd(10)} would create ${todo.length}, skip ${skipped}`);
+    return todo.length;
+  }
+
+  await inBatches(todo, BATCH, async (item) => {
+    await setDoc(makeRef(item), item);
+  });
+  console.log(`  ✓ ${label.padEnd(10)} created ${todo.length}, skipped ${skipped} existing`);
+  return todo.length;
 }
 
 async function seedFirestore() {
-  console.log('Seeding operational data to Firestore paguyuban-ev50...\n');
+  console.log(`${DRY ? 'DRY RUN — nothing will be written' : 'Seeding'} paguyuban-ev50 (additive only)\n`);
 
-  // 1. Vault (single doc)
-  await setDoc(doc(db, 'system', 'vault'), seedData.vault);
-  console.log('  ✓ system/vault');
+  // The vault is deliberately NOT written. Balances track live money and are
+  // owned by the app, not by this script.
+  const vaultSnap = await getDoc(doc(db, 'system', 'vault'));
+  if (vaultSnap.exists()) {
+    const v = vaultSnap.data();
+    console.log(`  - vault left untouched: BSI Rp${(v.bsiBalance || 0).toLocaleString('id-ID')} · Kas Kecil Rp${(v.pettyCash || 0).toLocaleString('id-ID')}`);
+  } else if (DRY) {
+    console.log(`  ~ vault missing — would create with seed values`);
+  } else {
+    await setDoc(doc(db, 'system', 'vault'), seedData.vault);
+    console.log(`  ✓ vault created (no existing doc): BSI Rp${seedData.vault.bsiBalance.toLocaleString('id-ID')}`);
+  }
 
-  // 2. ALL members — the previous revision sliced to 15, which silently
-  //    dropped the three documented test drivers (Nicholas, M. Sapli,
-  //    Muhamad Hasan) because the roster is alphabetical and they sort late.
-  await writeAll('users', seedData.users, (u) => doc(db, 'users', u.nik));
-  console.log(`  ✓ users (${seedData.users.length})`);
+  let created = 0;
+  created += await seedCollection('users', seedData.users, (u) => doc(db, 'users', u.nik), (u) => u.nik);
+  created += await seedCollection('iuran', seedData.iuran, (r) => doc(db, 'iuran', r.nik), (r) => r.nik);
+  created += await seedCollection('debts', seedData.debts, (d) => doc(db, 'debts', d.id), (d) => d.id);
+  created += await seedCollection('expenses', seedData.expenses, (e) => doc(db, 'expenses', e.id), (e) => e.id);
+  created += await seedCollection('incidents', seedData.incidents, (i) => doc(db, 'incidents', i.id), (i) => i.id);
 
-  // 3. Debts
-  await writeAll('debts', seedData.debts, (d) => doc(db, 'debts', d.id));
-  console.log(`  ✓ debts (${seedData.debts.length})`);
-
-  // 4. Expenses
-  await writeAll('expenses', seedData.expenses, (e) => doc(db, 'expenses', e.id));
-  console.log(`  ✓ expenses (${seedData.expenses.length})`);
-
-  // 5. Iuran — one doc per NIK holding a month -> payment map. Absent until
-  //    now, so every payment the app recorded evaporated on reload.
-  await writeAll('iuran', seedData.iuran, (r) => doc(db, 'iuran', r.nik));
-  console.log(`  ✓ iuran (${seedData.iuran.length})`);
-
-  // 6. Incidents / damage logbook
-  await writeAll('incidents', seedData.incidents, (i) => doc(db, 'incidents', i.id));
-  console.log(`  ✓ incidents (${seedData.incidents.length})`);
-
-  console.log('\nAll Firestore collections seeded.');
+  console.log(`\n${DRY ? 'Dry run complete' : 'Done'} — ${created} document(s) ${DRY ? 'would be' : ''} created. Existing documents were not modified.`);
 
   const unresolved = seedData.debts.filter((d) => !d.nik);
   if (unresolved.length) {
-    console.log(`\n${unresolved.length} debt card(s) have no resolved NIK and were`);
-    console.log('written with nik:null + needsReview:true. Assign them manually:');
+    console.log(`\n${unresolved.length} debt card(s) still have no resolved NIK:`);
     unresolved.forEach((d) => console.log(`  - ${d.id}  "${d.name}"  Rp${d.amount.toLocaleString('id-ID')}`));
+    console.log('Assign them in the A4 tab once you know the real NIK.');
   }
 }
 
