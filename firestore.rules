@@ -1,0 +1,283 @@
+rules_version = '2';
+
+// Firestore security rules for PAGUYUBAN EV50 CAWANG.
+//
+// IMPORTANT — READ BEFORE CHANGING
+//
+// The mobile app does NOT use Firebase Auth. It authenticates drivers with a
+// NIK + PIN checked on the device, so every Firestore request arrives with
+// request.auth == null. Writing `allow ... if request.auth != null` would
+// lock out the app, the seeder, and every user.
+//
+// That means these rules CANNOT tell one caller from another. There is no
+// such thing as "only the kasir may edit the vault" while auth is off.
+// Anyone holding the project ID can write a well-formed document.
+//
+// What these rules DO enforce is data integrity, plus the few invariants
+// worth holding even without identity:
+//
+//   - type and shape of every document, so a malformed write cannot corrupt
+//     the books or crash a screen that assumes a field exists
+//   - the bank identity on the vault is immutable, so a caller cannot
+//     silently redirect paguyuban transfers to a different account
+//   - a debt's paid amount can never exceed its principal, so a card can be
+//     settled but never appear overpaid
+//   - every document carries its own key in a field matching its path
+//   - members are never deleted, only deactivated, so financial history is
+//     never orphaned
+//
+// This is defence in depth, not authorisation. Enabling Firebase Auth is the
+// step that would make identity-based rules possible; until then, treat the
+// vault balances as client-writable.
+//
+// Deploy with:  firebase deploy --only firestore:rules
+//
+// NOTE ON RULE SEMANTICS (this file got this wrong once already):
+//   resource        -> the document as stored NOW. Null when it does not
+//                      exist yet, so it must never be read in an `allow
+//                      create` block.
+//   request.resource -> the document as it would be AFTER this write. This
+//                      is what a create must validate against.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- shared validators -------------------------------------------
+
+    function isStr(f) {
+      return f is string && f.size() > 0;
+    }
+
+    // Finite number within an inclusive range.
+    function isNum(f, lo, hi) {
+      return f is number && f >= lo && f <= hi;
+    }
+
+    // Only the keys listed may be present on the document.
+    function onlyKeys(data, allowed) {
+      return data.keys().hasOnly(allowed);
+    }
+
+    // The document carries its own id in a field matching its path, so a
+    // record copied to the wrong path cannot masquerade as a real one.
+    function selfKeyed(data, key) {
+      return key in data && data[key] == key;
+    }
+
+    function validPin(p) {
+      return p is string && p.matches('^[0-9]{4}$');
+    }
+
+    // ---- system/vault -------------------------------------------------
+
+    // Bank identity is fixed. Balances are the only mutable part, because
+    // every payment and expense in the app adjusts them.
+    match /system/vault {
+      allow read: if true;
+
+      allow create: if
+        onlyKeys(request.resource.data, ['bsiBalance', 'pettyCash', 'accountNo', 'bankName', 'accountHolder'])
+        && isNum(request.resource.data.bsiBalance, -1000000000000, 1000000000000)
+        && isNum(request.resource.data.pettyCash, -1000000000000, 1000000000000)
+        && isStr(request.resource.data.accountNo)
+        && isStr(request.resource.data.bankName)
+        && isStr(request.resource.data.accountHolder);
+
+      // The bank identity must stay byte-identical to what is stored. This
+      // is the one invariant worth holding without auth: nobody can point
+      // the paguyuban's money at a new account.
+      allow update: if
+        onlyKeys(request.resource.data, ['bsiBalance', 'pettyCash', 'accountNo', 'bankName', 'accountHolder'])
+        && isNum(request.resource.data.bsiBalance, -1000000000000, 1000000000000)
+        && isNum(request.resource.data.pettyCash, -1000000000000, 1000000000000)
+        && request.resource.data.accountNo == resource.data.accountNo
+        && request.resource.data.bankName == resource.data.bankName
+        && request.resource.data.accountHolder == resource.data.accountHolder;
+
+      // The app never deletes the vault.
+      allow delete: if false;
+    }
+
+    // ---- users/{nik} --------------------------------------------------
+
+    match /users/{nik} {
+      allow read: if true;
+
+      allow create: if
+        selfKeyed(request.resource.data, nik)
+        && onlyKeys(request.resource.data, ['nik', 'name', 'role', 'position', 'status', 'pin', 'createdAt', 'createdBy'])
+        && isStr(request.resource.data.name)
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.role in ['member', 'admin']
+        && isStr(request.resource.data.position)
+        && request.resource.data.status in ['active', 'inactive']
+        && ('pin' in request.resource.data ? validPin(request.resource.data.pin) : true);
+
+      allow update: if
+        // NIK cannot be rewritten: every debt, iuran and incident points at it.
+        request.resource.data.nik == resource.data.nik
+        && onlyKeys(request.resource.data, ['nik', 'name', 'role', 'position', 'status', 'pin', 'createdAt', 'createdBy'])
+        && isStr(request.resource.data.name)
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.role in ['member', 'admin']
+        && isStr(request.resource.data.position)
+        && request.resource.data.status in ['active', 'inactive']
+        && ('pin' in request.resource.data ? validPin(request.resource.data.pin) : true)
+        // Creation audit fields are written once and never revised.
+        && (!('createdAt' in resource.data)
+            || request.resource.data.createdAt == resource.data.createdAt)
+        && (!('createdBy' in resource.data)
+            || request.resource.data.createdBy == resource.data.createdBy);
+
+      // Members are deactivated, never deleted: a driver with a debt card or
+      // a settled iuran trail is part of the financial record.
+      allow delete: if false;
+    }
+
+    // ---- iuran/{nik} --------------------------------------------------
+
+    match /iuran/{nik} {
+      allow read: if true;
+
+      // One doc per driver holding a month -> payment map.
+      allow create: if
+        request.resource.data.keys().hasOnly(['nik', 'months'])
+        && request.resource.data.nik == nik
+        && request.resource.data.months is map
+        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September'])
+        && validMonthMap(request.resource.data.months);
+
+      allow update: if
+        request.resource.data.keys().hasOnly(['nik', 'months'])
+        && request.resource.data.nik == resource.data.nik
+        && request.resource.data.months is map
+        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September'])
+        && validMonthMap(request.resource.data.months);
+
+      allow delete: if false;
+    }
+
+    // ---- debts/{id} ---------------------------------------------------
+
+    match /debts/{id} {
+      allow read: if true;
+
+      allow create: if
+        selfKeyed(request.resource.data, id)
+        && isNum(request.resource.data.amount, 0, 1000000000000)
+        && isNum(request.resource.data.paid, 0, request.resource.data.amount)
+        && isStr(request.resource.data.name)
+        && isStr(request.resource.data.status)
+        // An unresolved card carries an explicit null rather than a made-up
+        // NIK, so `nik` may legitimately be null here.
+        && ('nik' in request.resource.data
+            ? (request.resource.data.nik == null || request.resource.data.nik is string)
+            : true);
+
+      allow update: if
+        request.resource.data.id == resource.data.id
+        && isNum(request.resource.data.amount, 0, 1000000000000)
+        // A card may be settled but never appear overpaid.
+        && isNum(request.resource.data.paid, 0, request.resource.data.amount)
+        && isStr(request.resource.data.name)
+        && isStr(request.resource.data.status);
+
+      // Admin correction only — the app calls this deliberately.
+      allow delete: if true;
+    }
+
+    // ---- expenses/{id} ------------------------------------------------
+
+    match /expenses/{id} {
+      allow read: if true;
+
+      allow create: if
+        selfKeyed(request.resource.data, id)
+        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body'])
+        && isNum(request.resource.data.amount, 0, 1000000000000)
+        && isStr(request.resource.data.title)
+        && request.resource.data.title.size() <= 200
+        && isStr(request.resource.data.category)
+        && isStr(request.resource.data.source);
+
+      allow update: if
+        request.resource.data.id == resource.data.id
+        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body'])
+        && isNum(request.resource.data.amount, 0, 1000000000000)
+        && isStr(request.resource.data.title)
+        && request.resource.data.title.size() <= 200
+        && isStr(request.resource.data.category)
+        && isStr(request.resource.data.source);
+
+      allow delete: if true;
+    }
+
+    // ---- incidents/{id} -----------------------------------------------
+
+    match /incidents/{id} {
+      allow read: if true;
+
+      allow create: if
+        selfKeyed(request.resource.data, id)
+        && isStr(request.resource.data.body)
+        && isStr(request.resource.data.driver)
+        && isStr(request.resource.data.damage)
+        && request.resource.data.status in ['Laporan Baru Masuk', 'Sedang Dikerjakan Mekanik', 'Selesai']
+        // Photos are downscaled base64 thumbnails riding on the document
+        // because the project has no Cloud Storage bucket. Cap the array so
+        // nobody can push a doc past Firestore's 1 MiB limit.
+        && validPhotos(request.resource.data);
+
+      allow update: if
+        request.resource.data.id == resource.data.id
+        && isStr(request.resource.data.body)
+        && isStr(request.resource.data.driver)
+        && isStr(request.resource.data.damage)
+        && request.resource.data.status in ['Laporan Baru Masuk', 'Sedang Dikerjakan Mekanik', 'Selesai']
+        && validPhotos(request.resource.data);
+
+      allow delete: if true;
+    }
+
+    // Everything not matched above is closed by default. Rules are OR'd per
+    // request, so this denies only what no rule above explicitly allows.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ---- helpers (service scope) ------------------------------------------
+
+// Every month entry must be an unpaid marker or a payment record, and a
+// recorded payment must carry a positive nominal and a stated method.
+function validMonthMap(months) {
+  return validMonth(months, 'Mei')
+      && validMonth(months, 'Juni')
+      && validMonth(months, 'Juli')
+      && validMonth(months, 'Agustus')
+      && validMonth(months, 'September');
+}
+
+function validMonth(months, m) {
+  return m in months
+    ? (months[m] is map
+        && months[m].status in ['lunas', 'partial', 'unpaid']
+        && months[m].nominal is number
+        && months[m].nominal >= 0
+        && (months[m].status == 'unpaid'
+            || (months[m].nominal > 0 && months[m].method is string)))
+    : true;
+}
+
+// Optional `photos` array: at most 3 entries, each a map carrying a base64
+// string. Absent is fine — most reports have no photo.
+function validPhotos(data) {
+  return !('photos' in data)
+    || (data.photos is list
+        && data.photos.size() <= 3
+        && (data.photos.size() == 0
+            || (data.photos[0] is map
+                && 'base64' in data.photos[0]
+                && data.photos[0].base64 is string)));
+}

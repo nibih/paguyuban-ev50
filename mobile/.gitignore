@@ -9,4 +9,8 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+# Local env files. EXPO_PUBLIC_* values are read at build time by EAS (from
+# the project's environment variables in the Expo dashboard), not from a
+# committed file, so these stay out of the repo.
+.env
 .env*.local
