@@ -12,7 +12,10 @@ const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 // matching each item against the BSI statement or the counted kas kecil.
 // Only `verifyIuran` credits the vault.
 export default function AdminIuran() {
-  const { users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran } = useApp();
+  const {
+    users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran,
+    expenses, debts, vault
+  } = useApp();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
   const [expandedNik, setExpandedNik] = useState(null);
@@ -163,80 +166,141 @@ export default function AdminIuran() {
     );
   };
 
-  // Pemasukan iuran: one row per month, split between what the bendahara has
-  // CONFIRMED (this is the money that is genuinely in the vault) and what is
-  // still only a claim sitting in the queue. Showing them side by side is the
-  // whole point — conflating the two is how Rp1.200.000 of test taps became
-  // financial history.
+  // Pemasukan iuran — the full recorded history, NOT just what flowed through
+  // the app. Most of this book predates the app entirely and came from the
+  // bank's own money-in report, so the two provenances are kept visibly
+  // separate rather than merged into one confident-looking total:
+  //
+  //   Laporan Uang Masuk  seeded from the BSI statement — pre-app history
+  //   Verifikasi Kasir    confirmed in-app by a bendahara
+  //   Menunggu            a claim, worth nothing until confirmed
+  //
+  // Every `lunas` entry counts as income here regardless of provenance, but
+  // `vault` is NOT derived from this. The vault is a separate stored balance.
   const income = useMemo(() => {
+    const fromBank = (d) => d?.source === 'Laporan Uang Masuk';
+
     const rows = MONTHS.map(month => {
-      const perMethod = {};
-      let verified = 0;
+      let bank = 0;
+      let bankCount = 0;
+      let cashier = 0;
+      let cashierCount = 0;
       let pending = 0;
-      let verifiedCount = 0;
       let pendingCount = 0;
 
       users.forEach(u => {
         const d = iuranRecords[u.nik]?.[month];
         if (!d) return;
         const nominal = Number(d.nominal) || 0;
-        if (d.status === 'lunas') {
-          verified += nominal;
-          verifiedCount++;
-          const m = d.method || 'Lainnya';
-          perMethod[m] = (perMethod[m] || 0) + nominal;
+        if (d.status === 'lunas' && fromBank(d)) {
+          bank += nominal; bankCount++;
+        } else if (d.status === 'lunas') {
+          cashier += nominal; cashierCount++;
         } else if (d.status === 'pending') {
-          pending += nominal;
-          pendingCount++;
+          pending += nominal; pendingCount++;
         }
       });
 
-      return { month, verified, pending, verifiedCount, pendingCount, perMethod };
+      return { month, bank, bankCount, cashier, cashierCount, pending, pendingCount };
     });
 
     return {
       rows,
-      totalVerified: rows.reduce((a, r) => a + r.verified, 0),
+      totalBank: rows.reduce((a, r) => a + r.bank, 0),
+      totalCashier: rows.reduce((a, r) => a + r.cashier, 0),
       totalPending: rows.reduce((a, r) => a + r.pending, 0),
-      methods: rows.reduce((acc, r) => {
-        Object.entries(r.perMethod).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + v; });
-        return acc;
-      }, {})
+      get totalRecorded() { return this.totalBank + this.totalCashier; }
     };
   }, [users, iuranRecords]);
 
+  // Reconciliation of recorded cash movement against the vault.
+  //
+  // This deliberately does NOT assert that the books balance, because with the
+  // data currently held they cannot, and printing a tidy equation that
+  // "closes" would be a lie a cashier would eventually discover the hard way.
+  // Two concrete gaps are computed and named instead:
+  //
+  //   1. The expense book only covers September, while iuran spans five
+  //      months, so four months of spending are simply absent.
+  //   2. Some talangan advances were booked as expenses AND as debt
+  //      principal, so subtracting both would double-count them.
+  const recon = useMemo(() => {
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // A talangan expense that also has a matching debt card is the same
+    // money recorded twice.
+    const overlap = expenses
+      .filter(e => e.category === 'Talangan')
+      .filter(e => debts.some(d => d.amount === e.amount && norm(d.name).includes(norm(e.pic))))
+      .reduce((a, e) => a + (e.amount || 0), 0);
+
+    const expenseMonths = [...new Set(expenses.map(e => String(e.date || '').slice(0, 7)))]
+      .filter(Boolean).sort();
+
+    return {
+      vaultTotal: (vault.bsiBalance || 0) + (vault.pettyCash || 0),
+      totalExpense: expenses.reduce((a, e) => a + (e.amount || 0), 0),
+      talanganOutstanding: debts.reduce((a, d) => a + (d.amount - d.paid), 0),
+      overlap,
+      expenseMonths,
+      monthsCovered: expenseMonths.length,
+      monthsWanted: MONTHS.length
+    };
+  }, [expenses, debts, vault]);
+
   return (
     <View style={{ flex: 1 }}>
-      {/* Pemasukan iuran ledger */}
+      {/* Pemasukan iuran — the full history, both provenances kept apart */}
       <View style={styles.incomeCard}>
         <View style={styles.incomeHead}>
           <Text style={styles.incomeTitle}>PEMASUKAN IURAN</Text>
-          <Text style={styles.incomeGrand}>Rp{income.totalVerified.toLocaleString('id-ID')}</Text>
+          <Text style={styles.incomeGrand}>Rp{income.totalRecorded.toLocaleString('id-ID')}</Text>
         </View>
         <Text style={styles.incomeNote}>
-          Baris hijau = sudah diverifikasi bendahara dan sudah masuk kas.
-          Baris kuning = masih klaim, belum dihitung sebagai pemasukan.
+          Total seluruh riwayat iuran yang tercatat, termasuk data sebelum aplikasi ada.
+          Angka ini arus masuk kumulatif, BUKAN saldo kas saat ini — lihat panel Rekonsiliasi
+          di bawah untuk hubungannya.
         </Text>
 
+        {/* Provenance legend */}
+        <View style={styles.provLegend}>
+          <View style={styles.provChip}>
+            <View style={[styles.provDot, { backgroundColor: '#0B2F64' }]} />
+            <Text style={styles.provChipText}>Laporan Uang Masuk</Text>
+          </View>
+          <View style={styles.provChip}>
+            <View style={[styles.provDot, { backgroundColor: '#059669' }]} />
+            <Text style={styles.provChipText}>Verifikasi Kasir</Text>
+          </View>
+          <View style={styles.provChip}>
+            <View style={[styles.provDot, { backgroundColor: '#D97706' }]} />
+            <Text style={styles.provChipText}>Menunggu</Text>
+          </View>
+        </View>
+
         {income.rows.map(r => (
-          <View key={r.month}>
+          <View key={r.month} style={styles.incomeMonthBlock}>
             <View style={styles.incomeRow}>
               <Text style={styles.incomeMonth}>{r.month}</Text>
-              <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text style={styles.incomeVerified}>Rp{r.verified.toLocaleString('id-ID')}</Text>
-                {r.verifiedCount > 0 && (
-                  <Text style={styles.incomeMeta}>{r.verifiedCount} pramudi</Text>
-                )}
-              </View>
+              <Text style={styles.incomeMonthTotal}>
+                Rp{(r.bank + r.cashier).toLocaleString('id-ID')}
+              </Text>
             </View>
 
-            {Object.entries(r.perMethod).map(([m, v]) => (
-              <View key={m} style={styles.incomeMethod}>
-                <Text style={styles.incomeMethodLabel}>{m}</Text>
-                <Text style={styles.incomeMethodVal}>Rp{v.toLocaleString('id-ID')}</Text>
+            {r.bank > 0 && (
+              <View style={styles.incomeProvRow}>
+                <View style={[styles.provDot, { backgroundColor: '#0B2F64' }]} />
+                <Text style={styles.incomeProvLabel}>Laporan Uang Masuk</Text>
+                <Text style={styles.incomeProvValBank}>Rp{r.bank.toLocaleString('id-ID')}</Text>
               </View>
-            ))}
-
+            )}
+            {r.cashier > 0 && (
+              <View style={styles.incomeProvRow}>
+                <View style={[styles.provDot, { backgroundColor: '#059669' }]} />
+                <Text style={styles.incomeProvLabel}>Verifikasi Kasir</Text>
+                <Text style={styles.incomeProvValBank}>Rp{r.cashier.toLocaleString('id-ID')}</Text>
+              </View>
+            )}
             {r.pending > 0 && (
               <View style={styles.incomePendingRow}>
                 <Clock size={11} color="#D97706" />
@@ -248,15 +312,67 @@ export default function AdminIuran() {
         ))}
 
         <View style={styles.incomeTotalRow}>
-          <Text style={styles.incomeTotalLabel}>TOTAL TERVERIFIKASI</Text>
-          <Text style={styles.incomeTotalVal}>Rp{income.totalVerified.toLocaleString('id-ID')}</Text>
+          <Text style={styles.incomeTotalLabel}>DARI LAPORAN BANK (SEBELUM APLIKASI)</Text>
+          <Text style={styles.incomeTotalValBank}>Rp{income.totalBank.toLocaleString('id-ID')}</Text>
+        </View>
+        <View style={styles.incomeTotalRow}>
+          <Text style={styles.incomeTotalLabel}>DARI VERIFIKASI KASIR (LEWAT APLIKASI)</Text>
+          <Text style={styles.incomeTotalValBank}>Rp{income.totalCashier.toLocaleString('id-ID')}</Text>
         </View>
         {income.totalPending > 0 && (
           <View style={styles.incomeTotalRowPending}>
-            <Text style={styles.incomeTotalLabelPending}>TOTAL BELUM VERIFIKASI</Text>
+            <Text style={styles.incomeTotalLabelPending}>MENUNGGU VERIFIKASI</Text>
             <Text style={styles.incomeTotalValPending}>Rp{income.totalPending.toLocaleString('id-ID')}</Text>
           </View>
         )}
+      </View>
+
+      {/* Rekonsiliasi — links the ledger to the vault without pretending */}
+      <View style={styles.reconCard}>
+        <Text style={styles.reconTitle}>REKONSILIASI TERHADAP KAS</Text>
+        <Text style={styles.reconNote}>
+          Iuran di atas adalah arus masuk sejak data dicatat. Kas adalah saldo yang tersisa
+          setelah pengeluaran dan talangan. Keduanya memang angka berbeda.
+        </Text>
+
+        <View style={styles.reconRow}>
+          <Text style={styles.reconLabel}>Pemasukan iuran tercatat</Text>
+          <Text style={styles.reconVal}>Rp{income.totalRecorded.toLocaleString('id-ID')}</Text>
+        </View>
+        <View style={styles.reconRow}>
+          <Text style={styles.reconLabel}>Pengeluaran tercatat</Text>
+          <Text style={[styles.reconVal, { color: '#E11D48' }]}>
+            −Rp{recon.totalExpense.toLocaleString('id-ID')}
+          </Text>
+        </View>
+        <View style={styles.reconRow}>
+          <Text style={styles.reconLabel}>Saldo kas saat ini (BSI + Kas Kecil)</Text>
+          <Text style={[styles.reconVal, { fontWeight: '900', color: '#0F172A' }]}>
+            Rp{recon.vaultTotal.toLocaleString('id-ID')}
+          </Text>
+        </View>
+        <View style={styles.reconRow}>
+          <Text style={styles.reconLabel}>Piutang talangan belum kembali</Text>
+          <Text style={[styles.reconVal, { color: '#D97706' }]}>
+            Rp{recon.talanganOutstanding.toLocaleString('id-ID')}
+          </Text>
+        </View>
+
+        <Text style={styles.reconGapTitle}>CATATAN REKONSILIASI</Text>
+        <Text style={styles.reconGapText}>
+          • Buku pengeluaran hanya mencakup {recon.monthsCovered} dari {recon.monthsWanted} bulan,
+          sehingga sebagian pengeluaran tidak ikut terhitung di sini.
+        </Text>
+        {recon.overlap > 0 && (
+          <Text style={styles.reconGapText}>
+            • Sebagian dana talangan tercatat dua kali: sebagai pengeluaran sekaligus sebagai
+            pokok piutang (Rp{recon.overlap.toLocaleString('id-ID')}). Keduanya uang yang sama.
+          </Text>
+        )}
+        <Text style={styles.reconGapText}>
+          • Karena itu selisih di atas tidak dipaksakan agar tampak seimbang. Cocokkan dengan
+          mutasi BSI sungguhan sebelum dipakai sebagai laporan resmi rapat.
+        </Text>
       </View>
 
       {queue.length > 0 && (
@@ -341,6 +457,38 @@ export default function AdminIuran() {
 }
 
 const styles = StyleSheet.create({
+  provLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 10 },
+  provChip: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  provDot: { width: 7, height: 7, borderRadius: 4 },
+  provChipText: { fontSize: 9, color: '#64748B', fontWeight: '600' },
+
+  incomeMonthBlock: {
+    borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 7, marginTop: 7
+  },
+  incomeMonthTotal: { fontSize: 11, fontWeight: '900', color: '#0F172A', fontVariant: ['tabular-nums'] },
+  incomeProvRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingLeft: 14, paddingVertical: 3
+  },
+  incomeProvLabel: { flex: 1, fontSize: 10, color: '#64748B' },
+  incomeProvValBank: { fontSize: 10, fontWeight: '700', color: '#0F172A', fontVariant: ['tabular-nums'] },
+  incomeTotalValBank: { fontSize: 12, fontWeight: '900', color: '#0F172A', fontVariant: ['tabular-nums'] },
+
+  reconCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1,
+    borderColor: '#E2E8F0', padding: 12, marginBottom: 12
+  },
+  reconTitle: { fontSize: 10, fontWeight: '900', color: '#0F172A', letterSpacing: 0.8 },
+  reconNote: { fontSize: 9, color: '#94A3B8', marginTop: 4, marginBottom: 8, lineHeight: 13 },
+  reconRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10,
+    backgroundColor: '#F8FAFC', borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, marginTop: 5
+  },
+  reconLabel: { flex: 1, fontSize: 10, color: '#64748B' },
+  reconVal: { fontSize: 11, fontWeight: 'bold', color: '#0F172A', fontVariant: ['tabular-nums'] },
+  reconGapTitle: { fontSize: 9, fontWeight: '900', color: '#92400E', marginTop: 12, marginBottom: 4 },
+  reconGapText: { fontSize: 9, color: '#B45309', lineHeight: 14, marginBottom: 4 },
+
   incomeCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
@@ -370,17 +518,6 @@ const styles = StyleSheet.create({
     marginTop: 6
   },
   incomeMonth: { fontSize: 11, fontWeight: 'bold', color: '#166534' },
-  incomeVerified: { fontSize: 11, fontWeight: '900', color: '#059669', fontVariant: ['tabular-nums'] },
-  incomeMeta: { fontSize: 8, color: '#4ADE80', marginTop: 1 },
-  incomeMethod: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingLeft: 22,
-    paddingRight: 9,
-    paddingVertical: 3
-  },
-  incomeMethodLabel: { fontSize: 9, color: '#94A3B8' },
-  incomeMethodVal: { fontSize: 9, color: '#64748B', fontVariant: ['tabular-nums'] },
   incomePendingRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -404,7 +541,6 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   incomeTotalLabel: { fontSize: 10, fontWeight: '900', color: '#166534' },
-  incomeTotalVal: { fontSize: 12, fontWeight: '900', color: '#059669', fontVariant: ['tabular-nums'] },
   incomeTotalRowPending: {
     flexDirection: 'row',
     justifyContent: 'space-between',
