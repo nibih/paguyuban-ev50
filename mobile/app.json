@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B2F64"
       },
-      "package": "com.transjakarta.paguyubanev50"
+      "package": "com.damri.ev50"
     },
     "web": {
       "favicon": "./assets/favicon.png"

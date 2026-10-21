@@ -10,27 +10,22 @@ import {
   ScrollView 
 } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { Bus, KeyRound, User, ShieldCheck, ArrowRight, Check } from 'lucide-react-native';
+import { Bus, KeyRound, User, ArrowRight } from 'lucide-react-native';
 
 export default function LoginScreen({ onLoginSuccess }) {
-  const { users, loginWithNik } = useApp();
+  const { loginWithNik } = useApp();
   const [nikInput, setNikInput] = useState('');
   const [pinInput, setPinInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Preset demo test accounts
-  const DEMO_ACCOUNTS = [
-    { nik: '17002197', name: 'Nicholas', role: 'Pramudi (Laka Tabrak Mobil MAC Rp910k)', defaultPin: '2197' },
-    { nik: '17001137', name: 'A Sutriadi', role: 'Pramudi (Lunas Kas & Bersih)', defaultPin: '1137' },
-    { nik: '17001504', name: 'M. Sapli', role: 'Pramudi (Ada Hutang Laka Rp200k)', defaultPin: '1504' },
-    { nik: '17001109', name: 'M. Hasan', role: 'Pramudi (Hutang Suket Rp500k)', defaultPin: '1109' },
-    { nik: '17001589', name: 'Afrizal Firmansyah', role: 'Admin Kasir / Korlap', defaultPin: '1589' },
-  ];
-
-  const handleLogin = (selectedNik = null) => {
-    const targetNik = selectedNik || nikInput.trim();
+  // The login list used to render five preset accounts — including the Ketua's
+  // admin NIK and PIN — with a one-tap "log in as them" button, so every
+  // pramudi could open the kasir's session. Gone: credentials belong to the
+  // person holding the phone, not to a list baked into the APK.
+  const handleLogin = () => {
+    const targetNik = nikInput.trim();
     if (!targetNik) {
-      setErrorMsg('Masukkan NIK pengemudi atau pilih akun pengujian');
+      setErrorMsg('Masukkan NIK pengemudi');
       return;
     }
 
@@ -42,12 +37,6 @@ export default function LoginScreen({ onLoginSuccess }) {
     } else {
       setErrorMsg(error);
     }
-  };
-
-  const handleSelectDemo = (account) => {
-    setNikInput(account.nik);
-    setPinInput(account.defaultPin);
-    handleLogin(account.nik);
   };
 
   return (
@@ -84,7 +73,7 @@ export default function LoginScreen({ onLoginSuccess }) {
               <User size={18} color="#64748B" />
               <TextInput
                 style={styles.input}
-                placeholder="Contoh: 17001137"
+                placeholder="Masukkan 8 digit NIK"
                 value={nikInput}
                 onChangeText={(text) => { setNikInput(text); setErrorMsg(''); }}
                 keyboardType="numeric"
@@ -111,33 +100,6 @@ export default function LoginScreen({ onLoginSuccess }) {
             <Text style={styles.loginBtnText}>Masuk ke Aplikasi</Text>
             <ArrowRight size={18} color="#0B2F64" />
           </TouchableOpacity>
-        </View>
-
-        {/* 1-Click Demo Accounts Quick Test */}
-        <View style={styles.demoSection}>
-          <Text style={styles.demoHeader}>⚡ PILIH AKUN PENGUJIAN INSTAN (1-CLICK TEST):</Text>
-
-          {DEMO_ACCOUNTS.map((acc) => (
-            <TouchableOpacity 
-              key={acc.nik} 
-              style={styles.demoCard} 
-              onPress={() => handleSelectDemo(acc)}
-            >
-              <View style={styles.demoAvatar}>
-                <Text style={styles.demoAvatarText}>{acc.name.charAt(0)}</Text>
-              </View>
-
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.demoName}>{acc.name}</Text>
-                <Text style={styles.demoRole}>{acc.role}</Text>
-                <Text style={styles.demoNik}>NIK: {acc.nik} • PIN: {acc.defaultPin}</Text>
-              </View>
-
-              <View style={styles.demoBtnPill}>
-                <Text style={styles.demoBtnText}>Pilih & Test</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -196,36 +158,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
     gap: 8
   },
-  loginBtnText: { color: '#0B2F64', fontWeight: '900', fontSize: 14 },
-  demoSection: { marginTop: 4 },
-  demoHeader: { color: '#94A3B8', fontSize: 11, fontWeight: 'bold', marginBottom: 10, letterSpacing: 0.5 },
-  demoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10
-  },
-  demoAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: '#00A896',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  demoAvatarText: { color: '#0B2F64', fontWeight: 'bold', fontSize: 16 },
-  demoName: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 13 },
-  demoRole: { color: '#38BDF8', fontSize: 11, marginTop: 1 },
-  demoNik: { color: '#94A3B8', fontSize: 10, marginTop: 2, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
-  demoBtnPill: {
-    backgroundColor: '#00A896',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12
-  },
-  demoBtnText: { color: '#0B2F64', fontSize: 11, fontWeight: 'bold' }
+  loginBtnText: { color: '#0B2F64', fontWeight: '900', fontSize: 14 }
 });

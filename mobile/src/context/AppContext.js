@@ -30,7 +30,11 @@ export const AppProvider = ({ children }) => {
   // Authentication & active driver
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState('member'); // 'member' or 'admin'
-  const [activeNik, setActiveNik] = useState('17001137'); // A Sutriadi default
+  // Empty until loginWithNik sets it. It used to be seeded with a real
+  // driver's NIK, which baked a specific person in as the app's default
+  // identity for no benefit — while unauthenticated nothing reads this, and
+  // after login loginWithNik overwrites it.
+  const [activeNik, setActiveNik] = useState('');
   const [users, setUsers] = useState(seedData.users);
   const [debts, setDebts] = useState(seedData.debts);
   const [expenses, setExpenses] = useState(seedData.expenses);
@@ -167,7 +171,21 @@ export const AppProvider = ({ children }) => {
     showToast('Berhasil keluar dari akun.');
   };
 
-  const currentUser = users.find(u => u.nik === (role === 'admin' ? '17001589' : activeNik)) || users[0];
+  // Identity is the NIK that logged in, and nothing else.
+  //
+  // This line used to read
+  //   users.find(u => u.nik === (role === 'admin' ? '17001589' : activeNik))
+  // which forced every admin to resolve to Afrizal Firmansyah. With two admins
+  // on the roster that meant Moh. Abdul Kholiq signed in, was welcomed by his
+  // own name, and then spent the rest of the session as Afrizal — his iuran,
+  // debt installments and incident reports all filed under another person.
+  // Role is a permission, not an identity.
+  //
+  // `|| users[0]` stays as a crash-safety net: every screen reads
+  // currentUser.nik without a guard, so null here would blank the app. After a
+  // successful login, loginWithNik has already proved activeNik exists in
+  // `users`, so that branch should not be reachable in practice.
+  const currentUser = users.find(u => u.nik === activeNik) || users[0];
 
   // Pay Iuran
   //
