@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } fr
 import { useApp } from '../../context/AppContext';
 import { FileSpreadsheet, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { iuranCsv, expenseCsv, debtCsv, incidentCsv, exportCsv } from '../../utils/csvExport';
+import { rp } from '../../utils/format';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 // Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
@@ -118,8 +119,8 @@ export default function AdminKas() {
             <TrendingUp size={13} color="#059669" />
             <Text style={[styles.figureLabel, { color: '#059669' }]}>PEMASUKAN</Text>
           </View>
-          <Text style={[styles.figureVal, { color: '#047857' }]}>
-            Rp{finance.income.toLocaleString('id-ID')}
+          <Text style={[styles.figureVal, { color: '#047857' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+            {rp(finance.income)}
           </Text>
           <Text style={styles.figureSub}>iuran masuk</Text>
         </View>
@@ -129,8 +130,8 @@ export default function AdminKas() {
             <TrendingDown size={13} color="#E11D48" />
             <Text style={[styles.figureLabel, { color: '#E11D48' }]}>PENGELUARAN</Text>
           </View>
-          <Text style={[styles.figureVal, { color: '#B91C1C' }]}>
-            Rp{finance.expense.toLocaleString('id-ID')}
+          <Text style={[styles.figureVal, { color: '#B91C1C' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+            {rp(finance.expense)}
           </Text>
           <Text style={styles.figureSub}>{expenses.length} transaksi</Text>
         </View>
@@ -139,15 +140,15 @@ export default function AdminKas() {
       {/* Net */}
       <View style={[styles.netBox, net < 0 && styles.netBoxNeg]}>
         <Text style={styles.netLabel}>SELISIH (MASUK − KELUAR)</Text>
-        <Text style={[styles.netVal, { color: net < 0 ? '#B91C1C' : '#047857' }]}>
-          {net < 0 ? '−' : '+'}Rp{Math.abs(net).toLocaleString('id-ID')}
+        <Text style={[styles.netVal, { color: net < 0 ? '#B91C1C' : '#047857' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+          {net < 0 ? '−' : '+'}{rp(Math.abs(net))}
         </Text>
       </View>
 
       {finance.pending > 0 && (
         <View style={styles.pendingBox}>
           <Text style={styles.pendingText}>
-            Rp{finance.pending.toLocaleString('id-ID')} masih menunggu verifikasi dan belum dihitung
+            {rp(finance.pending)} masih menunggu verifikasi dan belum dihitung
             sebagai pemasukan.
           </Text>
         </View>
@@ -167,10 +168,10 @@ export default function AdminKas() {
             <View key={m} style={styles.tr}>
               <Text style={[styles.td, { flex: 1, fontWeight: 'bold' }]}>{m}</Text>
               <Text style={[styles.td, { textAlign: 'right', color: '#047857' }]}>
-                Rp{r.in.toLocaleString('id-ID')}
+                {rp(r.in)}
               </Text>
               <Text style={[styles.td, { textAlign: 'right', color: '#B91C1C' }]}>
-                Rp{r.out.toLocaleString('id-ID')}
+                {rp(r.out)}
               </Text>
             </View>
           );
@@ -178,10 +179,10 @@ export default function AdminKas() {
         <View style={styles.totalRow}>
           <Text style={[styles.td, { flex: 1, fontWeight: '900' }]}>Total</Text>
           <Text style={[styles.td, { textAlign: 'right', fontWeight: '900', color: '#047857' }]}>
-            Rp{finance.income.toLocaleString('id-ID')}
+            {rp(finance.income)}
           </Text>
           <Text style={[styles.td, { textAlign: 'right', fontWeight: '900', color: '#B91C1C' }]}>
-            Rp{finance.expense.toLocaleString('id-ID')}
+            {rp(finance.expense)}
           </Text>
         </View>
 

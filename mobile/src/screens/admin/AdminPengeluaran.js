@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Plus, X, Trash2, Receipt, Check } from 'lucide-react-native';
+import { rp } from '../../utils/format';
 
 const SOURCES = ['BSI (Bank)', 'Kas Kecil Tunai (Kholiq)'];
 const CATEGORIES = ['Bansos', 'Talangan', 'Servis & Sparepart', 'Konsumsi Kegiatan', 'Operasional Harian', 'Lain-lain'];
@@ -125,7 +126,7 @@ export default function AdminPengeluaran() {
           </View>
         </View>
         <View style={styles.txnRight}>
-          <Text style={styles.txnAmount}>-Rp{(item.amount || 0).toLocaleString('id-ID')}</Text>
+          <Text style={styles.txnAmount}>−{rp(item.amount || 0)}</Text>
           <TouchableOpacity style={styles.delBtn} onPress={() => setPendingDelete(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Trash2 size={13} color="#EF4444" />
           </TouchableOpacity>
@@ -154,7 +155,7 @@ export default function AdminPengeluaran() {
                 {s.includes('Kas Kecil') ? 'KAS KECIL' : 'BSI (BANK)'}
               </Text>
               <Text style={[styles.segmentSum, active && styles.segmentSumActive]}>
-                -Rp{sum.toLocaleString('id-ID')}
+                −{rp(sum)}
               </Text>
             </TouchableOpacity>
           );
@@ -188,7 +189,7 @@ export default function AdminPengeluaran() {
       </View>
 
       <Text style={styles.count}>
-        {visible.length} transaksi · total -Rp{totalSource.toLocaleString('id-ID')}
+        {visible.length} transaksi · total −{rp(totalSource)}
       </Text>
 
       <FlatList
@@ -281,7 +282,7 @@ export default function AdminPengeluaran() {
             />
             {formAmount ? (
               <Text style={styles.amountPreview}>
-                = Rp{Number(formAmount || 0).toLocaleString('id-ID')}
+                = {rp(Number(formAmount || 0))}
               </Text>
             ) : null}
 
@@ -332,7 +333,7 @@ export default function AdminPengeluaran() {
           <View style={styles.confirmCard}>
             <Text style={styles.confirmTitle}>HAPUS TRANSAKSI?</Text>
             <Text style={styles.confirmBody}>
-              {pendingDelete?.title} senilai Rp{(pendingDelete?.amount || 0).toLocaleString('id-ID')} akan dihapus
+              {pendingDelete?.title} senilai {rp(pendingDelete?.amount || 0)} akan dihapus
               dan nominalnya dikembalikan ke kas {pendingDelete?.source?.includes('Kas Kecil') ? 'kecil' : 'BSI'}.
             </Text>
             <View style={styles.confirmRow}>

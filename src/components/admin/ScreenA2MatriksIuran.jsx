@@ -9,10 +9,10 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { rp } from '../../utils/format';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 
-const rp = (n) => `Rp${(Number(n) || 0).toLocaleString('id-ID')}`;
 
 // A2: the reconciliation matrix.
 //
@@ -358,7 +358,7 @@ export const ScreenA2MatriksIuran = () => {
           ].map((r) => (
             <div key={r.label} className="flex items-center justify-between gap-4 bg-slate-50 rounded-lg px-3 py-2.5">
               <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
-              <span className={`text-xs font-mono font-bold ${r.cls}`}>{r.value}</span>
+              <span className={`text-xs font-mono font-bold whitespace-nowrap ${r.cls}`}>{r.value}</span>
             </div>
           ))}
         </div>

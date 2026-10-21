@@ -10,8 +10,8 @@ import {
   Users
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { rp } from '../../utils/format';
 
-const rp = (n) => `Rp${(Number(n) || 0).toLocaleString('id-ID')}`;
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 
 const EMPTY_FORM = {

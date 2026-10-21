@@ -7,6 +7,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { rp } from '../../utils/format';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 
@@ -14,7 +15,6 @@ const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 // month name. Map one to the other so a per-month row can line them up.
 const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: '09' };
 
-const rp = (n) => `Rp${(Number(n) || 0).toLocaleString('id-ID')}`;
 
 // A1: the money in and the money out.
 //
@@ -135,7 +135,7 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
             {label}
           </span>
         </div>
-        <div className={`text-3xl font-black font-mono mt-2 tracking-tight ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
+        <div className={`text-3xl font-black font-mono mt-2 tracking-tight whitespace-nowrap ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
           {value}
         </div>
         <div className="text-[11px] text-slate-500 mt-1">{sub}</div>
@@ -200,7 +200,7 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
         <div className="text-[11px] font-black uppercase tracking-widest text-slate-500">
           Selisih (Masuk − Keluar)
         </div>
-        <div className={`text-3xl font-black font-mono mt-1 ${net < 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+        <div className={`text-3xl font-black font-mono mt-1 whitespace-nowrap ${net < 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
           {net < 0 ? '−' : '+'}{rp(Math.abs(net))}
         </div>
       </div>

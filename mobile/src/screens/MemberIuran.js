@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { Check, Building, X, Camera, Copy, ImagePlus, Clock } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { captureThumbnail } from '../utils/thumbnails';
+import { rp } from '../utils/format';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 const BSI_ACCOUNT = '720510945';
@@ -137,7 +138,7 @@ export default function MemberIuran() {
         <View style={styles.bottomBar}>
           <View>
             <Text style={styles.bottomLabel}>{selectedMonths.length} Bulan: {selectedMonths.join(', ')}</Text>
-            <Text style={styles.bottomTotal}>Rp{(selectedMonths.length * 100000).toLocaleString('id-ID')}</Text>
+            <Text style={styles.bottomTotal} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * 100000)}</Text>
           </View>
           <TouchableOpacity style={styles.checkoutBtn} onPress={() => setModalVisible(true)}>
             <Text style={styles.checkoutText}>Transfer BSI</Text>
@@ -158,7 +159,7 @@ export default function MemberIuran() {
 
             <View style={styles.modalTotalBox}>
               <Text style={styles.modalTotalLabel}>Total Tagihan Iuran:</Text>
-              <Text style={styles.modalTotalValue}>Rp{(selectedMonths.length * 100000).toLocaleString('id-ID')}</Text>
+              <Text style={styles.modalTotalValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * 100000)}</Text>
               <Text style={styles.modalMonths}>{selectedMonths.join(', ')} 2026</Text>
             </View>
 
@@ -176,7 +177,7 @@ export default function MemberIuran() {
               <Text style={styles.bankLabel}>REKENING RESMI PAGUYUBAN</Text>
               <Text style={styles.bankName}>{BSI_HOLDER}</Text>
               <View style={styles.bankNoRow}>
-                <Text style={styles.bankNo}>BSI {BSI_ACCOUNT}</Text>
+                <Text style={styles.bankNo} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>BSI {BSI_ACCOUNT}</Text>
                 <TouchableOpacity style={styles.copyBtn} onPress={copyAccount}>
                   <Copy size={13} color="#0B2F64" />
                   <Text style={styles.copyText}>Salin</Text>
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20
   },
   bottomLabel: { color: '#00A896', fontSize: 11, fontWeight: 'bold' },
-  bottomTotal: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold', marginTop: 2 },
+  bottomTotal: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold', marginTop: 2, fontVariant: ['tabular-nums'] },
   checkoutBtn: { backgroundColor: '#00A896', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   checkoutText: { color: '#0B2F64', fontWeight: 'bold', fontSize: 13 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 20 },
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 16, fontWeight: 'bold', color: '#0F172A' },
   modalTotalBox: { backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12, marginBottom: 16 },
   modalTotalLabel: { fontSize: 11, color: '#64748B' },
-  modalTotalValue: { fontSize: 22, fontWeight: 'bold', color: '#0B2F64', marginTop: 2 },
+  modalTotalValue: { fontSize: 22, fontWeight: 'bold', color: '#0B2F64', marginTop: 2, fontVariant: ['tabular-nums'] },
   methodHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginBottom: 12

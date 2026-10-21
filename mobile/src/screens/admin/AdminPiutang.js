@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock } from 'lucide-react-native';
+import { rp } from '../../utils/format';
 
 const METHODS = ['Cash ke Admin', 'Transfer BSI', 'Potong Gaji'];
 
@@ -156,9 +157,9 @@ export default function AdminPiutang() {
         </View>
 
         <View style={styles.debtFooter}>
-          <Text style={styles.debtMeta}>Dibayar Rp{(item.paid || 0).toLocaleString('id-ID')} ({pct}%)</Text>
+          <Text style={styles.debtMeta}>Dibayar {rp(item.paid || 0)} ({pct}%)</Text>
           <Text style={[styles.debtSisa, isLunas && { color: '#059669' }]}>
-            Sisa Rp{sisa.toLocaleString('id-ID')}
+            Sisa {rp(sisa)}
           </Text>
         </View>
 
@@ -166,7 +167,7 @@ export default function AdminPiutang() {
           <View style={styles.pendingStrip}>
             <Clock size={11} color="#D97706" />
             <Text style={styles.pendingText}>
-              Rp{queued.toLocaleString('id-ID')} menunggu verifikasi
+              {rp(queued)} menunggu verifikasi
             </Text>
           </View>
         )}
@@ -181,7 +182,7 @@ export default function AdminPiutang() {
           <View style={styles.queueHead}>
             <Clock size={14} color="#D97706" />
             <Text style={styles.queueTitle}>ANGSURAN MENUNGGU VERIFIKASI ({queue.length})</Text>
-            <Text style={styles.queueTotal}>Rp{queueTotal.toLocaleString('id-ID')}</Text>
+            <Text style={styles.queueTotal}>{rp(queueTotal)}</Text>
           </View>
           <Text style={styles.queueNote}>
             Belum mengurangi hutang dan belum masuk kas. Cocokkan dengan mutasi BSI / kas kecil dulu.
@@ -191,7 +192,7 @@ export default function AdminPiutang() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.queueName}>{q.debtName}</Text>
                 <Text style={styles.queueMeta}>
-                  Rp{(Number(q.amount) || 0).toLocaleString('id-ID')} · {q.method} · {q.date}
+                  {rp(Number(q.amount) || 0)} · {q.method} · {q.date}
                 </Text>
               </View>
               <TouchableOpacity
@@ -217,7 +218,7 @@ export default function AdminPiutang() {
       <View style={styles.kpiRow}>
         <View style={[styles.kpiBox, { backgroundColor: '#FEF3C7' }]}>
           <Text style={styles.kpiLabel}>TOTAL PIUTANG</Text>
-          <Text style={[styles.kpiVal, { color: '#B45309' }]}>Rp{totalOutstanding.toLocaleString('id-ID')}</Text>
+          <Text style={[styles.kpiVal, { color: '#B45309' }]}>{rp(totalOutstanding)}</Text>
         </View>
         <View style={[styles.kpiBox, { backgroundColor: '#ECFDF5' }]}>
           <Text style={styles.kpiLabel}>KARTU AKTIF</Text>
@@ -289,7 +290,7 @@ export default function AdminPiutang() {
                   <View style={styles.detailTotals}>
                     <Text style={styles.detailTotalLabel}>Sisa Tagihan</Text>
                     <Text style={styles.detailTotalVal}>
-                      Rp{(selected.amount - selected.paid).toLocaleString('id-ID')}
+                      {rp(selected.amount - selected.paid)}
                     </Text>
                   </View>
                 </View>
@@ -457,7 +458,7 @@ export default function AdminPiutang() {
           <View style={styles.confirmCard}>
             <Text style={styles.confirmTitle}>HAPUS KARTU PIUTANG?</Text>
             <Text style={styles.confirmBody}>
-              Kartu {pendingDelete?.name} senilai Rp{(pendingDelete?.amount || 0).toLocaleString('id-ID')} akan dihapus
+              Kartu {pendingDelete?.name} senilai {rp(pendingDelete?.amount || 0)} akan dihapus
               permanen beserta riwayat angsurannya.
             </Text>
             <View style={styles.confirmRow}>
@@ -531,7 +532,7 @@ const styles = StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   kpiBox: { flex: 1, padding: 13, borderRadius: 16 },
   kpiLabel: { fontSize: 9, fontWeight: '900', color: '#64748B' },
-  kpiVal: { fontSize: 15, fontWeight: '900', marginTop: 4 },
+  kpiVal: { fontSize: 15, fontWeight: '900', marginTop: 4, fontVariant: ['tabular-nums'] },
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
@@ -571,7 +572,7 @@ const styles = StyleSheet.create({
   },
   progressFill: { height: 6, borderRadius: 4, backgroundColor: '#D97706' },
   debtFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  debtMeta: { fontSize: 10, color: '#94A3B8' },
+  debtMeta: { fontSize: 10, color: '#94A3B8', fontVariant: ['tabular-nums'] },
   debtSisa: { fontSize: 11, fontWeight: '900', color: '#E11D48' },
 
   empty: { alignItems: 'center', paddingVertical: 48, gap: 8 },

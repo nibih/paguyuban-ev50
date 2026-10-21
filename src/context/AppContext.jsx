@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { rp } from '../utils/format';
 import { db } from '../services/firebase';
 import {
   collection,
@@ -258,7 +259,7 @@ export const AppProvider = ({ children }) => {
       });
 
       const name = users.find((u) => u.nik === nik)?.name || nik;
-      showToast(`Iuran ${month} a.n ${name} terverifikasi (+Rp${nominal.toLocaleString('id-ID')}).`);
+      showToast(`Iuran ${month} a.n ${name} terverifikasi (+${rp(nominal)}).`);
       return true;
     } catch (e) {
       setIuranRecords((prev) => ({
@@ -362,7 +363,7 @@ export const AppProvider = ({ children }) => {
         tx.set(vaultRef, { [vaultKey]: cash + found.amount }, { merge: true });
       });
 
-      showToast(`Angsuran ${name} Rp${amt.toLocaleString('id-ID')} terverifikasi.`);
+      showToast(`Angsuran ${name} ${rp(amt)} terverifikasi.`);
       return true;
     } catch (e) {
       setDebts((prev) => prev.map((d) => (d.id === debtId ? before : d)));
@@ -466,7 +467,7 @@ export const AppProvider = ({ children }) => {
         tx.set(vaultRef, { [vaultKey]: current - amount }, { merge: true });
       });
 
-      showToast(`Pengeluaran Rp${amount.toLocaleString('id-ID')} (${newExpense.title}) berhasil dicatat!`);
+      showToast(`Pengeluaran ${rp(amount)} (${newExpense.title}) berhasil dicatat!`);
       return true;
     } catch (e) {
       setExpenses((prev) => prev.filter((x) => x.id !== id));
@@ -497,7 +498,7 @@ export const AppProvider = ({ children }) => {
         tx.delete(doc(db, 'expenses', expense.id));
         tx.set(vaultRef, { [vaultKey]: current + amount }, { merge: true });
       });
-      showToast(`Pengeluaran dihapus, Rp${amount.toLocaleString('id-ID')} dikembalikan ke kas.`);
+      showToast(`Pengeluaran dihapus, ${rp(amount)} dikembalikan ke kas.`);
       return true;
     } catch (e) {
       setExpenses((prev) => [expense, ...prev]);
@@ -547,7 +548,7 @@ export const AppProvider = ({ children }) => {
         tx.set(debtRef, item);
         tx.set(vaultRef, { pettyCash: cash - nominal }, { merge: true });
       });
-      showToast(`Talangan Rp${nominal.toLocaleString('id-ID')} untuk ${user.name} dicatat.`);
+      showToast(`Talangan ${rp(nominal)} untuk ${user.name} dicatat.`);
       return true;
     } catch (e) {
       setDebts((prev) => prev.filter((d) => d.id !== id));

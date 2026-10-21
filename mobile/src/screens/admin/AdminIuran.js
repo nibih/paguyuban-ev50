@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Check, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react-native';
+import { rp } from '../../utils/format';
 
 const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 
@@ -139,7 +140,7 @@ export default function AdminIuran() {
                     <Clock size={12} color="#92400E" />
                   ) : (
                     <Text style={[styles.monthStatus, isPartial && styles.monthStatusPartial]}>
-                      {isPartial ? `Rp${(d.nominal || 0).toLocaleString('id-ID')}` : '—'}
+                      {isPartial ? rp(d.nominal || 0) : '—'}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -254,7 +255,7 @@ export default function AdminIuran() {
       <View style={styles.incomeCard}>
         <View style={styles.incomeHead}>
           <Text style={styles.incomeTitle}>PEMASUKAN IURAN</Text>
-          <Text style={styles.incomeGrand}>Rp{income.totalRecorded.toLocaleString('id-ID')}</Text>
+          <Text style={styles.incomeGrand} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(income.totalRecorded)}</Text>
         </View>
         <Text style={styles.incomeNote}>
           Total seluruh riwayat iuran yang tercatat, termasuk data sebelum aplikasi ada.
@@ -283,7 +284,7 @@ export default function AdminIuran() {
             <View style={styles.incomeRow}>
               <Text style={styles.incomeMonth}>{r.month}</Text>
               <Text style={styles.incomeMonthTotal}>
-                Rp{(r.bank + r.cashier).toLocaleString('id-ID')}
+                {rp(r.bank + r.cashier)}
               </Text>
             </View>
 
@@ -291,21 +292,21 @@ export default function AdminIuran() {
               <View style={styles.incomeProvRow}>
                 <View style={[styles.provDot, { backgroundColor: '#0B2F64' }]} />
                 <Text style={styles.incomeProvLabel}>Laporan Uang Masuk</Text>
-                <Text style={styles.incomeProvValBank}>Rp{r.bank.toLocaleString('id-ID')}</Text>
+                <Text style={styles.incomeProvValBank}>{rp(r.bank)}</Text>
               </View>
             )}
             {r.cashier > 0 && (
               <View style={styles.incomeProvRow}>
                 <View style={[styles.provDot, { backgroundColor: '#059669' }]} />
                 <Text style={styles.incomeProvLabel}>Verifikasi Kasir</Text>
-                <Text style={styles.incomeProvValBank}>Rp{r.cashier.toLocaleString('id-ID')}</Text>
+                <Text style={styles.incomeProvValBank}>{rp(r.cashier)}</Text>
               </View>
             )}
             {r.pending > 0 && (
               <View style={styles.incomePendingRow}>
                 <Clock size={11} color="#D97706" />
                 <Text style={styles.incomePendingLabel}>Menunggu verifikasi</Text>
-                <Text style={styles.incomePendingVal}>Rp{r.pending.toLocaleString('id-ID')}</Text>
+                <Text style={styles.incomePendingVal}>{rp(r.pending)}</Text>
               </View>
             )}
           </View>
@@ -313,16 +314,16 @@ export default function AdminIuran() {
 
         <View style={styles.incomeTotalRow}>
           <Text style={styles.incomeTotalLabel}>DARI LAPORAN BANK (SEBELUM APLIKASI)</Text>
-          <Text style={styles.incomeTotalValBank}>Rp{income.totalBank.toLocaleString('id-ID')}</Text>
+          <Text style={styles.incomeTotalValBank}>{rp(income.totalBank)}</Text>
         </View>
         <View style={styles.incomeTotalRow}>
           <Text style={styles.incomeTotalLabel}>DARI VERIFIKASI KASIR (LEWAT APLIKASI)</Text>
-          <Text style={styles.incomeTotalValBank}>Rp{income.totalCashier.toLocaleString('id-ID')}</Text>
+          <Text style={styles.incomeTotalValBank}>{rp(income.totalCashier)}</Text>
         </View>
         {income.totalPending > 0 && (
           <View style={styles.incomeTotalRowPending}>
             <Text style={styles.incomeTotalLabelPending}>MENUNGGU VERIFIKASI</Text>
-            <Text style={styles.incomeTotalValPending}>Rp{income.totalPending.toLocaleString('id-ID')}</Text>
+            <Text style={styles.incomeTotalValPending}>{rp(income.totalPending)}</Text>
           </View>
         )}
       </View>
@@ -337,24 +338,24 @@ export default function AdminIuran() {
 
         <View style={styles.reconRow}>
           <Text style={styles.reconLabel}>Pemasukan iuran tercatat</Text>
-          <Text style={styles.reconVal}>Rp{income.totalRecorded.toLocaleString('id-ID')}</Text>
+          <Text style={styles.reconVal}>{rp(income.totalRecorded)}</Text>
         </View>
         <View style={styles.reconRow}>
           <Text style={styles.reconLabel}>Pengeluaran tercatat</Text>
           <Text style={[styles.reconVal, { color: '#E11D48' }]}>
-            −Rp{recon.totalExpense.toLocaleString('id-ID')}
+            −{rp(recon.totalExpense)}
           </Text>
         </View>
         <View style={styles.reconRow}>
           <Text style={styles.reconLabel}>Saldo kas saat ini (BSI + Kas Kecil)</Text>
           <Text style={[styles.reconVal, { fontWeight: '900', color: '#0F172A' }]}>
-            Rp{recon.vaultTotal.toLocaleString('id-ID')}
+            {rp(recon.vaultTotal)}
           </Text>
         </View>
         <View style={styles.reconRow}>
           <Text style={styles.reconLabel}>Piutang talangan belum kembali</Text>
           <Text style={[styles.reconVal, { color: '#D97706' }]}>
-            Rp{recon.talanganOutstanding.toLocaleString('id-ID')}
+            {rp(recon.talanganOutstanding)}
           </Text>
         </View>
 
@@ -366,7 +367,7 @@ export default function AdminIuran() {
         {recon.overlap > 0 && (
           <Text style={styles.reconGapText}>
             • Sebagian dana talangan tercatat dua kali: sebagai pengeluaran sekaligus sebagai
-            pokok piutang (Rp{recon.overlap.toLocaleString('id-ID')}). Keduanya uang yang sama.
+            pokok piutang ({rp(recon.overlap)}). Keduanya uang yang sama.
           </Text>
         )}
         <Text style={styles.reconGapText}>
@@ -380,7 +381,7 @@ export default function AdminIuran() {
           <View style={styles.queueHead}>
             <Clock size={14} color="#D97706" />
             <Text style={styles.queueTitle}>MENUNGGU VERIFIKASI ({queue.length})</Text>
-            <Text style={styles.queueTotal}>Rp{pendingTotal.toLocaleString('id-ID')}</Text>
+            <Text style={styles.queueTotal}>{rp(pendingTotal)}</Text>
           </View>
           <Text style={styles.queueNote}>
             Belum masuk kas. Cocokkan dulu dengan mutasi BSI / hitung kas kecil.
@@ -390,7 +391,7 @@ export default function AdminIuran() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.queueName}>{q.name}</Text>
                 <Text style={styles.queueMeta}>
-                  {q.month} · {q.method} · Rp{(q.nominal || 0).toLocaleString('id-ID')}
+                  {q.month} · {q.method} · {rp(q.nominal || 0)}
                   {q.markedBy ? ` · ditandai ${q.markedBy}` : ''}
                 </Text>
               </View>

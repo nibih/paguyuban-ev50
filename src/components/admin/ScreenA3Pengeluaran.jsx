@@ -13,6 +13,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { rp } from '../../utils/format';
 
 export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
   const { expenses, addExpense, vault } = useApp();
@@ -164,7 +165,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right font-mono font-bold text-rose-600 whitespace-nowrap">
-                    - Rp{exp.amount.toLocaleString('id-ID')}
+                    −{rp(exp.amount)}
                   </td>
                   <td className="py-3 px-4 text-slate-700 whitespace-nowrap">
                     {exp.pic}
@@ -299,7 +300,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>
-                    Perhatian: Nominal melebihi saldo kas kecil tunai (Rp{pettyCash.toLocaleString('id-ID')}). Kas akan bertransisi ke defisit sementara.
+                    Perhatian: Nominal melebihi saldo kas kecil tunai ({rp(pettyCash)}). Kas akan bertransisi ke defisit sementara.
                   </span>
                 </div>
               )}
@@ -379,7 +380,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
               </div>
               <div className="pt-2 border-t border-dashed border-slate-300 flex justify-between font-bold text-xs text-rose-600">
                 <span>NOMINAL KELUAR:</span>
-                <span>Rp{viewReceiptItem.amount.toLocaleString('id-ID')}</span>
+                <span>{rp(viewReceiptItem.amount)}</span>
               </div>
             </div>
 

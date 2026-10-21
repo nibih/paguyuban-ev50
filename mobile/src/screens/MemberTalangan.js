@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { AlertCircle, PlusCircle, CheckCircle2, FileText, X, ArrowRight, ShieldCheck } from 'lucide-react-native';
+import { rp } from '../utils/format';
 
 export default function MemberTalangan() {
   const { currentUser, debts, repayDebt } = useApp();
@@ -35,8 +36,8 @@ export default function MemberTalangan() {
       {/* Overall Outstanding Debt Banner */}
       <View style={[styles.banner, hasDebt ? styles.bannerRed : styles.bannerGreen]}>
         <Text style={styles.bannerSubtitle}>TOTAL SISA DANA TALANGAN SAYA</Text>
-        <Text style={[styles.bannerAmount, { color: hasDebt ? '#E11D48' : '#059669' }]}>
-          Rp{totalOutstanding.toLocaleString('id-ID')}
+        <Text style={[styles.bannerAmount, { color: hasDebt ? '#E11D48' : '#059669' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+          {rp(totalOutstanding)}
         </Text>
         <Text style={styles.bannerNotice}>
           {hasDebt 
@@ -83,8 +84,8 @@ export default function MemberTalangan() {
                   />
                 </View>
                 <View style={styles.progressLabels}>
-                  <Text style={styles.progressText}>Terbayar: Rp{debtItem.paid.toLocaleString('id-ID')}</Text>
-                  <Text style={styles.progressText}>Total: Rp{debtItem.amount.toLocaleString('id-ID')}</Text>
+                  <Text style={styles.progressText}>Terbayar: {rp(debtItem.paid)}</Text>
+                  <Text style={styles.progressText}>Total: {rp(debtItem.amount)}</Text>
                 </View>
               </View>
 
@@ -93,7 +94,7 @@ export default function MemberTalangan() {
                 <View style={styles.detailCol}>
                   <Text style={styles.detailLabel}>Sisa Kewajiban:</Text>
                   <Text style={[styles.detailVal, { color: isLunas ? '#059669' : '#E11D48', fontWeight: 'bold' }]}>
-                    Rp{remaining.toLocaleString('id-ID')}
+                    {rp(remaining)}
                   </Text>
                 </View>
                 <View style={styles.detailCol}>
@@ -127,7 +128,7 @@ export default function MemberTalangan() {
                 <View style={styles.pendingStrip}>
                   <AlertCircle size={13} color="#D97706" />
                   <Text style={styles.pendingText}>
-                    Rp{queued.toLocaleString('id-ID')} menunggu verifikasi bendahara — belum mengurangi
+                    {rp(queued)} menunggu verifikasi bendahara — belum mengurangi
                     sisa hutang.
                   </Text>
                 </View>
@@ -161,7 +162,7 @@ export default function MemberTalangan() {
                 <View style={styles.modalInfoBox}>
                   <Text style={styles.modalInfoLabel}>Sisa Pinjaman Pos Ini:</Text>
                   <Text style={styles.modalInfoVal}>
-                    Rp{(selectedDebt.amount - selectedDebt.paid).toLocaleString('id-ID')}
+                    {rp(selectedDebt.amount - selectedDebt.paid)}
                   </Text>
                 </View>
 
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
   progressTrack: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
   progressBar: { height: '100%', backgroundColor: '#00A896', borderRadius: 4 },
   progressLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  progressText: { fontSize: 10, color: '#64748B' },
+  progressText: { fontSize: 10, color: '#64748B', fontVariant: ['tabular-nums'] },
   itemDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',

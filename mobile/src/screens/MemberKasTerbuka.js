@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { Search, Calendar, FileText } from 'lucide-react-native';
+import { rp } from '../utils/format';
 
 export default function MemberKasTerbuka() {
   const { expenses } = useApp();
@@ -41,7 +42,7 @@ export default function MemberKasTerbuka() {
             <Text style={styles.title}>{item.title}</Text>
             <View style={styles.rowBottom}>
               <Text style={styles.pic}>PIC: {item.pic}</Text>
-              <Text style={styles.amount}>- Rp{item.amount.toLocaleString('id-ID')}</Text>
+              <Text style={styles.amount}>−{rp(item.amount)}</Text>
             </View>
           </View>
         )}
@@ -80,5 +81,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 13, fontWeight: 'bold', color: '#0F172A', marginBottom: 6 },
   rowBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pic: { fontSize: 11, color: '#64748B' },
-  amount: { fontSize: 13, fontWeight: 'bold', color: '#E11D48' }
+  amount: { fontSize: 13, fontWeight: 'bold', color: '#E11D48', fontVariant: ['tabular-nums'] }
 });

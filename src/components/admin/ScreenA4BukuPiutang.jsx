@@ -7,8 +7,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { rp } from '../../utils/format';
 
-const rp = (n) => `Rp${(Number(n) || 0).toLocaleString('id-ID')}`;
 
 // A4: the receivables book and the installment verification queue.
 //
@@ -74,7 +74,7 @@ export const ScreenA4BukuPiutang = () => {
             <div className="text-xs uppercase tracking-wider font-bold text-amber-900">
               Total Piutang Paguyuban Beredar
             </div>
-            <div className="text-2xl font-black font-mono text-amber-950 mt-0.5">
+            <div className="text-2xl font-black font-mono text-amber-950 mt-0.5 whitespace-nowrap">
               {rp(totalOutstanding)}
             </div>
           </div>
@@ -289,7 +289,7 @@ export const ScreenA4BukuPiutang = () => {
                     }}
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono mt-1 block">
+                <span className="text-[10px] text-slate-500 font-mono mt-1 block whitespace-nowrap">
                   {rp(liveSelected.paid)} / {rp(liveSelected.amount)}
                 </span>
               </div>

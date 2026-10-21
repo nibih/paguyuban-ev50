@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { ShieldCheck, CreditCard, AlertCircle, Wrench, HeartHandshake, CheckCircle } from 'lucide-react-native';
+import { rp } from '../utils/format';
 
 export default function MemberDashboard({ navigation }) {
   const { currentUser, iuranRecords, debts, vault } = useApp();
@@ -60,16 +61,16 @@ export default function MemberDashboard({ navigation }) {
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>KAS BERJALAN</Text>
-          <Text style={styles.statVal}>Rp{vault.pettyCash.toLocaleString('id-ID')}</Text>
+          <Text style={styles.statVal}>{rp(vault.pettyCash)}</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>REKENING BSI</Text>
-          <Text style={styles.statVal}>Rp12.45 Jt</Text>
+          <Text style={styles.statVal}>{rp(vault.bsiBalance)}</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>HUTANG SAYA</Text>
           <Text style={[styles.statVal, { color: remainingDebt > 0 ? '#E11D48' : '#059669' }]}>
-            Rp{remainingDebt.toLocaleString('id-ID')}
+            {rp(remainingDebt)}
           </Text>
         </View>
       </View>
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0'
   },
   statLabel: { fontSize: 9, fontWeight: 'bold', color: '#64748B' },
-  statVal: { fontSize: 13, fontWeight: 'bold', color: '#0F172A', marginTop: 4 },
+  statVal: { fontSize: 13, fontWeight: 'bold', color: '#0F172A', marginTop: 4, fontVariant: ['tabular-nums'] },
   quickGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   quickBtn: {
     flex: 1,
