@@ -139,7 +139,7 @@ export const ScreenA6DaftarPramudi = () => {
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#0B2F64]" />
+            <Users className="w-5 h-5 text-navy-800" />
             <h2 className="text-lg font-bold text-slate-900">Daftar Pramudi</h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -149,7 +149,7 @@ export const ScreenA6DaftarPramudi = () => {
 
         <button
           onClick={openCreate}
-          className="px-3.5 py-2 bg-[#0B2F64] hover:bg-[#123e7e] text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95 self-start"
+          className="px-3.5 py-2 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95 self-start"
         >
           <UserPlus className="w-4 h-4" />
           <span>Tambah Pramudi</span>

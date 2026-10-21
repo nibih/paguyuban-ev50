@@ -32,3 +32,25 @@ body {
 .animate-pulse-subtle {
   animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Modal / drawer backdrop. Opacity only — these elements are `fixed inset-0`,
+   so any transform would pull the backdrop off the viewport edges. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.16s ease-out both;
+}
+
+/* Toast entry — a short lift, then settle. */
+@keyframes bounce-subtle {
+  0%   { opacity: 0; transform: translateY(8px); }
+  60%  { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

@@ -78,7 +78,7 @@ export const ScreenA5LogbookArmada = () => {
                   >
                     {/* Vehicle Badge & Suket */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono bg-[#0B2F64] text-white">
+                      <span className="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono bg-navy-800 text-white">
                         {item.body}
                       </span>
 
@@ -141,7 +141,7 @@ export const ScreenA5LogbookArmada = () => {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-lg text-xs font-black font-mono bg-[#0B2F64] text-white">
+                <span className="px-2.5 py-1 rounded-lg text-xs font-black font-mono bg-navy-800 text-white">
                   {selectedIncident.body}
                 </span>
                 <h4 className="font-bold text-slate-900 text-sm">Status Armada Transjakarta</h4>

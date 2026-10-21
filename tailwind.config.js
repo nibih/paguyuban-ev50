@@ -6,17 +6,21 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Wired to the two families index.html already loads. Without this,
+        // `font-mono` silently fell back to the system stack and JetBrains Mono
+        // was downloaded on every page load but never rendered.
+        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+      },
       colors: {
+        // The teal accent needs no token: Tailwind's native teal-* scale already
+        // covers it and is used throughout (47 usages).
         navy: {
           900: '#061a38',
-          800: '#0B2F64', // Transjakarta Corporate Deep Blue
+          800: '#0B2F64', // DAMRI corporate deep blue
           700: '#123e7e',
           600: '#1d519d'
-        },
-        electric: {
-          teal: '#00A896',
-          cyan: '#0284C7',
-          light: '#38BDF8'
         }
       }
     },

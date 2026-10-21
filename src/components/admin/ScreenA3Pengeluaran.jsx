@@ -86,7 +86,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 bg-[#0B2F64] hover:bg-[#123e7e] text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition active:scale-95 self-start md:self-auto"
+          className="px-4 py-2.5 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition active:scale-95 self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>+ Catat Pengeluaran Baru</span>
@@ -102,7 +102,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
               onClick={() => setActiveTab(tab.label)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
                 activeTab === tab.label
-                  ? 'bg-[#0B2F64] text-white shadow-sm'
+                  ? 'bg-navy-800 text-white shadow-sm'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
               }`}
             >
@@ -330,7 +330,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-[#0B2F64] hover:bg-[#123e7e] text-white font-bold rounded-xl shadow-md"
+                  className="flex-1 py-2.5 bg-navy-800 hover:bg-navy-700 text-white font-bold rounded-xl shadow-md"
                 >
                   Simpan Pengeluaran
                 </button>

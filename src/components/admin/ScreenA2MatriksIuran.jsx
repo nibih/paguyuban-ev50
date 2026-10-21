@@ -214,7 +214,7 @@ export const ScreenA2MatriksIuran = () => {
         </div>
         <button
           onClick={exportMatrix}
-          className="px-3.5 py-2 bg-[#0B2F64] hover:bg-[#123e7e] text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition active:scale-95 self-start"
+          className="px-3.5 py-2 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95 self-start"
         >
           <FileSpreadsheet className="w-3.5 h-3.5" />
           <span>Export Excel (.csv)</span>

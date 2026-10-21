@@ -199,16 +199,16 @@ const styles = StyleSheet.create({
   photoHint: { fontSize: 10, color: '#94A3B8', marginBottom: 10, marginTop: -2 },
   photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   photoWrap: { position: 'relative' },
-  photoThumb: { width: 74, height: 74, borderRadius: 12, backgroundColor: '#F1F5F9' },
+  photoThumb: { width: 74, height: 74, borderRadius: 8, backgroundColor: '#F1F5F9' },
   photoRemove: {
     position: 'absolute', top: -6, right: -6,
-    width: 22, height: 22, borderRadius: 11,
+    width: 22, height: 22, borderRadius: 12,
     backgroundColor: '#EF4444',
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: '#FFFFFF'
   },
   photoAdd: {
-    width: 74, height: 74, borderRadius: 12,
+    width: 74, height: 74, borderRadius: 8,
     borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#99F6E4',
     backgroundColor: '#F0FDFA',
     alignItems: 'center', justifyContent: 'center', gap: 3
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#0B2F64',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     marginTop: 20,
     gap: 8
   },

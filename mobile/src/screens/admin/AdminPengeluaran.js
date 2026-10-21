@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   segment: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     overflow: 'hidden',
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0',
     paddingHorizontal: 12, paddingVertical: 10
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   filterChip: {
     paddingHorizontal: 11, paddingVertical: 7,
-    borderRadius: 11, backgroundColor: '#FFFFFF',
+    borderRadius: 12, backgroundColor: '#FFFFFF',
     borderWidth: 1, borderColor: '#E2E8F0'
   },
   filterChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -389,13 +389,13 @@ const styles = StyleSheet.create({
 
   txnCard: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0',
     padding: 12, marginBottom: 8, gap: 10
   },
   txnLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   txnIcon: {
-    width: 34, height: 34, borderRadius: 11,
+    width: 34, height: 34, borderRadius: 12,
     backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center'
   },
   txnIconBm: { backgroundColor: '#D97706' },
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   txnRight: { alignItems: 'flex-end', gap: 6 },
   txnAmount: { fontSize: 12, fontWeight: '900', color: '#E11D48', fontVariant: ['tabular-nums'] },
   delBtn: {
-    width: 26, height: 26, borderRadius: 9,
+    width: 26, height: 26, borderRadius: 12,
     backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center'
   },
 
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
 
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   catChip: {
-    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0'
   },
   catChipActive: { backgroundColor: '#00A896', borderColor: '#00A896' },
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   catTextActive: { color: '#FFFFFF' },
 
   submit: {
-    backgroundColor: '#0B2F64', borderRadius: 14,
+    backgroundColor: '#0B2F64', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 18
   },
   submitText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
@@ -474,12 +474,12 @@ const styles = StyleSheet.create({
   confirmBody: { fontSize: 12, color: '#475569', marginTop: 8, lineHeight: 18 },
   confirmRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
   cancelBtn: {
-    flex: 1, paddingVertical: 12, borderRadius: 13,
+    flex: 1, paddingVertical: 12, borderRadius: 12,
     backgroundColor: '#F1F5F9', alignItems: 'center'
   },
   cancelText: { fontSize: 11, fontWeight: '900', color: '#475569' },
   confirmBtn: {
-    flex: 1, paddingVertical: 12, borderRadius: 13,
+    flex: 1, paddingVertical: 12, borderRadius: 12,
     backgroundColor: '#E11D48', alignItems: 'center'
   },
   confirmText: { fontSize: 11, fontWeight: '900', color: '#FFFFFF' }

@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     padding: 16,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0'
   },
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     padding: 11, marginBottom: 8
   },
   exportIcon: {
-    width: 32, height: 32, borderRadius: 10,
+    width: 32, height: 32, borderRadius: 12,
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0',
     alignItems: 'center', justifyContent: 'center'
   },

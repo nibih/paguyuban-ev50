@@ -328,13 +328,13 @@ export default function AdminAnggota() {
 
 const styles = StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  kpiBox: { flex: 1, padding: 12, borderRadius: 14, alignItems: 'center' },
+  kpiBox: { flex: 1, padding: 12, borderRadius: 16, alignItems: 'center' },
   kpiLabel: { fontSize: 9, fontWeight: '900', color: '#64748B' },
   kpiVal: { fontSize: 17, fontWeight: '900', marginTop: 3 },
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0',
     paddingHorizontal: 12, paddingVertical: 10
   },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
 
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   filterChip: {
-    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0'
   },
   filterChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   count: { fontSize: 10, color: '#94A3B8', marginVertical: 10 },
 
   row: {
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0',
     padding: 12, marginBottom: 8
   },
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   rowNik: { fontSize: 10, color: '#94A3B8', marginTop: 1, fontVariant: ['tabular-nums'] },
   rowPos: { fontSize: 10, color: '#64748B', marginTop: 8, marginLeft: 46 },
 
-  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9 },
+  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   pillBlue: { backgroundColor: '#DBEAFE' },
   pillGray: { backgroundColor: '#F1F5F9' },
   pillOff: { backgroundColor: '#FEE2E2' },
@@ -387,13 +387,13 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
   editBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
-    paddingVertical: 9, borderRadius: 11,
+    paddingVertical: 9, borderRadius: 12,
     backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0'
   },
   editText: { fontSize: 11, fontWeight: 'bold', color: '#0B2F64' },
   toggleBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
-    paddingVertical: 9, borderRadius: 11
+    paddingVertical: 9, borderRadius: 12
   },
   toggleBtnOff: { backgroundColor: '#EF4444' },
   toggleBtnOn: { backgroundColor: '#10B981' },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
 
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: {
-    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0'
   },
   chipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   pinToggleText: { fontSize: 10, fontWeight: 'bold', color: '#475569' },
 
   submit: {
-    backgroundColor: '#0B2F64', borderRadius: 14,
+    backgroundColor: '#0B2F64', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 20
   },
   submitText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 }

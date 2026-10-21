@@ -107,7 +107,7 @@ export const AdminContainer = () => {
                   onClick={() => setAdminTab(item.id)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-[#0B2F64] text-white shadow-md shadow-blue-950/40 border border-blue-600/40'
+                      ? 'bg-navy-800 text-white shadow-md shadow-blue-950/40 border border-blue-600/40'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                   }`}
                   title={item.label}

@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     margin: 16,
     marginBottom: 4,
     paddingHorizontal: 12,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 8
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   date: { fontSize: 11, color: '#94A3B8' },
-  catBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  catBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   catText: { fontSize: 10, fontWeight: 'bold', color: '#475569' },
   title: { fontSize: 13, fontWeight: 'bold', color: '#0F172A', marginBottom: 6 },
   rowBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

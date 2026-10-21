@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
 
   filterRow: { flexDirection: 'row', gap: 7, paddingHorizontal: 16, marginBottom: 10 },
   filterChip: {
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0'
   },
   filterChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, paddingBottom: 20 },
 
   empty: {
-    backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1,
+    backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,
     borderStyle: 'dashed', borderColor: '#E2E8F0',
     padding: 28, alignItems: 'center', marginTop: 8
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   bodyChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#F0FDFA', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 9
+    backgroundColor: '#F0FDFA', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12
   },
   bodyChipText: { fontSize: 11, fontWeight: '900', color: '#0B2F64' },
   cardDate: { fontSize: 9, color: '#94A3B8', fontWeight: '600' },
@@ -260,16 +260,16 @@ const styles = StyleSheet.create({
 
   pill: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 9
+    alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12
   },
-  pillDot: { width: 6, height: 6, borderRadius: 3 },
+  pillDot: { width: 6, height: 6, borderRadius: 4 },
   pillText: { fontSize: 10, fontWeight: '900' },
 
   photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 10 },
-  photoThumb: { width: 62, height: 62, borderRadius: 9, backgroundColor: '#F1F5F9' },
+  photoThumb: { width: 62, height: 62, borderRadius: 8, backgroundColor: '#F1F5F9' },
   photoEmpty: {
     flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10,
-    paddingVertical: 8, paddingHorizontal: 10, borderRadius: 9,
+    paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8,
     backgroundColor: '#F8FAFC', borderWidth: 1, borderStyle: 'dashed', borderColor: '#E2E8F0'
   },
   photoEmptyText: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },

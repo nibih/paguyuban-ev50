@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   instruction: { fontSize: 12, color: '#93C5FD', textAlign: 'center', marginTop: 8 },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: 24
   },
   cardTitle: { fontSize: 15, fontWeight: 'bold', color: '#0F172A', marginBottom: 16 },
-  errorBox: { backgroundColor: '#FEE2E2', padding: 10, borderRadius: 10, marginBottom: 12 },
+  errorBox: { backgroundColor: '#FEE2E2', padding: 10, borderRadius: 12, marginBottom: 12 },
   errorText: { color: '#B91C1C', fontSize: 12, fontWeight: '600' },
   inputGroup: { marginBottom: 14 },
   label: { fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 6 },
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     paddingHorizontal: 12
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#00A896',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     marginTop: 8,
     gap: 8
   },
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00A896',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 10
+    borderRadius: 12
   },
   demoBtnText: { color: '#0B2F64', fontSize: 11, fontWeight: 'bold' }
 });

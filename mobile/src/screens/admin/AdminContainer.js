@@ -114,9 +114,9 @@ const styles = StyleSheet.create({
   liveBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,168,150,0.2)',
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8
   },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5EEAD4' },
+  liveDot: { width: 6, height: 6, borderRadius: 4, backgroundColor: '#5EEAD4' },
   liveText: { color: '#5EEAD4', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
 
   navStrip: { maxHeight: 56, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   navLabelActive: { color: '#FFFFFF' },
   navBadge: {
     minWidth: 18, paddingHorizontal: 5, paddingVertical: 1,
-    borderRadius: 9, backgroundColor: '#E2E8F0',
+    borderRadius: 8, backgroundColor: '#E2E8F0',
     alignItems: 'center'
   },
   navBadgeActive: { backgroundColor: '#00A896' },

@@ -161,7 +161,7 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={onOpenExpenseModal}
-            className="px-3.5 py-2 bg-[#0B2F64] hover:bg-[#123e7e] text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
+            className="px-3.5 py-2 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Catat Pengeluaran</span>
@@ -269,7 +269,7 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
             className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition text-left disabled:opacity-60"
           >
             <span className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
-              <FileSpreadsheet className="w-4 h-4 text-[#0B2F64]" />
+              <FileSpreadsheet className="w-4 h-4 text-navy-800" />
             </span>
             <span className="flex-1">
               <span className="block text-xs font-bold text-slate-900">Matriks Iuran</span>
@@ -283,7 +283,7 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
             className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition text-left disabled:opacity-60"
           >
             <span className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
-              <FileSpreadsheet className="w-4 h-4 text-[#0B2F64]" />
+              <FileSpreadsheet className="w-4 h-4 text-navy-800" />
             </span>
             <span className="flex-1">
               <span className="block text-xs font-bold text-slate-900">Buku Pengeluaran</span>

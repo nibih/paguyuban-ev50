@@ -475,14 +475,14 @@ const styles = StyleSheet.create({
   incomeTotalValBank: { fontSize: 12, fontWeight: '900', color: '#0F172A', fontVariant: ['tabular-nums'] },
 
   reconCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1,
+    backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,
     borderColor: '#E2E8F0', padding: 12, marginBottom: 12
   },
   reconTitle: { fontSize: 10, fontWeight: '900', color: '#0F172A', letterSpacing: 0.8 },
   reconNote: { fontSize: 9, color: '#94A3B8', marginTop: 4, marginBottom: 8, lineHeight: 13 },
   reconRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10,
-    backgroundColor: '#F8FAFC', borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, marginTop: 5
+    backgroundColor: '#F8FAFC', borderRadius: 12, paddingHorizontal: 9, paddingVertical: 8, marginTop: 5
   },
   reconLabel: { flex: 1, fontSize: 10, color: '#64748B' },
   reconVal: { fontSize: 11, fontWeight: 'bold', color: '#0F172A', fontVariant: ['tabular-nums'] },
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
 
   incomeCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     padding: 12,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#F0FDF4',
-    borderRadius: 9,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#DCFCE7',
     paddingHorizontal: 9,
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     backgroundColor: '#FFFBEB',
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#FDE68A',
     paddingHorizontal: 9,
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
 
   queueCard: {
     backgroundColor: '#FFFBEB',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
     padding: 12,
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
     padding: 8,
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   queueMeta: { fontSize: 9, color: '#94A3B8', marginTop: 1 },
   queueMore: { fontSize: 9, color: '#B45309', marginTop: 2 },
   qBtn: {
-    width: 30, height: 30, borderRadius: 9,
+    width: 30, height: 30, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center'
   },
   qBtnOk: { backgroundColor: '#059669' },
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     paddingHorizontal: 12,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   filterChip: {
     paddingHorizontal: 11, paddingVertical: 7,
-    borderRadius: 11, backgroundColor: '#FFFFFF',
+    borderRadius: 12, backgroundColor: '#FFFFFF',
     borderWidth: 1, borderColor: '#E2E8F0'
   },
   filterChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
 
   row: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     padding: 12,
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
   rowNik: { fontSize: 10, color: '#94A3B8', marginTop: 1, fontVariant: ['tabular-nums'] },
 
-  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9 },
+  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   pillGreen: { backgroundColor: '#D1FAE5' },
   pillRed: { backgroundColor: '#FEF2F2' },
   pillText: { fontSize: 9, fontWeight: '900' },
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
   monthCell: {
     width: '18.5%',
     aspectRatio: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: '#FEF2F2',
     borderWidth: 1,
     borderColor: '#FECACA',

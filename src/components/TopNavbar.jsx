@@ -40,11 +40,11 @@ export const TopNavbar = () => {
   );
 
   return (
-    <header className="h-16 bg-[#0B2F64] text-white px-4 md:px-8 flex items-center justify-between border-b border-blue-900/60 sticky top-0 z-40 shadow-lg">
+    <header className="h-16 bg-navy-800 text-white px-4 md:px-8 flex items-center justify-between border-b border-blue-900/60 sticky top-0 z-40 shadow-lg">
       {/* App Branding */}
       <div className="flex items-center space-x-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-400 to-sky-500 p-0.5 shadow-md flex items-center justify-center">
-          <div className="w-full h-full bg-[#0B2F64] rounded-[10px] flex items-center justify-center">
+          <div className="w-full h-full bg-navy-800 rounded-[10px] flex items-center justify-center">
             <Bus className="w-5 h-5 text-teal-400" />
           </div>
         </div>

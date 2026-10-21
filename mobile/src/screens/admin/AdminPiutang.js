@@ -485,7 +485,7 @@ export default function AdminPiutang() {
 const styles = StyleSheet.create({
   queueCard: {
     backgroundColor: '#FFFBEB',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
     padding: 12,
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
     padding: 8,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   queueName: { fontSize: 11, fontWeight: 'bold', color: '#0F172A' },
   queueMeta: { fontSize: 9, color: '#94A3B8', marginTop: 1 },
   queueMore: { fontSize: 9, color: '#B45309', marginTop: 2 },
-  qBtn: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  qBtn: { width: 30, height: 30, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   qBtnOk: { backgroundColor: '#059669' },
   qBtnNo: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA' },
   qBtnDisabled: { opacity: 0.4 },
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFBEB',
     borderWidth: 1,
     borderColor: '#FDE68A',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 5,
     marginTop: 8
@@ -529,13 +529,13 @@ const styles = StyleSheet.create({
   pendingText: { fontSize: 9, fontWeight: '700', color: '#92400E' },
 
   kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  kpiBox: { flex: 1, padding: 13, borderRadius: 15 },
+  kpiBox: { flex: 1, padding: 13, borderRadius: 16 },
   kpiLabel: { fontSize: 9, fontWeight: '900', color: '#64748B' },
   kpiVal: { fontSize: 15, fontWeight: '900', marginTop: 4 },
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0',
     paddingHorizontal: 12, paddingVertical: 10
   },
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
 
   filterRow: { flexDirection: 'row', gap: 6, marginTop: 10 },
   filterChip: {
-    paddingHorizontal: 13, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 13, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0'
   },
   filterChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -551,13 +551,13 @@ const styles = StyleSheet.create({
   filterTextActive: { color: '#FFFFFF' },
 
   debtCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 15,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
     borderWidth: 1, borderColor: '#E2E8F0', padding: 13, marginBottom: 9
   },
   debtTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   debtName: { fontSize: 13, fontWeight: 'bold', color: '#0F172A' },
   debtNik: { fontSize: 10, color: '#94A3B8', marginTop: 1, fontVariant: ['tabular-nums'] },
-  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9 },
+  pill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   pillGreen: { backgroundColor: '#D1FAE5' },
   pillRed: { backgroundColor: '#FEF2F2' },
   pillText: { fontSize: 9, fontWeight: '900' },
@@ -566,10 +566,10 @@ const styles = StyleSheet.create({
 
   debtIncident: { fontSize: 11, color: '#475569', marginTop: 8, lineHeight: 16 },
   progressTrack: {
-    height: 6, borderRadius: 3, backgroundColor: '#F1F5F9',
+    height: 6, borderRadius: 4, backgroundColor: '#F1F5F9',
     marginTop: 10, overflow: 'hidden'
   },
-  progressFill: { height: 6, borderRadius: 3, backgroundColor: '#D97706' },
+  progressFill: { height: 6, borderRadius: 4, backgroundColor: '#D97706' },
   debtFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
   debtMeta: { fontSize: 10, color: '#94A3B8' },
   debtSisa: { fontSize: 11, fontWeight: '900', color: '#E11D48' },
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
 
   lunasBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#ECFDF5', borderRadius: 13, padding: 13, marginTop: 14
+    backgroundColor: '#ECFDF5', borderRadius: 12, padding: 13, marginTop: 14
   },
   lunasText: { fontSize: 11, color: '#047857', flex: 1, fontWeight: '600' },
 
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
 
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   catChip: {
-    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 11,
+    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 12,
     backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0'
   },
   catChipActive: { backgroundColor: '#00A896', borderColor: '#00A896' },
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   catTextActive: { color: '#FFFFFF' },
 
   submit: {
-    backgroundColor: '#00A896', borderRadius: 14,
+    backgroundColor: '#00A896', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 18
   },
   submitText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
 
   userPick: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F0FDF9', borderRadius: 13,
+    backgroundColor: '#F0FDF9', borderRadius: 12,
     borderWidth: 1, borderColor: '#99F6E4', padding: 13
   },
   userPickName: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
@@ -668,8 +668,8 @@ const styles = StyleSheet.create({
   confirmTitle: { fontSize: 13, fontWeight: '900', color: '#E11D48', letterSpacing: 0.8 },
   confirmBody: { fontSize: 12, color: '#475569', marginTop: 8, lineHeight: 18 },
   confirmRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
-  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 13, backgroundColor: '#F1F5F9', alignItems: 'center' },
+  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center' },
   cancelText: { fontSize: 11, fontWeight: '900', color: '#475569' },
-  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 13, backgroundColor: '#E11D48', alignItems: 'center' },
+  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#E11D48', alignItems: 'center' },
   confirmText: { fontSize: 11, fontWeight: '900', color: '#FFFFFF' }
 });

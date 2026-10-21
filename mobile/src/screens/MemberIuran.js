@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   monthCardLunas: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
   monthCardSelected: { borderColor: '#00A896', backgroundColor: '#F0FDFA', borderWidth: 2 },
-  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
+  checkbox: { width: 22, height: 22, borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
   checkboxLunas: { backgroundColor: '#10B981', borderColor: '#10B981' },
   checkboxSelected: { backgroundColor: '#00A896', borderColor: '#00A896' },
   monthName: { fontSize: 14, fontWeight: 'bold', color: '#0F172A' },
@@ -300,13 +300,13 @@ const styles = StyleSheet.create({
   },
   methodHeaderText: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
 
-  webhookBtn: { backgroundColor: '#00A896', paddingVertical: 12, borderRadius: 14, alignItems: 'center', marginTop: 16 },
+  webhookBtn: { backgroundColor: '#00A896', paddingVertical: 12, borderRadius: 12, alignItems: 'center', marginTop: 16 },
   webhookText: { color: '#0B2F64', fontWeight: 'bold', fontSize: 13 },
 
   modalMonths: { fontSize: 11, color: '#94A3B8', marginTop: 4 },
 
   bankCard: {
-    backgroundColor: '#F0FDFA', borderRadius: 14,
+    backgroundColor: '#F0FDFA', borderRadius: 16,
     borderWidth: 1, borderColor: '#99F6E4', padding: 14
   },
   bankLabel: { fontSize: 9, fontWeight: '900', color: '#0F766E', letterSpacing: 0.8 },
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   copyBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#FFFFFF', paddingHorizontal: 10, paddingVertical: 6,
-    borderRadius: 9, borderWidth: 1, borderColor: '#99F6E4'
+    borderRadius: 12, borderWidth: 1, borderColor: '#99F6E4'
   },
   copyText: { fontSize: 10, fontWeight: 'bold', color: '#0B2F64' },
 
@@ -324,17 +324,17 @@ const styles = StyleSheet.create({
   receiptRow: { flexDirection: 'row', gap: 10 },
   receiptAdd: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4,
-    paddingVertical: 18, borderRadius: 13,
+    paddingVertical: 18, borderRadius: 12,
     borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#99F6E4',
     backgroundColor: '#F0FDFA'
   },
   receiptAddText: { fontSize: 10, fontWeight: 'bold', color: '#0F766E' },
   receiptWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#F0FDF4', borderRadius: 13,
+    backgroundColor: '#F0FDF4', borderRadius: 12,
     borderWidth: 1, borderColor: '#BBF7D0', padding: 12
   },
-  receiptThumb: { width: 62, height: 62, borderRadius: 10, backgroundColor: '#F1F5F9' },
+  receiptThumb: { width: 62, height: 62, borderRadius: 8, backgroundColor: '#F1F5F9' },
   receiptOk: { fontSize: 12, fontWeight: 'bold', color: '#166534' },
   receiptMeta: { fontSize: 10, color: '#4D7C0F', marginTop: 3 },
   receiptChange: { marginTop: 6, alignSelf: 'flex-start' },

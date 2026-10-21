@@ -256,19 +256,19 @@ const styles = StyleSheet.create({
   colTitle: { flex: 1, fontSize: 11, fontWeight: '900', letterSpacing: 0.4 },
   colCount: {
     minWidth: 22, paddingHorizontal: 6, paddingVertical: 1,
-    borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.65)', alignItems: 'center'
+    borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.65)', alignItems: 'center'
   },
   colCountText: { fontSize: 10, fontWeight: '900' },
 
   colEmpty: {
-    backgroundColor: '#FFFFFF', borderRadius: 13, borderWidth: 1,
+    backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,
     borderStyle: 'dashed', borderColor: '#E2E8F0',
     paddingVertical: 14, alignItems: 'center', marginTop: 8
   },
   colEmptyText: { fontSize: 10, color: '#CBD5E1', fontWeight: '600' },
 
   card: {
-    backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1,
+    backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,
     borderColor: '#E2E8F0', padding: 12, marginTop: 8
   },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 7 },
@@ -295,11 +295,11 @@ const styles = StyleSheet.create({
   detailNotes: { fontSize: 11, color: '#475569', marginTop: 8, lineHeight: 16 },
 
   photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  photoThumb: { borderRadius: 10, backgroundColor: '#F1F5F9' },
+  photoThumb: { borderRadius: 8, backgroundColor: '#F1F5F9' },
   photoEmpty: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
     marginTop: 12, paddingVertical: 10, paddingHorizontal: 12,
-    borderRadius: 11, backgroundColor: '#F8FAFC', borderWidth: 1,
+    borderRadius: 8, backgroundColor: '#F8FAFC', borderWidth: 1,
     borderStyle: 'dashed', borderColor: '#E2E8F0'
   },
   photoEmptyText: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
 
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   mechChip: {
-    paddingHorizontal: 12, paddingVertical: 9, borderRadius: 11,
+    paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12,
     backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0'
   },
   mechChipActive: { backgroundColor: '#0B2F64', borderColor: '#0B2F64' },
@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
   confirmTitle: { fontSize: 13, fontWeight: '900', color: '#E11D48', letterSpacing: 0.8 },
   confirmBody: { fontSize: 12, color: '#475569', marginTop: 8, lineHeight: 18 },
   confirmRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
-  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 13, backgroundColor: '#F1F5F9', alignItems: 'center' },
+  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center' },
   cancelText: { fontSize: 11, fontWeight: '900', color: '#475569' },
-  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 13, backgroundColor: '#E11D48', alignItems: 'center' },
+  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#E11D48', alignItems: 'center' },
   confirmText: { fontSize: 11, fontWeight: '900', color: '#FFFFFF' }
 });
