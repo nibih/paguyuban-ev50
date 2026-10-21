@@ -10,9 +10,11 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
+import { MONTHS, IURAN_FEE } from '../../constants';
 
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
-
+// Provenance dot in the legend. Module-scope so React can reconcile it by
+// identity rather than treating it as a fresh component type each render.
+const ProvDot = ({ color }) => <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />;
 
 // A2: the reconciliation matrix.
 //
@@ -199,8 +201,6 @@ export const ScreenA2MatriksIuran = () => {
     showToast('CSV matriks iuran diunduh.');
   };
 
-  const ProvDot = ({ color }) => <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />;
-
   return (
     <div className="space-y-6">
 
@@ -209,7 +209,7 @@ export const ScreenA2MatriksIuran = () => {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Iuran: Verifikasi &amp; Buku Pemasukan</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Iuran wajib Rp100.000 / pramudi / bulan • Tanda centang hanya ANTREKAN, bukan uang masuk kas
+            Iuran wajib {rp(IURAN_FEE)} / pramudi / bulan • Tanda centang hanya ANTREKAN, bukan uang masuk kas
           </p>
         </div>
         <button
@@ -462,7 +462,7 @@ export const ScreenA2MatriksIuran = () => {
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-help"
                             >
                               <Check className="w-3 h-3 text-emerald-600" />
-                              {rp(d.nominal || 100000)}
+                              {rp(d.nominal || IURAN_FEE)}
                             </span>
                           </td>
                         );

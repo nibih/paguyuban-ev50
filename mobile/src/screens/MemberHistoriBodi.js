@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     padding: 28, alignItems: 'center', marginTop: 8
   },
   emptyTitle: { fontSize: 13, fontWeight: 'bold', color: '#94A3B8', marginTop: 12 },
-  emptyText: { fontSize: 11, color: '#CBD5E1', textAlign: 'center', marginTop: 6, lineHeight: 17 },
+  emptyText: { fontSize: 11, color: '#64748B', textAlign: 'center', marginTop: 6, lineHeight: 17 },
 
   card: {
     backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,

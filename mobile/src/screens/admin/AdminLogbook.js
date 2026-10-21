@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed', borderColor: '#E2E8F0',
     paddingVertical: 14, alignItems: 'center', marginTop: 8
   },
-  colEmptyText: { fontSize: 10, color: '#CBD5E1', fontWeight: '600' },
+  colEmptyText: { fontSize: 10, color: '#64748B', fontWeight: '600' },
 
   card: {
     backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1,

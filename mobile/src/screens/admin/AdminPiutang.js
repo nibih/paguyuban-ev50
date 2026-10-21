@@ -6,6 +6,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock } from 'lucide-react-native';
 import { rp } from '../../utils/format';
+import { IURAN_FEE } from '../../constants';
 
 const METHODS = ['Cash ke Admin', 'Transfer BSI', 'Potong Gaji'];
 
@@ -27,7 +28,7 @@ export default function AdminPiutang() {
   const [pendingDelete, setPendingDelete] = useState(null);
 
   // Installment form
-  const [instNominal, setInstNominal] = useState('100000');
+  const [instNominal, setInstNominal] = useState(String(IURAN_FEE));
   const [instMethod, setInstMethod] = useState(METHODS[0]);
 
   // New-debt form
@@ -136,7 +137,7 @@ export default function AdminPiutang() {
       <TouchableOpacity
         style={styles.debtCard}
         activeOpacity={0.85}
-        onPress={() => { setSelected(item); setInstNominal(String(Math.min(100000, sisa || 100000))); }}
+        onPress={() => { setSelected(item); setInstNominal(String(Math.min(IURAN_FEE, sisa || IURAN_FEE))); }}
       >
         <View style={styles.debtTop}>
           <View style={{ flex: 1 }}>

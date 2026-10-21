@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from './src/context/AppContext';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 // Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -134,13 +135,17 @@ function MainNavigation() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AppProvider>
-        <NavigationContainer>
-          <MainNavigation />
-        </NavigationContainer>
-      </AppProvider>
-    </SafeAreaProvider>
+    // Outermost on purpose: AppProvider owns the Firestore listeners and is the
+    // most likely thing to throw, so the boundary has to sit above it.
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <AppProvider>
+          <NavigationContainer>
+            <MainNavigation />
+          </NavigationContainer>
+        </AppProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

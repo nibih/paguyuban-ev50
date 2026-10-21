@@ -4,8 +4,8 @@ import { useApp } from '../../context/AppContext';
 import { FileSpreadsheet, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { iuranCsv, expenseCsv, debtCsv, incidentCsv, exportCsv } from '../../utils/csvExport';
 import { rp } from '../../utils/format';
+import { MONTHS } from '../../constants';
 
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 // Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
 // month name. Map one to the other so a per-month row can line them up.
 const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: '09' };
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0'
   },
-  tableNote: { fontSize: 9, color: '#CBD5E1', marginTop: 10, lineHeight: 13 },
+  tableNote: { fontSize: 9, color: '#64748B', marginTop: 10, lineHeight: 13 },
 
   exportHint: { fontSize: 10, color: '#94A3B8', marginBottom: 10, lineHeight: 15 },
   exportRow: {

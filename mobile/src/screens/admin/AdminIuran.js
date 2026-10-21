@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList } from 'r
 import { useApp } from '../../context/AppContext';
 import { Search, Check, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react-native';
 import { rp } from '../../utils/format';
-
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+import { MONTHS } from '../../constants';
 
 // A2: the reconciliation matrix.
 //

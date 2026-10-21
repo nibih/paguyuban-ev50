@@ -11,8 +11,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
-
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+import { MONTHS } from '../../constants';
 
 const EMPTY_FORM = {
   nik: '',

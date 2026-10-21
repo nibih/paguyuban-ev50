@@ -5,8 +5,8 @@ import { Check, Building, X, Camera, Copy, ImagePlus, Clock } from 'lucide-react
 import * as Clipboard from 'expo-clipboard';
 import { captureThumbnail } from '../utils/thumbnails';
 import { rp } from '../utils/format';
+import { MONTHS, IURAN_FEE } from '../constants';
 
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
 const BSI_ACCOUNT = '720510945';
 const BSI_HOLDER = 'Paguyuban EV50 Cawang';
 
@@ -72,7 +72,7 @@ export default function MemberIuran() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerBox}>
           <Text style={styles.headerTitle}>Status Iuran Bulanan</Text>
-          <Text style={styles.headerSub}>Kewajiban Rp100.000 / Bulan (Mutual-Aid Driver & Bodi EV)</Text>
+          <Text style={styles.headerSub}>Kewajiban {rp(IURAN_FEE)} / Bulan (Mutual-Aid Driver & Bodi EV)</Text>
         </View>
 
         <View style={styles.list}>
@@ -100,7 +100,7 @@ export default function MemberIuran() {
                   </View>
                   <View style={{ marginLeft: 12 }}>
                     <Text style={styles.monthName}>{m} 2026</Text>
-                    <Text style={styles.monthFee}>Rp100.000</Text>
+                    <Text style={styles.monthFee}>{rp(IURAN_FEE)}</Text>
                   </View>
                 </View>
 
@@ -138,7 +138,7 @@ export default function MemberIuran() {
         <View style={styles.bottomBar}>
           <View>
             <Text style={styles.bottomLabel}>{selectedMonths.length} Bulan: {selectedMonths.join(', ')}</Text>
-            <Text style={styles.bottomTotal} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * 100000)}</Text>
+            <Text style={styles.bottomTotal} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * IURAN_FEE)}</Text>
           </View>
           <TouchableOpacity style={styles.checkoutBtn} onPress={() => setModalVisible(true)}>
             <Text style={styles.checkoutText}>Transfer BSI</Text>
@@ -159,7 +159,7 @@ export default function MemberIuran() {
 
             <View style={styles.modalTotalBox}>
               <Text style={styles.modalTotalLabel}>Total Tagihan Iuran:</Text>
-              <Text style={styles.modalTotalValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * 100000)}</Text>
+              <Text style={styles.modalTotalValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{rp(selectedMonths.length * IURAN_FEE)}</Text>
               <Text style={styles.modalMonths}>{selectedMonths.join(', ')} 2026</Text>
             </View>
 

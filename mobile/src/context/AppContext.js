@@ -3,6 +3,7 @@ import seedData from '../data/seedData.json';
 import { db } from '../services/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, runTransaction } from 'firebase/firestore';
 import { rp } from '../utils/format';
+import { IURAN_FEE } from '../constants';
 
 const AppContext = createContext();
 
@@ -15,9 +16,6 @@ const FS_MESSAGES = {
 };
 
 const fsError = (e) => FS_MESSAGES[e?.code] || e?.message || 'Gagal menyinkronkan ke server.';
-
-// Iuran fee per driver per month; single source of truth for the record shape.
-const IURAN_FEE = 100000;
 
 const todayId = () => new Date().toLocaleDateString('id-ID');
 
@@ -125,7 +123,7 @@ export const AppProvider = ({ children }) => {
         unsubUsers();
       };
     } catch (e) {
-      console.log('Using local state cache');
+      console.warn('Firestore unreachable — falling back to the bundled seed data.');
     }
   }, []);
 

@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
-
-const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+import { MONTHS } from '../../constants';
 
 // Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
 // month name. Map one to the other so a per-month row can line them up.
@@ -27,6 +26,28 @@ const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: 
 // seeded history never fed, so presenting it beside the income totals invites
 // a comparison that cannot be reconciled from this data. A2 carries that
 // reconciliation, with its gaps stated.
+
+// KPI tile for the two headline figures. Module-scope so React reconciles it by
+// identity; defined inside the screen it became a new component type on every
+// render and was torn down and rebuilt each time.
+const Figure = ({ tone, icon: Icon, label, value, sub }) => {
+  const isIn = tone === 'in';
+  return (
+    <div className={`flex-1 rounded-2xl p-5 border shadow-sm ${isIn ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+      <div className="flex items-center gap-2">
+        <Icon className={`w-4 h-4 ${isIn ? 'text-emerald-600' : 'text-rose-600'}`} />
+        <span className={`text-[11px] font-black uppercase tracking-widest ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
+          {label}
+        </span>
+      </div>
+      <div className={`text-3xl font-black font-mono mt-2 tracking-tight whitespace-nowrap ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
+        {value}
+      </div>
+      <div className="text-[11px] text-slate-500 mt-1">{sub}</div>
+    </div>
+  );
+};
+
 export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
   const { users, iuranRecords, expenses, setAdminTab } = useApp();
   const [exporting, setExporting] = useState(null);
@@ -123,24 +144,6 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
     } finally {
       setExporting(null);
     }
-  };
-
-  const Figure = ({ tone, icon: Icon, label, value, sub }) => {
-    const isIn = tone === 'in';
-    return (
-      <div className={`flex-1 rounded-2xl p-5 border shadow-sm ${isIn ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
-        <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${isIn ? 'text-emerald-600' : 'text-rose-600'}`} />
-          <span className={`text-[11px] font-black uppercase tracking-widest ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
-            {label}
-          </span>
-        </div>
-        <div className={`text-3xl font-black font-mono mt-2 tracking-tight whitespace-nowrap ${isIn ? 'text-emerald-700' : 'text-rose-700'}`}>
-          {value}
-        </div>
-        <div className="text-[11px] text-slate-500 mt-1">{sub}</div>
-      </div>
-    );
   };
 
   return (

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useApp } from '../context/AppContext';
 import { ShieldCheck, CreditCard, AlertCircle, Wrench, HeartHandshake, CheckCircle } from 'lucide-react-native';
 import { rp } from '../utils/format';
+import { IURAN_FEE } from '../constants';
 
 export default function MemberDashboard({ navigation }) {
   const { currentUser, iuranRecords, debts, vault } = useApp();
@@ -42,7 +43,7 @@ export default function MemberDashboard({ navigation }) {
           )}
         </View>
         <Text style={styles.heroTitle}>September 2026</Text>
-        <Text style={styles.heroAmount}>Rp100.000</Text>
+        <Text style={styles.heroAmount}>{rp(IURAN_FEE)}</Text>
         
         {!isPaid ? (
           <TouchableOpacity 

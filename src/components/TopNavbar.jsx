@@ -7,6 +7,17 @@ import { useApp } from '../context/AppContext';
 //
 // The old role switcher (Member / Admin) and the member-identity dropdown are
 // gone — there is no member mode on the website any more.
+
+// Stat pill in the top bar. Module-scope: TopNavbar re-renders every second off
+// its clock, and a component defined inside it was remounting 4x/second.
+const Stat = ({ icon: Icon, value, label, tone }) => (
+  <div className="hidden md:flex items-center gap-2 bg-blue-950/60 border border-blue-800/60 px-3 py-1.5 rounded-xl" title={label}>
+    <Icon className={`w-3.5 h-3.5 ${tone}`} />
+    <span className="text-sm font-black text-white leading-none font-mono">{value}</span>
+    <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wide">{label}</span>
+  </div>
+);
+
 export const TopNavbar = () => {
   const { currentUser, users, debts, iuranRecords } = useApp();
   const [time, setTime] = useState(new Date());
@@ -30,14 +41,6 @@ export const TopNavbar = () => {
   }, [iuranRecords, debts]);
 
   const activeDrivers = users.filter((u) => u.status !== 'inactive').length;
-
-  const Stat = ({ icon: Icon, value, label, tone }) => (
-    <div className="hidden md:flex items-center gap-2 bg-blue-950/60 border border-blue-800/60 px-3 py-1.5 rounded-xl" title={label}>
-      <Icon className={`w-3.5 h-3.5 ${tone}`} />
-      <span className="text-sm font-black text-white leading-none font-mono">{value}</span>
-      <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wide">{label}</span>
-    </div>
-  );
 
   return (
     <header className="h-16 bg-navy-800 text-white px-4 md:px-8 flex items-center justify-between border-b border-blue-900/60 sticky top-0 z-40 shadow-lg">

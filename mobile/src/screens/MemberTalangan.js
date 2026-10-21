@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal 
 import { useApp } from '../context/AppContext';
 import { AlertCircle, PlusCircle, CheckCircle2, FileText, X, ArrowRight, ShieldCheck } from 'lucide-react-native';
 import { rp } from '../utils/format';
+import { IURAN_FEE } from '../constants';
 
 export default function MemberTalangan() {
   const { currentUser, debts, repayDebt } = useApp();
   const [selectedDebt, setSelectedDebt] = useState(null);
-  const [amountInput, setAmountInput] = useState('100000');
+  const [amountInput, setAmountInput] = useState(String(IURAN_FEE));
   const [repayMethod, setRepayMethod] = useState('Transfer Bank BSI');
 
   // Filter all debt items belonging to this user
@@ -19,7 +20,7 @@ export default function MemberTalangan() {
     setSelectedDebt(debtItem);
     const remaining = debtItem.amount - debtItem.paid;
     // Default installment suggestion: 100k or the remaining if less
-    setAmountInput(String(Math.min(100000, remaining)));
+    setAmountInput(String(Math.min(IURAN_FEE, remaining)));
   };
 
   const handlePay = async () => {
@@ -169,7 +170,7 @@ export default function MemberTalangan() {
                 {/* Quick nominal buttons */}
                 <Text style={styles.inputLabel}>Pilih Cepat / Ketik Nominal Cicilan:</Text>
                 <View style={styles.chipsRow}>
-                  {[50000, 100000, 200000, (selectedDebt.amount - selectedDebt.paid)].map((chipVal, i) => (
+                  {[50000, IURAN_FEE, 200000, (selectedDebt.amount - selectedDebt.paid)].map((chipVal, i) => (
                     <TouchableOpacity
                       key={i}
                       style={[styles.chip, amountInput === String(chipVal) && styles.chipActive]}

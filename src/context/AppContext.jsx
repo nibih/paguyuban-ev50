@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { rp } from '../utils/format';
+import { IURAN_FEE, MONTHS } from '../constants';
 import { db } from '../services/firebase';
 import {
   collection,
@@ -22,10 +23,10 @@ const FS_MESSAGES = {
 
 const fsError = (e) => FS_MESSAGES[e?.code] || e?.message || 'Gagal menyinkronkan ke server.';
 
-// Iuran fee per driver per month.
-const IURAN_FEE = 100000;
-
-export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+// Iuran fee per driver per month, and the fixed collection period — both live in
+// ../constants. Re-exported here because MONTHS is handed down through the
+// context value below and consumers already reach for it from this module.
+export { IURAN_FEE, MONTHS };
 
 const todayId = () => new Date().toLocaleDateString('id-ID');
 
@@ -125,7 +126,7 @@ export const AppProvider = ({ children }) => {
         if (snap.exists()) setVault(snap.data());
       }), safe(() => {})));
     } catch (e) {
-      console.log('Using local state cache', e);
+      console.warn('Firestore unreachable — falling back to the bundled seed data.', e);
     }
 
     // Mark the first snapshot round as done whether or not it succeeded, so
