@@ -1,9 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { ShieldCheck, CreditCard, AlertCircle, Wrench, HeartHandshake, CheckCircle } from 'lucide-react-native';
+import { ShieldCheck, CreditCard, AlertCircle, AlertTriangle, Wrench, HeartHandshake, CheckCircle, ArrowRight } from 'lucide-react-native';
 import { rp } from '../utils/format';
-import { IURAN_FEE } from '../constants';
+import { IURAN_FEE, HAZARD_FORM_URL } from '../constants';
+
+// The hazard board belongs to another team, so this is a plain handoff: the
+// app keeps no record of what is reported and there is nothing to poll.
+//
+// Opened in the device's EXTERNAL browser on purpose — Google returns 401 to
+// non-browser clients, so an in-app WebView would most likely be refused.
+const openHazardForm = () => {
+  Linking.openURL(HAZARD_FORM_URL).catch(() =>
+    Alert.alert(
+      'Tidak bisa membuka formulir',
+      `Salin tautan ini ke browser Anda:\n\n${HAZARD_FORM_URL}`
+    )
+  );
+};
 
 export default function MemberDashboard({ navigation }) {
   const { currentUser, iuranRecords, debts, vault } = useApp();
@@ -95,6 +109,19 @@ export default function MemberDashboard({ navigation }) {
           <Text style={styles.quickText}>Kas Terbuka</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Hazard handoff. Its own banner rather than a fifth tile squeezed into
+          the row above — reporting a hazard is time-critical and should be
+          impossible to miss. Opens the other team's form; nothing is recorded
+          here. */}
+      <TouchableOpacity style={styles.hazardBanner} onPress={openHazardForm} activeOpacity={0.85}>
+        <AlertTriangle size={20} color="#92400E" />
+        <View style={styles.hazardTextWrap}>
+          <Text style={styles.hazardTitle}>Lihat Bahaya di Jalan?</Text>
+          <Text style={styles.hazardSub}>Laporkan ke papan hazard Transjakarta</Text>
+        </View>
+        <ArrowRight size={16} color="#92400E" />
+      </TouchableOpacity>
 
       {/* Solidaritas Feed */}
       <View style={styles.feedCard}>
@@ -192,6 +219,21 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0'
   },
   quickText: { fontSize: 10, fontWeight: 'bold', color: '#334155', marginTop: 6 },
+  hazardBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    marginBottom: 16
+  },
+  hazardTextWrap: { flex: 1 },
+  hazardTitle: { fontSize: 13, fontWeight: '900', color: '#92400E' },
+  hazardSub: { fontSize: 11, color: '#B45309', marginTop: 2 },
   feedCard: {
     backgroundColor: '#FFFFFF',
     padding: 16,
