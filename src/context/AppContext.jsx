@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
-import { rp } from '../utils/format';
+import { rp, normalizePhone } from '../utils/format';
 import { IURAN_FEE, MONTHS } from '../constants';
 import { db } from '../services/firebase';
 import {
@@ -54,6 +54,8 @@ export const AppProvider = ({ children }) => {
   const [debts, setDebts] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [incidents, setIncidents] = useState([]);
+  // Route dispatch list for drivers who need a phone number fast.
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [vault, setVault] = useState({ bsiBalance: 0, pettyCash: 0 });
   // iuranRecords: { [nik]: { [month]: { status, nominal, date, method, ... } } }
   const [iuranRecords, setIuranRecords] = useState({});
@@ -120,6 +122,16 @@ export const AppProvider = ({ children }) => {
         snap.forEach((d) => list.push(d.data()));
         list.sort((a, b) => String(b.id || '').localeCompare(String(a.id || '')));
         setIncidents(list);
+      }), safe(() => {})));
+
+      unsubs.push(onSnapshot(collection(db, 'emergencyContacts'), safe((snap) => {
+        // Unlike the money collections, empty is a legitimate answer here:
+        // the dispatch list can be cleared entirely, and a stale roster must
+        // not linger on the panel after the admin empties it.
+        const list = [];
+        snap.forEach((d) => list.push(d.data()));
+        list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'id'));
+        setEmergencyContacts(list);
       }), safe(() => {})));
 
       unsubs.push(onSnapshot(doc(db, 'system', 'vault'), safe((snap) => {
@@ -755,6 +767,100 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  /* ---------------------------------------------------------------- *
+   * Emergency contacts — the route dispatch list
+   * ---------------------------------------------------------------- */
+
+  // Blank is a meaningful state here, not an omission.
+  //
+  // A contact whose number is still unknown stays on the list and is badged
+  // in the panel, so the roster stays whole and the gap stays visible. Digits
+  // that are typed but do not normalise are REFUSED: a number that looks
+  // complete but cannot be dialled is worse than an obvious blank, because
+  // nobody finds out until they are standing beside a broken bus.
+  const validateContact = ({ name, phone, route }) => {
+    const cleanName = String(name || '').trim();
+    if (!cleanName) return { ok: false, error: 'Nama kontak wajib diisi.' };
+
+    const routeKey = String(route || '').trim();
+    if (!routeKey) return { ok: false, error: 'Pilih rute kontak.' };
+
+    const typed = String(phone || '').trim();
+    const normalized = normalizePhone(typed);
+    if (typed && !normalized) {
+      return {
+        ok: false,
+        error: 'Nomor tidak lengkap atau tidak valid. Pakai nomor HP Indonesia utuh, mis. 081234567890.'
+      };
+    }
+
+    return { ok: true, name: cleanName, phone: normalized, route: routeKey };
+  };
+
+  // Timestamp rather than a sliced one: the seed writes a dozen contacts in a
+  // tight loop, and two adds inside the same few milliseconds would otherwise
+  // collide onto one document and silently lose a driver.
+  const addContact = async (fields) => {
+    const v = validateContact(fields);
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    const id = `CONTACT-${Date.now()}`;
+    const item = { id, name: v.name, phone: v.phone, route: v.route };
+
+    setEmergencyContacts((prev) => [...prev, item]);
+    try {
+      await setDoc(doc(db, 'emergencyContacts', id), item);
+      showToast(`${v.name} ditambahkan ke kontak darurat.`);
+      return true;
+    } catch (e) {
+      setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
+      showToast(`Gagal menyimpan kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  const updateContact = async (id, fields) => {
+    const before = emergencyContacts.find((c) => c.id === id);
+    if (!before) return false;
+
+    const v = validateContact({ ...before, ...fields });
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    const item = { ...before, name: v.name, phone: v.phone, route: v.route };
+    setEmergencyContacts((prev) => prev.map((c) => (c.id === id ? item : c)));
+    try {
+      await setDoc(doc(db, 'emergencyContacts', id), item);
+      showToast('Kontak diperbarui.');
+      return true;
+    } catch (e) {
+      setEmergencyContacts((prev) => prev.map((c) => (c.id === id ? before : c)));
+      showToast(`Gagal memperbarui kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  const deleteContact = async (id) => {
+    const before = emergencyContacts.find((c) => c.id === id);
+    if (!before) return false;
+
+    setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await deleteDoc(doc(db, 'emergencyContacts', id));
+      showToast(`${before.name} dihapus dari kontak darurat.`);
+      return true;
+    } catch (e) {
+      setEmergencyContacts((prev) => [...prev, before]);
+      showToast(`Gagal menghapus kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -786,7 +892,12 @@ export const AppProvider = ({ children }) => {
       // Roster management
       addMember,
       updateMember,
-      setMemberActive
+      setMemberActive,
+      // Emergency contacts — route dispatch list
+      emergencyContacts,
+      addContact,
+      updateContact,
+      deleteContact
     }}
     >
       {children}

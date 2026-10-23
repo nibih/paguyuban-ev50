@@ -241,6 +241,47 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    // ---- emergencyContacts/{id} ---------------------------------------
+
+    // Route dispatch list shown to drivers when a unit strands.
+    //
+    // `phone` may be an EMPTY string and nothing else short. An incomplete
+    // number stays on the list — so the roster stays whole and the admin
+    // panel can badge it for repair — but a number too short to dial is
+    // refused at the door. A contact that cannot be rung is a liability in an
+    // emergency list, so the shape allows exactly two states: knowingly
+    // blank, or dialable. Never "looks fine until you need it".
+    //
+    // The pattern mirrors normalizePhone()'s 12-15 digit rule on the client,
+    // so a number the app would refuse to turn into a tel:/wa.me link cannot
+    // be stored as though it were usable.
+    match /emergencyContacts/{id} {
+      allow read: if true;
+
+      allow create: if
+        selfKeyed(request.resource.data, id)
+        && onlyKeys(request.resource.data, ['id', 'name', 'phone', 'route'])
+        && isStr(request.resource.data.name)
+        && request.resource.data.name.size() <= 120
+        && validPhone(request.resource.data.phone)
+        && isStr(request.resource.data.route)
+        && request.resource.data.route.size() <= 60;
+
+      allow update: if
+        request.resource.data.id == resource.data.id
+        && onlyKeys(request.resource.data, ['id', 'name', 'phone', 'route'])
+        && isStr(request.resource.data.name)
+        && request.resource.data.name.size() <= 120
+        && validPhone(request.resource.data.phone)
+        && isStr(request.resource.data.route)
+        && request.resource.data.route.size() <= 60;
+
+      // The dispatch list is maintained, not archived. Removing a driver who
+      // has left the depo is ordinary upkeep and leaves no financial trail,
+      // unlike a member row, which is only ever deactivated.
+      allow delete: if true;
+    }
+
     // Everything not matched above is closed by default. Rules are OR'd per
     // request, so this denies only what no rule above explicitly allows.
     match /{document=**} {
@@ -328,4 +369,15 @@ function validPhotos(data) {
             || (data.photos[0] is map
                 && 'base64' in data.photos[0]
                 && data.photos[0].base64 is string)));
+}
+
+// Emergency contact number: either deliberately blank (an entry waiting for
+// the admin to supply the missing digits) or a normalised international
+// mobile number — 62 followed by 10-13 digits, matching normalizePhone().
+//
+// The type check is inlined rather than calling isStr(), because that helper
+// is defined inside the match block and is NOT visible from service scope:
+// the same trap that made the first draft of validSlot() fail to compile.
+function validPhone(p) {
+  return p is string && (p == '' || p.matches('^62[0-9]{10,13}$'));
 }

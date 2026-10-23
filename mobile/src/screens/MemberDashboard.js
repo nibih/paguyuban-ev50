@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Modal } from 'react-native';
 import { useApp } from '../context/AppContext';
-import { ShieldCheck, CreditCard, AlertCircle, AlertTriangle, Wrench, HeartHandshake, CheckCircle, ArrowRight } from 'lucide-react-native';
+import { ShieldCheck, CreditCard, AlertCircle, AlertTriangle, Wrench, HeartHandshake, CheckCircle, ArrowRight, PhoneCall } from 'lucide-react-native';
 import { rp } from '../utils/format';
 import { IURAN_FEE, HAZARD_FORM_URL } from '../constants';
+import MemberKontakDarurat from './MemberKontakDarurat';
 
 // The hazard board belongs to another team, so this is a plain handoff: the
 // app keeps no record of what is reported and there is nothing to poll.
@@ -21,6 +22,11 @@ const openHazardForm = () => {
 
 export default function MemberDashboard({ navigation }) {
   const { currentUser, iuranRecords, debts, vault } = useApp();
+
+  // The roster opens full-screen over the dashboard rather than as a seventh
+  // bottom tab: six tabs are already tight, and a label like "Kontak Darurat"
+  // would truncate next to "Lapor Perbaikan".
+  const [contactsOpen, setContactsOpen] = useState(false);
 
   const userIuran = iuranRecords[currentUser.nik] || {};
   const isPaid = userIuran['September']?.status === 'lunas';
@@ -123,6 +129,26 @@ export default function MemberDashboard({ navigation }) {
         <ArrowRight size={16} color="#92400E" />
       </TouchableOpacity>
 
+      {/* Kontak darurat. Sits right under the hazard handoff because both are
+          "something has gone wrong on the road" buttons, and the driver
+          hunting for a phone number is in the same hurry as the one reporting
+          a hazard. Solid navy, not another amber banner: it must read as a
+          different tool, not a second warning. */}
+      <TouchableOpacity
+        style={styles.contactBanner}
+        onPress={() => setContactsOpen(true)}
+        activeOpacity={0.85}
+      >
+        <View style={styles.contactIcon}>
+          <PhoneCall size={17} color="#FFFFFF" />
+        </View>
+        <View style={styles.hazardTextWrap}>
+          <Text style={styles.contactTitle}>Kontak Darurat</Text>
+          <Text style={styles.contactSub}>Nomor bantuan per rute</Text>
+        </View>
+        <ArrowRight size={16} color="#93C5FD" />
+      </TouchableOpacity>
+
       {/* Solidaritas Feed */}
       <View style={styles.feedCard}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
@@ -143,6 +169,16 @@ export default function MemberDashboard({ navigation }) {
           <Text style={styles.feedNominal}>- Rp302.500</Text>
         </View>
       </View>
+      {/* Full-screen roster. A Modal nested in the ScrollView is deliberate:
+          RN renders it in its own root, so it takes no layout space here and
+          the dashboard keeps a single scroll container. */}
+      <Modal
+        visible={contactsOpen}
+        animationType="slide"
+        onRequestClose={() => setContactsOpen(false)}
+      >
+        <MemberKontakDarurat onClose={() => setContactsOpen(false)} />
+      </Modal>
     </ScrollView>
   );
 }
@@ -234,6 +270,27 @@ const styles = StyleSheet.create({
   hazardTextWrap: { flex: 1 },
   hazardTitle: { fontSize: 13, fontWeight: '900', color: '#92400E' },
   hazardSub: { fontSize: 11, color: '#B45309', marginTop: 2 },
+
+  contactBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#0B2F64',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    marginBottom: 16
+  },
+  contactIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 168, 150, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  contactTitle: { fontSize: 13, fontWeight: 'bold', color: '#FFFFFF' },
+  contactSub: { fontSize: 10, color: '#93C5FD', marginTop: 1 },
   feedCard: {
     backgroundColor: '#FFFFFF',
     padding: 16,

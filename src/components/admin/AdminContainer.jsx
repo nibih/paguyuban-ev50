@@ -6,6 +6,7 @@ import {
   Wallet,
   Bus,
   Users,
+  Phone,
   ShieldCheck,
   ChevronLeft,
   ChevronRight
@@ -17,6 +18,7 @@ import { ScreenA3Pengeluaran } from './ScreenA3Pengeluaran';
 import { ScreenA4BukuPiutang } from './ScreenA4BukuPiutang';
 import { ScreenA5LogbookArmada } from './ScreenA5LogbookArmada';
 import { ScreenA6DaftarPramudi } from './ScreenA6DaftarPramudi';
+import { ScreenA7KontakDarurat } from './ScreenA7KontakDarurat';
 
 export const AdminContainer = () => {
   const { adminTab, setAdminTab, currentUser, debts, incidents, iuranRecords } = useApp();
@@ -41,7 +43,8 @@ export const AdminContainer = () => {
     { id: 'A3', label: 'Buku Pengeluaran', icon: Receipt },
     { id: 'A4', label: 'Buku Piutang Driver', icon: Wallet, badge: debts.length },
     { id: 'A5', label: 'Logbook Armada & Bodi', icon: Bus, badge: incidents.length },
-    { id: 'A6', label: 'Daftar Pramudi', icon: Users }
+    { id: 'A6', label: 'Daftar Pramudi', icon: Users },
+    { id: 'A7', label: 'Kontak Darurat', icon: Phone }
   ];
 
   const renderActiveScreen = () => {
@@ -58,6 +61,8 @@ export const AdminContainer = () => {
         return <ScreenA5LogbookArmada />;
       case 'A6':
         return <ScreenA6DaftarPramudi />;
+      case 'A7':
+        return <ScreenA7KontakDarurat />;
       default:
         return <ScreenA1Dashboard onOpenExpenseModal={() => setIsExpenseModalOpen(true)} />;
     }

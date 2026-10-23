@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import seedData from '../data/seedData.json';
 import { db } from '../services/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, runTransaction } from 'firebase/firestore';
-import { rp } from '../utils/format';
+import { rp, normalizePhone } from '../utils/format';
 import { IURAN_FEE } from '../constants';
 
 const AppContext = createContext();
@@ -51,6 +51,15 @@ export const AppProvider = ({ children }) => {
 
   // Incidents & Damage Logbook, from the parsed reference data.
   const [incidents, setIncidents] = useState(() => seedData.incidents || []);
+
+  // Emergency contacts — the route dispatch list.
+  //
+  // Deliberately NOT seeded from seedData.json. A bundled copy would give the
+  // phone a second, silently stale set of numbers, and calling a number that
+  // was right three months ago is precisely the failure this feature exists
+  // to prevent. Firestore is the single source; if it cannot be reached the
+  // screen says so instead of showing something that may be wrong.
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
 
   // Sync real-time with Firestore if connected
   useEffect(() => {
@@ -105,6 +114,16 @@ export const AppProvider = ({ children }) => {
         }
       }, () => {});
 
+      const unsubContacts = onSnapshot(collection(db, 'emergencyContacts'), (snap) => {
+        // No `!snap.empty` guard here, unlike the money collections: an empty
+        // dispatch list is a legitimate state, and a roster the admin just
+        // cleared must not linger on the phone.
+        const list = [];
+        snap.forEach(d => list.push(d.data()));
+        list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'id'));
+        setEmergencyContacts(list);
+      }, () => {});
+
       // Roster. Merge per NIK like the debts listener: a backend seeded with
       // only some drivers must not erase the rest from the login screen.
       const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
@@ -125,6 +144,7 @@ export const AppProvider = ({ children }) => {
         unsubIuran();
         unsubIncidents();
         unsubUsers();
+        unsubContacts();
       };
     } catch (e) {
       console.warn('Firestore unreachable — falling back to the bundled seed data.');
@@ -987,6 +1007,96 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  /* ---------------------------------------------------------------- *
+   * Emergency contacts — the route dispatch list
+   * ---------------------------------------------------------------- */
+
+  // Blank is a meaningful state here, not an omission. A contact whose number
+  // is still unknown stays on the list (badged in the panel) so the roster
+  // stays whole and the gap stays visible. Digits that are typed but do not
+  // normalise are REFUSED: a number that looks complete but cannot be dialled
+  // is worse than an obvious blank, because nobody finds out until they are
+  // standing beside a broken bus.
+  const validateContact = ({ name, phone, route }) => {
+    const cleanName = String(name || '').trim();
+    if (!cleanName) return { ok: false, error: 'Nama kontak wajib diisi.' };
+
+    const routeKey = String(route || '').trim();
+    if (!routeKey) return { ok: false, error: 'Pilih rute kontak.' };
+
+    const typed = String(phone || '').trim();
+    const normalized = normalizePhone(typed);
+    if (typed && !normalized) {
+      return {
+        ok: false,
+        error: 'Nomor tidak lengkap atau tidak valid. Pakai nomor HP Indonesia utuh, mis. 081234567890.'
+      };
+    }
+
+    return { ok: true, name: cleanName, phone: normalized, route: routeKey };
+  };
+
+  const addContact = async (fields) => {
+    const v = validateContact(fields);
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    const id = `CONTACT-${Date.now()}`;
+    const item = { id, name: v.name, phone: v.phone, route: v.route };
+
+    setEmergencyContacts(prev => [...prev, item]);
+    try {
+      await setDoc(doc(db, 'emergencyContacts', id), item);
+      showToast(`${v.name} ditambahkan ke kontak darurat.`);
+      return true;
+    } catch (e) {
+      setEmergencyContacts(prev => prev.filter(c => c.id !== id));
+      showToast(`Gagal menyimpan kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  const updateContact = async (id, fields) => {
+    const before = emergencyContacts.find(c => c.id === id);
+    if (!before) return false;
+
+    const v = validateContact({ ...before, ...fields });
+    if (!v.ok) {
+      showToast(v.error, 'error');
+      return false;
+    }
+
+    const item = { ...before, name: v.name, phone: v.phone, route: v.route };
+    setEmergencyContacts(prev => prev.map(c => (c.id === id ? item : c)));
+    try {
+      await setDoc(doc(db, 'emergencyContacts', id), item);
+      showToast('Kontak diperbarui.');
+      return true;
+    } catch (e) {
+      setEmergencyContacts(prev => prev.map(c => (c.id === id ? before : c)));
+      showToast(`Gagal memperbarui kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  const deleteContact = async (id) => {
+    const before = emergencyContacts.find(c => c.id === id);
+    if (!before) return false;
+
+    setEmergencyContacts(prev => prev.filter(c => c.id !== id));
+    try {
+      await deleteDoc(doc(db, 'emergencyContacts', id));
+      showToast(`${before.name} dihapus dari kontak darurat.`);
+      return true;
+    } catch (e) {
+      setEmergencyContacts(prev => [...prev, before]);
+      showToast(`Gagal menghapus kontak. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       isAuthenticated,
@@ -1022,7 +1132,12 @@ export const AppProvider = ({ children }) => {
       // Member / roster management
       addMember,
       updateMember,
-      setMemberActive
+      setMemberActive,
+      // Emergency contacts — route dispatch list
+      emergencyContacts,
+      addContact,
+      updateContact,
+      deleteContact
     }}>
       {children}
     </AppContext.Provider>
