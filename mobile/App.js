@@ -23,10 +23,14 @@ import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, LogOut, History } f
 const Tab = createBottomTabNavigator();
 
 function MainNavigation() {
-  const { isAuthenticated, logout, role, currentUser, toast } = useApp();
+  const { isAuthenticated, logout, activeNik, users, toast } = useApp();
 
-  // The admin view follows the ACCOUNT, never a local switch.
-  const isAdminUser = currentUser?.role === 'admin' && currentUser?.status !== 'inactive';
+  // The admin view follows the ACCOUNT that signed in — not `currentUser`,
+  // which falls back to users[0] as a crash-safety net, and not a local
+  // toggle. If the NIK that logged in is not an active admin on the roster,
+  // this is a driver's session.
+  const signedIn = users.find((u) => u.nik === activeNik) || null;
+  const isAdminUser = !!signedIn && signedIn.role === 'admin' && signedIn.status !== 'inactive';
 
   if (!isAuthenticated) {
     return <LoginScreen />;

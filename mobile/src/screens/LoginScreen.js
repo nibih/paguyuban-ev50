@@ -28,6 +28,10 @@ export default function LoginScreen({ onLoginSuccess }) {
       setErrorMsg('Masukkan NIK pengemudi');
       return;
     }
+    if (!pinInput.trim()) {
+      setErrorMsg('Masukkan PIN — bawaan 4 angka terakhir NIK');
+      return;
+    }
 
     // loginWithNik returns null on success, or a reason string on failure.
     const error = loginWithNik(targetNik, pinInput.trim());
@@ -82,7 +86,7 @@ export default function LoginScreen({ onLoginSuccess }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>PIN Keamanan (Opsional Default: 4 Angka Terakhir NIK)</Text>
+            <Text style={styles.label}>PIN Keamanan (4 angka — bawaan: 4 angka terakhir NIK)</Text>
             <View style={styles.inputRow}>
               <KeyRound size={18} color="#64748B" />
               <TextInput

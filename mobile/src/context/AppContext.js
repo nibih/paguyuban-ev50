@@ -181,7 +181,10 @@ export const AppProvider = ({ children }) => {
     }
 
     const expected = String(user.pin || nik.slice(-4));
-    if (pin !== undefined && pin !== null && String(pin) !== expected) {
+    // The PIN check is not optional. This used to be skipped whenever `pin`
+    // was undefined, which meant any caller — or anyone who could reach the
+    // context — could sign in as an admin with the NIK alone.
+    if (!pin || String(pin) !== expected) {
       return 'PIN salah. Coba lagi.';
     }
 
