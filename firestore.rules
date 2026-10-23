@@ -60,8 +60,14 @@ service cloud.firestore {
 
     // The document carries its own id in a field matching its path, so a
     // record copied to the wrong path cannot masquerade as a real one.
-    function selfKeyed(data, key) {
-      return key in data && data[key] == key;
+    //
+    // `field` is the NAME of the key ('id' almost everywhere, 'nik' on users)
+    // and `key` is the path segment. Passing the path segment alone was a bug
+    // that denied every create in the database: it asks whether the document
+    // has a *field named after its own id*, e.g. a map key "DEBT-AGUS_TRIONO",
+    // which no document ever has.
+    function selfKeyed(data, field, key) {
+      return field in data && data[field] == key;
     }
 
     function validPin(p) {
@@ -104,7 +110,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        selfKeyed(request.resource.data, nik)
+        selfKeyed(request.resource.data, 'nik', nik)
         && onlyKeys(request.resource.data, ['nik', 'name', 'role', 'position', 'status', 'pin', 'createdAt', 'createdBy'])
         && isStr(request.resource.data.name)
         && request.resource.data.name.size() <= 120
@@ -163,7 +169,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        selfKeyed(request.resource.data, id)
+        selfKeyed(request.resource.data, 'id', id)
         && isNum(request.resource.data.amount, 0, 1000000000000)
         && isNum(request.resource.data.paid, 0, request.resource.data.amount)
         && isStr(request.resource.data.name)
@@ -194,7 +200,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        selfKeyed(request.resource.data, id)
+        selfKeyed(request.resource.data, 'id', id)
         && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body'])
         && isNum(request.resource.data.amount, 0, 1000000000000)
         && isStr(request.resource.data.title)
@@ -220,7 +226,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        selfKeyed(request.resource.data, id)
+        selfKeyed(request.resource.data, 'id', id)
         && isStr(request.resource.data.body)
         && isStr(request.resource.data.driver)
         && isStr(request.resource.data.damage)
@@ -259,7 +265,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        selfKeyed(request.resource.data, id)
+        selfKeyed(request.resource.data, 'id', id)
         && onlyKeys(request.resource.data, ['id', 'name', 'phone', 'route'])
         && isStr(request.resource.data.name)
         && request.resource.data.name.size() <= 120
