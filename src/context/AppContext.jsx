@@ -44,7 +44,46 @@ const normName = (s) => String(s || '')
 const vaultKeyForMethod = (method) => ((method || '').includes('Tunai') ? 'pettyCash' : 'bsiBalance');
 const vaultKeyFor = (source) => ((source || '').includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
 
-const SESSION_KEY = 'paguyuban.admin.nik';
+const SESSION_KEY = 'paguyuban.admin.session';
+
+// The shared password the depot has used since day one. It stays the default
+// web gate for now, by request — the account login below is available for
+// anyone who wants a real identity attached to their actions.
+//
+// This is a deterrent, not security: the value is compiled into the bundle,
+// so anyone with devtools can read it. Firestore rules still have no
+// `request.auth` check, so the password protects the screen, not the data.
+const LEGACY_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'EV50-Cawang-2026';
+
+// The shared password carries no identity. Actions taken through it are filed
+// under the cashier account the panel historically used, so `createdBy` and
+// `verifiedBy` still hold a name rather than a blank.
+const LEGACY_ADMIN_NIK = '17001589';
+const LEGACY_ADMIN = {
+  nik: LEGACY_ADMIN_NIK,
+  name: 'Afrizal Firmansyah',
+  role: 'admin',
+  position: 'Admin Kasir & Korlap'
+};
+
+// `{ mode: 'password' }` or `{ mode: 'account', nik }`. The old stored value
+// was a bare NIK, which is read as an account session.
+const readSession = () => {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed?.mode === 'password') return { mode: 'password' };
+      if (parsed?.mode === 'account' && parsed.nik) return { mode: 'account', nik: String(parsed.nik) };
+      return null;
+    } catch {
+      return { mode: 'account', nik: raw };
+    }
+  } catch {
+    return null;
+  }
+};
 
 export const AppProvider = ({ children }) => {
   // The panel used to act as Afrizal no matter who opened it, behind a shared
@@ -57,13 +96,7 @@ export const AppProvider = ({ children }) => {
   // Firebase Auth, so a caller who skips the UI can still reach the data. What
   // this stops is the realistic case: a driver opening the panel and reading
   // the books, or flipping `role` on their own account from the member view.
-  const [adminNik, setAdminNik] = useState(() => {
-    try {
-      return sessionStorage.getItem(SESSION_KEY) || '';
-    } catch {
-      return '';
-    }
-  });
+  const [session, setSession] = useState(readSession);
 
   const [users, setUsers] = useState([]);
   const [debts, setDebts] = useState([]);
@@ -167,33 +200,58 @@ export const AppProvider = ({ children }) => {
     };
   }, []);
 
-  // Identity is derived from the loaded roster, so a demoted or deactivated
-  // account loses the panel on the next snapshot instead of keeping a stale
-  // session alive.
-  const currentUser = useMemo(
-    () => users.find((u) => u.nik === adminNik) || null,
-    [users, adminNik]
-  );
-  const isAdmin = !!currentUser
-    && currentUser.role === 'admin'
-    && currentUser.status !== 'inactive';
-  const hasSession = !!adminNik;
+  // Persist the session for the life of the tab. sessionStorage (not
+  // localStorage) so a shared depot machine re-locks when the tab closes.
+  const persistSession = (next) => {
+    try {
+      if (next) sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      else sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* private mode — the session lasts this render only */
+    }
+    setSession(next);
+  };
 
-  // Drop a stored session that no longer maps to an active admin. Waits for
-  // the roster: an empty `users` while the first snapshot is in flight must
-  // not look like "this account was deleted".
+  // Identity: an account session is checked against the roster; a password
+  // session is the shared cashier identity the depot has always used.
+  const currentUser = useMemo(() => {
+    if (session?.mode === 'password') {
+      return users.find((u) => u.nik === LEGACY_ADMIN_NIK) || LEGACY_ADMIN;
+    }
+    return users.find((u) => u.nik === session?.nik) || null;
+  }, [users, session]);
+
+  // Password mode is let through because that is the gate the team uses
+  // today; account mode additionally requires an active admin account.
+  const isAdmin = session?.mode === 'password'
+    ? true
+    : !!currentUser && currentUser.role === 'admin' && currentUser.status !== 'inactive';
+  const hasSession = !!session;
+
+  // Drop a stored ACCOUNT session that no longer maps to an active admin.
+  // Password sessions are left alone — there is no account to validate.
   useEffect(() => {
-    if (loading || !adminNik || users.length === 0) return;
-    const u = users.find((x) => x.nik === adminNik);
+    if (loading || session?.mode !== 'account' || users.length === 0) return;
+    const u = users.find((x) => x.nik === session.nik);
     if (!u || u.role !== 'admin' || u.status === 'inactive') {
       try {
         sessionStorage.removeItem(SESSION_KEY);
       } catch {
         /* storage unavailable — the in-memory session is cleared below */
       }
-      setAdminNik('');
+      setSession(null);
     }
-  }, [loading, users, adminNik]);
+  }, [loading, users, session]);
+
+  // Open the panel with the shared password. Kept as the default gate while
+  // the depot is still used to it; the account form below is the way off it.
+  const signInWithPassword = (password) => {
+    if (String(password || '') !== LEGACY_PASSWORD) {
+      return { ok: false, error: 'Kata sandi salah.' };
+    }
+    persistSession({ mode: 'password' });
+    return { ok: true };
+  };
 
   // Verify NIK + PIN against the roster. The default PIN is the last four
   // digits of the NIK, matching the mobile app; nothing in Firestore stores a
@@ -213,12 +271,7 @@ export const AppProvider = ({ children }) => {
       const expected = String(user.pin || cleanNik.slice(-4));
       if (String(pin || '') !== expected) return { ok: false, error: 'PIN salah.' };
 
-      try {
-        sessionStorage.setItem(SESSION_KEY, cleanNik);
-      } catch {
-        /* private mode — the session lasts this render only */
-      }
-      setAdminNik(cleanNik);
+      persistSession({ mode: 'account', nik: cleanNik });
       return { ok: true };
     } catch (e) {
       return { ok: false, error: fsError(e) };
@@ -226,12 +279,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const signOut = () => {
-    try {
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* nothing to clear */
-    }
-    setAdminNik('');
+    persistSession(null);
   };
 
   // Each call replaces the previous toast AND takes over its dismissal
@@ -1349,6 +1397,7 @@ export const AppProvider = ({ children }) => {
       isAdmin,
       hasSession,
       signIn,
+      signInWithPassword,
       signOut,
       loading,
       users,
