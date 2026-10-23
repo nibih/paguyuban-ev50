@@ -5,10 +5,12 @@ import {
   Check,
   X,
   AlertTriangle,
-  Plus
+  Plus,
+  Undo2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
+import { ImageUpload } from '../ImageUpload';
 
 
 // A4: the receivables book and the installment verification queue.
@@ -24,7 +26,7 @@ import { rp } from '../../utils/format';
 // the first row clicked. What follows shows what the documents actually hold:
 // the pending queue, and the confirmed progress of paid against amount.
 export const ScreenA4BukuPiutang = () => {
-  const { debts, users, verifyInstallment, rejectInstallment, deleteDebt, addDebt, showToast } = useApp();
+  const { debts, users, verifyInstallment, rejectInstallment, unverifyInstallment, attachInstallmentProof, deleteDebt, addDebt, showToast } = useApp();
   const [selectedDebt, setSelectedDebt] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
 
@@ -69,6 +71,19 @@ export const ScreenA4BukuPiutang = () => {
     setBusyKey(null);
   };
 
+  // Reverse a confirmation. Only entries the panel itself recorded carry the
+  // amount and vault needed to do this exactly.
+  const runUnverify = async (debt, entry) => {
+    const ok = window.confirm(
+      `Batalkan verifikasi angsuran ${debt.name} ${rp(entry.amount)}?\n\n` +
+      `Sisa hutang bertambah dan kas dikurangi ${rp(entry.amount)}.`
+    );
+    if (!ok) return;
+    setBusyKey(`${debt.id}-${entry.id}`);
+    await unverifyInstallment(debt.id, entry.id);
+    setBusyKey(null);
+  };
+
   const submitAdd = async () => {
     if (!addForm.nik) {
       showToast('Pilih pramudi terlebih dahulu.', 'error');
@@ -100,6 +115,12 @@ export const ScreenA4BukuPiutang = () => {
   // Keep the open drawer in step with the store: it holds a snapshot, and
   // verifying an installment changes the card underneath it.
   const liveSelected = selectedDebt ? debts.find((d) => d.id === selectedDebt.id) || selectedDebt : null;
+
+  // `paid` also contains amounts inherited from the paper cards, which carry
+  // no per-installment record and therefore cannot be undone one by one.
+  const verifiedList = liveSelected?.verifiedInstallments || [];
+  const verifiedSum = verifiedList.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const legacyPaid = Math.max(0, (liveSelected?.paid || 0) - verifiedSum);
 
   return (
     <div className="space-y-6">
@@ -168,6 +189,12 @@ export const ScreenA4BukuPiutang = () => {
                       {q.requestedBy ? ` · oleh ${q.requestedBy}` : ''}
                     </div>
                   </div>
+                  <ImageUpload
+                    value={q.proof}
+                    className="w-9 h-9"
+                    title={q.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                    onChange={(proof) => attachInstallmentProof(q.debtId, q.id, proof)}
+                  />
                   <button
                     onClick={() => runVerify(q)}
                     disabled={busy}
@@ -368,6 +395,12 @@ export const ScreenA4BukuPiutang = () => {
                             {p.method} · {p.date}
                           </div>
                         </div>
+                        <ImageUpload
+                          value={p.proof}
+                          className="w-8 h-8"
+                          title={p.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                          onChange={(proof) => attachInstallmentProof(liveSelected.id, p.id, proof)}
+                        />
                         <button
                           onClick={() => runVerify(item)}
                           disabled={busy}
@@ -388,6 +421,46 @@ export const ScreenA4BukuPiutang = () => {
                 </div>
               )}
             </div>
+
+            {/* Confirmed installments — each one reversible */}
+            {verifiedList.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 mb-2">
+                  Angsuran Terverifikasi ({verifiedList.length})
+                </h4>
+                <div className="space-y-2">
+                  {[...verifiedList].reverse().map((p) => {
+                    const key = `${liveSelected.id}-${p.id}`;
+                    return (
+                      <div key={p.id} className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-slate-900 font-mono">{rp(p.amount)}</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            {p.method} · {p.date}
+                            {p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => runUnverify(liveSelected, p)}
+                          disabled={busyKey === key}
+                          className="w-7 h-7 rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center transition disabled:opacity-40"
+                          title="Batalkan verifikasi — sisa hutang bertambah, kas dikurangi"
+                        >
+                          <Undo2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {legacyPaid > 0 && (
+              <p className="mb-4 text-[10px] text-slate-400 leading-relaxed">
+                {rp(legacyPaid)} dari total dibayar berasal dari kartu kertas / data awal dan
+                tidak punya rincian per angsuran, jadi tidak bisa dibatalkan per setoran.
+              </p>
+            )}
 
             {/* Admin correction */}
             <div className="pt-4 border-t border-slate-100">

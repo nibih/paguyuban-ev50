@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Check, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react-native';
 import { rp } from '../../utils/format';
@@ -13,7 +13,7 @@ import { MONTHS } from '../../constants';
 // Only `verifyIuran` credits the vault.
 export default function AdminIuran() {
   const {
-    users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran,
+    users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran, unverifyIuran,
     expenses, debts, vault
   } = useApp();
   const [search, setSearch] = useState('');
@@ -47,6 +47,31 @@ export default function AdminIuran() {
     setBusyKey(item.key);
     await rejectIuran(item.nik, item.month);
     setBusyKey(null);
+  };
+
+  // Tapping a red month still queues a claim. Tapping a green one reverses a
+  // confirmation, which moves money — so it confirms first and refuses the
+  // rows that came from the bank statement.
+  const onMonthPress = (item, month, entry) => {
+    if (entry.status !== 'lunas') {
+      markIuranPaidCash(item.nik, month);
+      return;
+    }
+    if (entry.source === 'Laporan Uang Masuk') {
+      Alert.alert(
+        'Data laporan bank',
+        'Baris ini berasal dari laporan bank, bukan verifikasi aplikasi. Koreksi lewat laporan aslinya.'
+      );
+      return;
+    }
+    Alert.alert(
+      'Batalkan verifikasi?',
+      `Iuran ${month} a.n ${item.name} (${rp(entry.nominal || 0)}) kembali ke Belum Bayar dan kas dikurangi sebesar itu.`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        { text: 'Batalkan', style: 'destructive', onPress: () => unverifyIuran(item.nik, month) }
+      ]
+    );
   };
 
   const rows = useMemo(() => {
@@ -126,9 +151,9 @@ export default function AdminIuran() {
               return (
                 <TouchableOpacity
                   key={m}
-                  disabled={isLunas || isPending}
+                  disabled={isPending}
                   style={[styles.monthCell, isLunas && styles.monthCellLunas, isPending && styles.monthCellPending]}
-                  onPress={() => markIuranPaidCash(item.nik, m)}
+                  onPress={() => onMonthPress(item, m, d)}
                 >
                   <Text style={[styles.monthName, isLunas && styles.monthNameLunas, isPending && styles.monthNamePending]}>
                     {m.slice(0, 3)}
@@ -149,8 +174,8 @@ export default function AdminIuran() {
             <View style={styles.quickRow}>
               <Clock size={13} color="#D97706" />
               <Text style={styles.quickText}>
-                Ketuk bulan untuk ANTREKAN verifikasi. Uang baru masuk kas setelah dicocokkan
-                dengan mutasi BSI / kas kecil di panel atas.
+                Ketuk bulan merah untuk ANTREKAN verifikasi. Ketuk bulan hijau untuk
+                MEMBATALKAN verifikasi — status kembali ke belum bayar dan kas dikurangi.
               </Text>
             </View>
           </View>

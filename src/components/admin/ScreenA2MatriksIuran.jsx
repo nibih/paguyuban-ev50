@@ -11,6 +11,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 import { MONTHS, IURAN_FEE } from '../../constants';
+import { ImageUpload } from '../ImageUpload';
 
 // Provenance dot in the legend. Module-scope so React can reconcile it by
 // identity rather than treating it as a fresh component type each render.
@@ -24,8 +25,8 @@ const ProvDot = ({ color }) => <span className="w-2 h-2 rounded-full shrink-0" s
 // Only `verifyIuran` credits the vault.
 export const ScreenA2MatriksIuran = () => {
   const {
-    users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran,
-    expenses, debts, vault, showToast
+    users, iuranRecords, markIuranPaidCash, verifyIuran, rejectIuran, unverifyIuran,
+    attachIuranProof, expenses, debts, vault, showToast
   } = useApp();
 
   const [search, setSearch] = useState('');
@@ -64,6 +65,27 @@ export const ScreenA2MatriksIuran = () => {
   const runReject = async (item) => {
     setBusyKey(item.key);
     await rejectIuran(item.nik, item.month);
+    setBusyKey(null);
+  };
+
+  // Undoing a confirmation is a financial reversal, not a UI toggle: the month
+  // returns to unpaid and the vault is debited. Two guards keep it honest —
+  // bank-sourced rows are refused outright, and the cashier is told the exact
+  // amount that will leave the till before anything moves.
+  const runUnverify = async (item, entry) => {
+    if (entry?.source === 'Laporan Uang Masuk') {
+      showToast('Data ini dari laporan bank, bukan verifikasi aplikasi.', 'error');
+      return;
+    }
+    const amount = Number(entry?.nominal) || 0;
+    const ok = window.confirm(
+      `Batalkan pembayaran ${item.month} a.n ${item.name}?\n\n` +
+      `Status kembali ke Belum Bayar dan kas dikurangi ${rp(amount)}.`
+    );
+    if (!ok) return;
+
+    setBusyKey(item.key);
+    await unverifyIuran(item.nik, item.month);
     setBusyKey(null);
   };
 
@@ -359,6 +381,12 @@ export const ScreenA2MatriksIuran = () => {
                       {q.markedBy ? ` · ditandai ${q.markedBy}` : ''}
                     </div>
                   </div>
+                  <ImageUpload
+                    value={q.proof}
+                    className="w-9 h-9"
+                    title={q.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                    onChange={(proof) => attachIuranProof(q.nik, q.month, proof)}
+                  />
                   <button
                     onClick={() => runVerify(q)}
                     disabled={busy || bulkBusy}
@@ -567,15 +595,28 @@ export const ScreenA2MatriksIuran = () => {
                       const isPartial = d?.status === 'partial';
 
                       if (isLunas) {
+                        const bank = d.source === 'Laporan Uang Masuk';
+                        const key = `${user.nik}-${month}`;
                         return (
                           <td key={month} className="py-3 px-2 text-center">
-                            <span
-                              title={`Lunas: ${d.date || '-'} via ${d.method || 'BSI'}${d.verifiedBy ? ` · diverifikasi ${d.verifiedBy}` : ''}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-help"
+                            <button
+                              type="button"
+                              disabled={busyKey === key || bank}
+                              onClick={() => runUnverify({ nik: user.nik, name: user.name, month, key }, d)}
+                              title={
+                                bank
+                                  ? 'Berasal dari laporan bank — koreksi lewat laporan aslinya'
+                                  : `Lunas: ${d.date || '-'} via ${d.method || 'BSI'}${d.verifiedBy ? ` · diverifikasi ${d.verifiedBy}` : ''}\nKlik untuk membatalkan (kas dikurangi).`
+                              }
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
+                                bank
+                                  ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                                  : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
+                              }`}
                             >
-                              <Check className="w-3 h-3 text-emerald-600" />
-                              {rp(d.nominal || IURAN_FEE)}
-                            </span>
+                              <Check className="w-3 h-3" />
+                              {d.nominal ? rp(d.nominal) : '—'}
+                            </button>
                           </td>
                         );
                       }

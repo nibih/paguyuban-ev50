@@ -227,7 +227,11 @@ service cloud.firestore {
 
       allow create: if
         selfKeyed(request.resource.data, 'id', id)
-        && isStr(request.resource.data.body)
+        // A paper repair card often names the damage without naming a body
+        // number, so body may be empty here — driver and damage are still
+        // required. The board renders "Tanpa body" instead of inventing a unit.
+        && request.resource.data.body is string
+        && request.resource.data.body.size() <= 120
         && isStr(request.resource.data.driver)
         && isStr(request.resource.data.damage)
         && request.resource.data.status in ['Laporan Baru Masuk', 'Sedang Dikerjakan Mekanik', 'Selesai']
@@ -238,7 +242,8 @@ service cloud.firestore {
 
       allow update: if
         request.resource.data.id == resource.data.id
-        && isStr(request.resource.data.body)
+        && request.resource.data.body is string
+        && request.resource.data.body.size() <= 120
         && isStr(request.resource.data.driver)
         && isStr(request.resource.data.damage)
         && request.resource.data.status in ['Laporan Baru Masuk', 'Sedang Dikerjakan Mekanik', 'Selesai']

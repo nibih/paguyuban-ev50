@@ -8,6 +8,7 @@ import {
   Users,
   Phone,
   ShieldCheck,
+  FileSpreadsheet,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -19,6 +20,7 @@ import { ScreenA4BukuPiutang } from './ScreenA4BukuPiutang';
 import { ScreenA5LogbookArmada } from './ScreenA5LogbookArmada';
 import { ScreenA6DaftarPramudi } from './ScreenA6DaftarPramudi';
 import { ScreenA7KontakDarurat } from './ScreenA7KontakDarurat';
+import { ScreenA8Import } from './ScreenA8Import';
 
 export const AdminContainer = () => {
   const { adminTab, setAdminTab, currentUser, debts, incidents, iuranRecords } = useApp();
@@ -44,7 +46,8 @@ export const AdminContainer = () => {
     { id: 'A4', label: 'Buku Piutang Driver', icon: Wallet, badge: debts.length },
     { id: 'A5', label: 'Logbook Armada & Bodi', icon: Bus, badge: incidents.length },
     { id: 'A6', label: 'Daftar Pramudi', icon: Users },
-    { id: 'A7', label: 'Kontak Darurat', icon: Phone }
+    { id: 'A7', label: 'Kontak Darurat', icon: Phone },
+    { id: 'A8', label: 'Impor Data', icon: FileSpreadsheet }
   ];
 
   const renderActiveScreen = () => {
@@ -63,12 +66,14 @@ export const AdminContainer = () => {
         return <ScreenA6DaftarPramudi />;
       case 'A7':
         return <ScreenA7KontakDarurat />;
+      case 'A8':
+        return <ScreenA8Import />;
       default:
         return <ScreenA1Dashboard onOpenExpenseModal={() => setIsExpenseModalOpen(true)} />;
     }
   };
 
-  const initials = currentUser.name.split(' ').map((w) => w[0]).slice(0, 2).join('');
+  const initials = currentUser?.name?.split(' ').map((w) => w[0]).slice(0, 2).join('');
 
   return (
     <div className="flex w-full min-h-[calc(100vh-64px)] bg-[#F8FAFC]">
@@ -88,10 +93,10 @@ export const AdminContainer = () => {
               </div>
               {!isSidebarCollapsed && (
                 <div className="overflow-hidden">
-                  <div className="font-bold text-white text-xs truncate">{currentUser.name}</div>
+                  <div className="font-bold text-white text-xs truncate">{currentUser?.name || 'Pengurus'}</div>
                   <div className="text-[11px] text-teal-400 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-teal-400" />
-                    {currentUser.position}
+                    {currentUser?.position || 'Pengurus'}
                   </div>
                 </div>
               )}

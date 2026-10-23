@@ -13,10 +13,20 @@ import {
   Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { ImageUpload } from '../ImageUpload';
 
 export const ScreenA5LogbookArmada = () => {
-  const { incidents, updateIncidentStatus, deleteIncident } = useApp();
+  const { incidents, updateIncidentStatus, deleteIncident, updateIncidentPhotos, showToast } = useApp();
   const [selectedIncident, setSelectedIncident] = useState(null);
+
+  // The official kartu perbaikan were imported into this collection — they are
+  // the same object as a laporan bodi, just written on paper first. That is 76
+  // historical rows, all already 'Selesai', and leaving them on the board would
+  // bury the two or three live reports under an archive. Hidden by default,
+  // counted in the header, one click to reveal.
+  const [showArchive, setShowArchive] = useState(false);
+  const archiveCount = incidents.filter((i) => i.source === 'kartu-perbaikan').length;
+  const visible = incidents.filter((i) => showArchive || i.source !== 'kartu-perbaikan');
 
   const COLUMNS = [
     { id: 'Laporan Baru Masuk', title: 'Laporan Baru Masuk', color: 'border-amber-400 bg-amber-50/50 text-amber-800' },
@@ -41,13 +51,25 @@ export const ScreenA5LogbookArmada = () => {
           <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl font-bold border border-slate-200">
             Total {incidents.length} Catatan Kerusakan
           </span>
+          {archiveCount > 0 && (
+            <button
+              onClick={() => setShowArchive((v) => !v)}
+              className={`text-xs px-3 py-1.5 rounded-xl font-bold border transition ${
+                showArchive
+                  ? 'bg-navy-800 text-white border-navy-800'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {showArchive ? 'Sembunyikan' : 'Tampilkan'} arsip kartu ({archiveCount})
+            </button>
+          )}
         </div>
       </div>
 
       {/* 2. Kanban Board Columns */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {COLUMNS.map(col => {
-          const colItems = incidents.filter(inc => {
+          const colItems = visible.filter(inc => {
             if (col.id === 'Selesai') {
               return inc.status.includes('Selesai');
             }
@@ -80,9 +102,16 @@ export const ScreenA5LogbookArmada = () => {
                   >
                     {/* Vehicle Badge & Suket */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono bg-navy-800 text-white">
-                        {item.body}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2.5 py-0.5 rounded-lg text-xs font-black font-mono bg-navy-800 text-white">
+                          {item.body || 'Tanpa body'}
+                        </span>
+                        {item.source === 'kartu-perbaikan' && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded border border-slate-200 text-slate-400 font-bold tracking-wide">
+                            KARTU
+                          </span>
+                        )}
+                      </div>
 
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
                         item.suketStatus.includes('Selesai') 
@@ -113,7 +142,7 @@ export const ScreenA5LogbookArmada = () => {
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
                       <span className="text-slate-500 flex items-center gap-1">
                         <Wrench className="w-3 h-3 text-teal-600" />
-                        {item.mechanic}
+                        {item.mechanic || '—'}
                       </span>
 
                       {item.expenseRef && item.expenseRef !== '-' && (
@@ -144,7 +173,7 @@ export const ScreenA5LogbookArmada = () => {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-1 rounded-lg text-xs font-black font-mono bg-navy-800 text-white">
-                  {selectedIncident.body}
+                  {selectedIncident.body || 'Tanpa body'}
                 </span>
                 <h4 className="font-bold text-slate-900 text-sm">Status Armada Transjakarta</h4>
               </div>
@@ -173,6 +202,73 @@ export const ScreenA5LogbookArmada = () => {
                 <span className="text-slate-400 block text-[10px]">Catatan Tindak Lanjut:</span>
                 <span className="text-slate-600">{selectedIncident.notes || '-'}</span>
               </div>
+
+              {/* Photos. The web could read a report but never attach a photo,
+                  so anything filed at the desk went to the board without
+                  evidence. Same base64 thumbnails the mobile app stores, same
+                  three-photo cap enforced by firestore.rules. */}
+              <div>
+                <span className="text-slate-400 block text-[10px] mb-1">
+                  Foto Kerusakan ({(selectedIncident.photos || []).length}/3)
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(selectedIncident.photos || []).map((p, index) => (
+                    <ImageUpload
+                      key={index}
+                      value={p?.base64}
+                      className="w-14 h-14"
+                      title={`Foto ${index + 1}`}
+                      onChange={async (base64) => {
+                        const next = (selectedIncident.photos || [])
+                          .map((x, i) => (i === index ? { ...x, base64 } : x))
+                          .filter((x) => x?.base64);
+                        const ok = await updateIncidentPhotos(selectedIncident.id, next);
+                        if (ok) setSelectedIncident((prev) => ({ ...prev, photos: next }));
+                      }}
+                    />
+                  ))}
+                  {(selectedIncident.photos || []).length < 3 && (
+                    <ImageUpload
+                      value=""
+                      className="w-14 h-14"
+                      title="Tambah foto"
+                      onChange={async (base64) => {
+                        const next = [...(selectedIncident.photos || []), { base64 }];
+                        const ok = await updateIncidentPhotos(selectedIncident.id, next);
+                        if (!ok) showToast('Foto gagal disimpan.', 'error');
+                        else setSelectedIncident((prev) => ({ ...prev, photos: next }));
+                      }}
+                    />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Diperkecil otomatis dan disimpan di laporan ini, bukan di server terpisah.
+                </p>
+              </div>
+
+              {/* The paper card carries three things a driver report never does.
+                  Shown only when present, so ordinary reports look unchanged. */}
+              {(selectedIncident.kind || selectedIncident.part || selectedIncident.partPrice > 0) && (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                  <span className="text-slate-400 block text-[10px]">Kartu Perbaikan</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Jenis perbaikan</span>
+                    <span className="font-bold text-slate-800">{selectedIncident.kind || '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Spare part</span>
+                    <span className="font-bold text-slate-800">{selectedIncident.part || '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Harga part</span>
+                    <span className="font-bold text-slate-800">
+                      {selectedIncident.partPrice > 0
+                        ? `Rp${Number(selectedIncident.partPrice).toLocaleString('id-ID')}`
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Status Update Selectors */}
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-2">

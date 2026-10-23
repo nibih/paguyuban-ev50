@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  FlatList, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView
+  FlatList, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Alert
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
-import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock } from 'lucide-react-native';
+import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock, Undo2 } from 'lucide-react-native';
 import { rp } from '../../utils/format';
 import { IURAN_FEE } from '../../constants';
 
@@ -18,7 +18,7 @@ const METHODS = ['Cash ke Admin', 'Transfer BSI', 'Potong Gaji'];
 // funds. New talangan cards still debit the tin up front, because that is a
 // disbursement, not a receipt.
 export default function AdminPiutang() {
-  const { debts, users, repayDebt, addDebt, deleteDebt, verifyInstallment, rejectInstallment } = useApp();
+  const { debts, users, repayDebt, addDebt, deleteDebt, verifyInstallment, rejectInstallment, unverifyInstallment } = useApp();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
   const [selected, setSelected] = useState(null);
@@ -62,6 +62,32 @@ export default function AdminPiutang() {
     setBusyIns(item.key);
     await rejectInstallment(item.debtId, item.id);
     setBusyIns(null);
+  };
+
+  // Reverse a confirmation. Only entries written by verifyInstallment carry
+  // the vault and amount needed to do this exactly.
+  const confirmUndo = (debt, entry) => {
+    Alert.alert(
+      'Batalkan verifikasi?',
+      `Angsuran ${debt.name} ${rp(entry.amount)} dibatalkan. Sisa hutang bertambah dan kas dikurangi sebesar itu.`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Batalkan',
+          style: 'destructive',
+          onPress: async () => {
+            const ok = await unverifyInstallment(debt.id, entry.id);
+            if (ok) {
+              setSelected(prev => (prev ? {
+                ...prev,
+                paid: Math.max(0, (prev.paid || 0) - Number(entry.amount || 0)),
+                verifiedInstallments: (prev.verifiedInstallments || []).filter(p => p.id !== entry.id)
+              } : prev));
+            }
+          }
+        }
+      ]
+    );
   };
 
   const visible = useMemo(() => {
@@ -336,6 +362,31 @@ export default function AdminPiutang() {
                       {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitText}>ANTREKAN ANGSURAN</Text>}
                     </TouchableOpacity>
                   </>
+                )}
+
+                {(selected.verifiedInstallments || []).length > 0 && (
+                  <View style={{ marginTop: 18 }}>
+                    <Text style={styles.label}>
+                      ANGSURAN TERVERIFIKASI ({(selected.verifiedInstallments || []).length})
+                    </Text>
+                    {[...(selected.verifiedInstallments || [])].reverse().map(p => (
+                      <View key={p.id} style={styles.verifiedRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.verifiedAmount}>{rp(p.amount)}</Text>
+                          <Text style={styles.verifiedMeta}>
+                            {p.method} · {p.date}{p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.undoBtn}
+                          onPress={() => confirmUndo(selected, p)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Undo2 size={13} color="#E11D48" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
                 )}
 
                 <TouchableOpacity
@@ -637,8 +688,21 @@ const styles = StyleSheet.create({
   },
   submitText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
 
-  deleteLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 },
-  deleteLinkText: { fontSize: 11, fontWeight: 'bold', color: '#EF4444' },
+  deleteLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 },  deleteLinkText: { fontSize: 11, fontWeight: 'bold', color: '#EF4444' },
+
+  verifiedRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#ECFDF5', borderRadius: 12,
+    borderWidth: 1, borderColor: '#A7F3D0',
+    paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6
+  },
+  verifiedAmount: { fontSize: 11, fontWeight: '900', color: '#0F172A', fontVariant: ['tabular-nums'] },
+  verifiedMeta: { fontSize: 9, color: '#64748B', marginTop: 1 },
+  undoBtn: {
+    width: 28, height: 28, borderRadius: 10,
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA',
+    alignItems: 'center', justifyContent: 'center'
+  },
 
   userPick: {
     flexDirection: 'row', alignItems: 'center',

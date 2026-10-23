@@ -15,7 +15,7 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 //
 // Drivers use the mobile app. This is for the pengurus at the depot desk.
 function App() {
-  const { toast, showToast, loading } = useApp();
+  const { toast, showToast, loading, isAdmin } = useApp();
 
   const toastStyle = {
     success: 'border-emerald-500/40 bg-emerald-950/90 text-emerald-100',
@@ -27,6 +27,7 @@ function App() {
 
   return (
     <LoginGate>
+      {!isAdmin ? null : (
       <div className="min-h-screen bg-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
         {/* Top Persistent Control Bar */}
         <TopNavbar />
@@ -60,6 +61,7 @@ function App() {
           </div>
         )}
       </div>
+      )}
     </LoginGate>
   );
 }

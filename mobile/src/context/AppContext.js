@@ -571,6 +571,94 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // A bendahara undoes a confirmed iuran month. Exact inverse of verifyIuran:
+  // the month returns to `unpaid` and the vault it credited is debited.
+  //
+  // Bank-sourced rows are refused — that money never entered the vault through
+  // this app, so debiting it here would invent a refund nobody paid out.
+  const unverifyIuran = async (nik, month) => {
+    const entry = iuranRecords[nik]?.[month];
+    if (!entry || entry.status !== 'lunas') {
+      showToast('Hanya iuran yang sudah lunas yang bisa dibatalkan.', 'error');
+      return false;
+    }
+    if (entry.source === 'Laporan Uang Masuk') {
+      showToast('Data ini dari laporan bank, bukan verifikasi aplikasi.', 'error');
+      return false;
+    }
+
+    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
+    const nominal = Number(entry.nominal) || 0;
+    const before = entry;
+    const reverted = {
+      status: 'unpaid',
+      nominal: 0,
+      method: entry.method || '',
+      date: entry.date || '',
+      revertedBy: currentUser?.name || 'Bendahara',
+      revertedAt: todayId(),
+      revertedFrom: {
+        status: entry.status,
+        nominal: entry.nominal,
+        method: entry.method || '',
+        date: entry.date || '',
+        verifiedBy: entry.verifiedBy || entry.markedBy || ''
+      }
+    };
+
+    if ((vault[vaultKey] || 0) < nominal) {
+      showToast(
+        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(nominal)}.`,
+        'error'
+      );
+      return false;
+    }
+
+    setIuranRecords(prev => ({
+      ...prev,
+      [nik]: { ...(prev[nik] || {}), [month]: reverted }
+    }));
+    setVault(v => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const iuranRef = doc(db, 'iuran', nik);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [iuranSnap, vaultSnap] = await Promise.all([tx.get(iuranRef), tx.get(vaultRef)]);
+
+        const months = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
+        const current = months[month];
+        if (!current || current.status !== 'lunas') throw { code: 'not-lunas' };
+        if (current.source === 'Laporan Uang Masuk') throw { code: 'bank' };
+
+        const amount = Number(current.nominal) || 0;
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (cash < amount) throw { code: 'insufficient' };
+
+        months[month] = {
+          ...reverted,
+          revertedFrom: { ...reverted.revertedFrom, nominal: current.nominal }
+        };
+        tx.set(iuranRef, { nik, months }, { merge: true });
+        tx.set(vaultRef, { [vaultKey]: cash - amount }, { merge: true });
+      });
+
+      const name = users.find(u => u.nik === nik)?.name || nik;
+      showToast(`Iuran ${month} a.n ${name} dibatalkan. Kas dikurangi ${rp(nominal)}.`);
+      return true;
+    } catch (e) {
+      setIuranRecords(prev => ({ ...prev, [nik]: { ...(prev[nik] || {}), [month]: before } }));
+      setVault(v => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
+      showToast(
+        e?.code === 'not-lunas'
+          ? `Iuran ${month} sudah diubah pengurus lain. Muat ulang.`
+          : `Pembatalan GAGAL. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
   // A bendahara confirms one queued installment: it moves into `paid`, the
   // card's status is recomputed, and the cash lands in the matching vault.
   const verifyInstallment = async (debtId, entryId) => {
@@ -586,6 +674,9 @@ export const AppProvider = ({ children }) => {
     const name = debt.name || debtId;
 
     const before = debt;
+    const verifiedBy = currentUser?.name || 'Bendahara';
+    const verifiedAt = todayId();
+    const record = { ...entry, verifiedBy, verifiedAt, vault: vaultKey };
 
     // Optimistic update
     setDebts(prev => prev.map(d => {
@@ -596,7 +687,8 @@ export const AppProvider = ({ children }) => {
         ...d,
         paid: newPaid,
         status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
-        pendingInstallments: (d.pendingInstallments || []).filter(p => p.id !== entryId)
+        pendingInstallments: (d.pendingInstallments || []).filter(p => p.id !== entryId),
+        verifiedInstallments: [...(d.verifiedInstallments || []), record]
       };
     }));
     setVault(v => ({ ...v, [vaultKey]: v[vaultKey] + amt }));
@@ -619,7 +711,8 @@ export const AppProvider = ({ children }) => {
         tx.update(debtRef, {
           paid: newPaid,
           status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
-          pendingInstallments: queue.filter(p => p.id !== entryId)
+          pendingInstallments: queue.filter(p => p.id !== entryId),
+          verifiedInstallments: [...(d.verifiedInstallments || []), { ...found, verifiedBy, verifiedAt, vault: vaultKey }]
         });
 
         const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
@@ -635,6 +728,85 @@ export const AppProvider = ({ children }) => {
         e?.code === 'not-found'
           ? 'Angsuran sudah diproses pengurus lain. Muat ulang.'
           : `Verifikasi GAGAL. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
+  // A bendahara undoes a confirmation this app recorded. Exact inverse of
+  // verifyInstallment: the entry leaves the audit trail, `paid` falls back,
+  // and the vault is debited by the same amount.
+  const unverifyInstallment = async (debtId, entryId) => {
+    const debt = debts.find(d => d.id === debtId);
+    const entry = (debt?.verifiedInstallments || []).find(p => p.id === entryId);
+    if (!entry) {
+      showToast('Angsuran ini tidak punya riwayat verifikasi di aplikasi.', 'error');
+      return false;
+    }
+
+    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
+    const amt = Number(entry.amount) || 0;
+    const before = debt;
+    const statusFor = (amount, paid) => {
+      if (paid >= amount) return 'Lunas';
+      if (paid <= 0) return 'Belum Mengangsur';
+      return 'Sedang Mengangsur';
+    };
+
+    if ((vault[vaultKey] || 0) < amt) {
+      showToast(
+        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(amt)}.`,
+        'error'
+      );
+      return false;
+    }
+
+    setDebts(prev => prev.map(d => {
+      if (d.id !== debtId) return d;
+      const newPaid = Math.max(0, (d.paid || 0) - amt);
+      return {
+        ...d,
+        paid: newPaid,
+        status: statusFor(d.amount, newPaid),
+        verifiedInstallments: (d.verifiedInstallments || []).filter(p => p.id !== entryId)
+      };
+    }));
+    setVault(v => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const debtRef = doc(db, 'debts', debtId);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [debtSnap, vaultSnap] = await Promise.all([tx.get(debtRef), tx.get(vaultRef)]);
+        if (!debtSnap.exists()) throw { code: 'not-found' };
+
+        const d = debtSnap.data();
+        const list = d.verifiedInstallments || [];
+        const found = list.find(p => p.id === entryId);
+        if (!found) throw { code: 'not-recorded' };
+
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (cash < found.amount) throw { code: 'insufficient' };
+
+        const newPaid = Math.max(0, (d.paid || 0) - found.amount);
+        tx.update(debtRef, {
+          paid: newPaid,
+          status: statusFor(d.amount, newPaid),
+          verifiedInstallments: list.filter(p => p.id !== entryId)
+        });
+        tx.set(vaultRef, { [vaultKey]: cash - found.amount }, { merge: true });
+      });
+
+      showToast(`Verifikasi angsuran ${debt.name || debtId} ${rp(amt)} dibatalkan. Kas dikurangi.`);
+      return true;
+    } catch (e) {
+      setDebts(prev => prev.map(d => (d.id === debtId ? before : d)));
+      setVault(v => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
+      showToast(
+        e?.code === 'not-recorded'
+          ? 'Angsuran sudah dibatalkan pengurus lain. Muat ulang.'
+          : `Pembatalan GAGAL. ${fsError(e)}`,
         'error'
       );
       return false;
@@ -1121,8 +1293,10 @@ export const AppProvider = ({ children }) => {
       // Payment verification — the only paths that credit the vault
       verifyIuran,
       rejectIuran,
+      unverifyIuran,
       verifyInstallment,
       rejectInstallment,
+      unverifyInstallment,
       addExpense,
       deleteExpense,
       addDebt,

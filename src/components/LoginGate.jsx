@@ -1,75 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { Bus, Lock, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bus, User, KeyRound, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
-// Admin password gate.
+// Admin gate — an ACCOUNT, not a shared password.
 //
-// READ THIS BEFORE ASSUMING THE PANEL IS PRIVATE.
+// Until now the panel opened for anyone who typed a password that was compiled
+// into the JavaScript bundle, and then acted as Afrizal regardless of who was
+// sitting there. A driver who found the URL could read and edit the books.
 //
-// The Firestore rules deployed on this project have no `request.auth` check —
-// they enforce data integrity (valid shapes, derived status, bounded lists)
-// but NOT authorization. That is deliberate: the mobile app never signs in,
-// so tightening the rules to require authentication would break every driver's
-// phone.
+// Now the gate matches NIK + PIN against `users` and refuses every account
+// whose role is not `admin`. The default PIN is the last four digits of the
+// NIK, which is how the mobile app already behaves; nothing in Firestore
+// stores a PIN yet, so that default is what actually raises the bar, and
+// changing it is the next step.
 //
-// Consequence: this password is a DETERRENT, not security. The correct value
-// is compiled into the JavaScript bundle, so anyone who opens devtools can
-// read it. It stops a colleague walking up to an unlocked laptop, and it
-// stops search engines indexing the panel. It does not stop someone who
-// decides to look.
-//
-// The real fix is Firebase Auth for the pengurus plus a rules change to
-// `request.auth != null` — which requires adding sign-in to the mobile app
-// first. Until then, treat the URL as the actual secret.
-const STORAGE_KEY = 'paguyuban.admin.unlocked';
-
-// VITE_ADMIN_PASSWORD is read from .env.local (gitignored). The fallback below
-// exists so `npm run dev` works on a fresh clone with no .env — it is a
-// development default, not a production secret.
-const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'EV50-Cawang-2026';
+// READ THIS BEFORE ASSUMING THE PANEL IS PRIVATE: Firestore rules still have
+// no `request.auth` check, because the mobile app never signs in. This gate
+// protects the UI, not the data. Someone who calls the Firestore API directly
+// is not stopped by it.
+const Splash = () => (
+  <div className="min-h-screen bg-slate-900 flex items-center justify-center gap-3 text-slate-400 text-sm">
+    <span className="w-4 h-4 border-2 border-slate-700 border-t-teal-400 rounded-full animate-spin" />
+    <span>Memeriksa sesi pengurus…</span>
+  </div>
+);
 
 export const LoginGate = ({ children }) => {
-  const [unlocked, setUnlocked] = useState(() => {
-    try {
-      return sessionStorage.getItem(STORAGE_KEY) === '1';
-    } catch {
-      return false;
-    }
-  });
-  const [value, setValue] = useState('');
+  const { isAdmin, signIn, loading, hasSession } = useApp();
+  const [nik, setNik] = useState('');
+  const [pin, setPin] = useState('');
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
-  const [attempts, setAttempts] = useState(0);
+  const [busy, setBusy] = useState(false);
 
-  // Lock again when the tab closes, so a shared depot machine re-locks itself.
-  useEffect(() => {
-    const onUnload = () => {
-      try {
-        sessionStorage.removeItem(STORAGE_KEY);
-      } catch {
-        /* storage unavailable — nothing to clear */
-      }
-    };
-    window.addEventListener('unload', onUnload);
-    return () => window.removeEventListener('unload', onUnload);
-  }, []);
+  if (isAdmin) return children;
 
-  if (unlocked) return children;
+  // A stored session cannot be checked until the roster arrives. Showing the
+  // form for that half-second would look like a logout on every refresh.
+  if (loading && hasSession) return <Splash />;
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (value === PASSWORD) {
-      try {
-        sessionStorage.setItem(STORAGE_KEY, '1');
-      } catch {
-        /* private mode — stay unlocked for this render only */
-      }
-      setUnlocked(true);
-      setError('');
-      return;
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    const res = await signIn(nik, pin);
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.error);
+      setPin('');
     }
-    setAttempts((a) => a + 1);
-    setValue('');
-    setError('Kata sandi salah.');
   };
 
   return (
@@ -97,25 +77,45 @@ export const LoginGate = ({ children }) => {
         >
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck className="w-4 h-4 text-teal-400" />
-            <h2 className="text-sm font-bold text-white">Masuk Panel Admin</h2>
+            <h2 className="text-sm font-bold text-white">Masuk Akun Pengurus</h2>
           </div>
 
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Kata Sandi Pengurus
+            NIK
           </label>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative mb-3">
+            <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
-              type={show ? 'text' : 'password'}
-              value={value}
+              type="text"
+              inputMode="numeric"
+              autoComplete="username"
+              value={nik}
               onChange={(e) => {
-                setValue(e.target.value);
+                setNik(e.target.value.replace(/\D/g, ''));
                 if (error) setError('');
               }}
               autoFocus
+              className="w-full pl-9 pr-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white font-mono outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              placeholder="1700xxxx"
+            />
+          </div>
+
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            PIN
+          </label>
+          <div className="relative">
+            <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type={show ? 'text' : 'password'}
+              inputMode="numeric"
               autoComplete="current-password"
-              className="w-full pl-9 pr-10 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="••••••••••"
+              value={pin}
+              onChange={(e) => {
+                setPin(e.target.value.replace(/\D/g, '').slice(0, 4));
+                if (error) setError('');
+              }}
+              className="w-full pl-9 pr-10 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white font-mono outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              placeholder="••••"
             />
             <button
               type="button"
@@ -136,22 +136,20 @@ export const LoginGate = ({ children }) => {
 
           <button
             type="submit"
-            className="mt-4 w-full py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold rounded-xl transition active:scale-[0.98]"
+            disabled={busy || !nik || pin.length < 4}
+            className="mt-4 w-full py-2.5 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition active:scale-[0.98]"
           >
-            Buka Panel
+            {busy ? 'Memeriksa…' : 'Buka Panel'}
           </button>
 
-          {attempts >= 3 && (
-            <p className="mt-3 text-[11px] text-slate-500 leading-relaxed">
-              Panel ini terhubung langsung ke data Firestore. Kata sandi ada di
-              bundel JavaScript, jadi anggap URL-nya sebagai rahasia yang
-              sebenarnya.
-            </p>
-          )}
+          <p className="mt-3 text-[11px] text-slate-500 leading-relaxed">
+            Hanya akun berstatus pengurus yang bisa membuka panel ini. PIN bawaan
+            adalah 4 angka terakhir NIK.
+          </p>
         </form>
 
         <p className="text-center text-[10px] text-slate-600 mt-4">
-          Sesi terkunci otomatis saat tab ditutup.
+          Sesi berakhir saat tab ditutup.
         </p>
       </div>
     </div>

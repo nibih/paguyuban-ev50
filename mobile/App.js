@@ -18,12 +18,15 @@ import MemberKasTerbuka from './src/screens/MemberKasTerbuka';
 import AdminContainer from './src/screens/admin/AdminContainer';
 
 // Icons
-import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, RefreshCw, LogOut, History } from 'lucide-react-native';
+import { Home, CreditCard, AlertCircle, Wrench, ShieldCheck, LogOut, History } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 
 function MainNavigation() {
-  const { isAuthenticated, logout, role, setRole, toast } = useApp();
+  const { isAuthenticated, logout, role, currentUser, toast } = useApp();
+
+  // The admin view follows the ACCOUNT, never a local switch.
+  const isAdminUser = currentUser?.role === 'admin' && currentUser?.status !== 'inactive';
 
   if (!isAuthenticated) {
     return <LoginScreen />;
@@ -41,13 +44,14 @@ function MainNavigation() {
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <TouchableOpacity 
-            style={styles.roleToggle}
-            onPress={() => setRole(role === 'member' ? 'admin' : 'member')}
-          >
-            <RefreshCw size={12} color="#00A896" />
-            <Text style={styles.roleText}>{role === 'member' ? 'Pramudi' : 'Pengurus'}</Text>
-          </TouchableOpacity>
+          {/* The role used to be a TAP TOGGLE — any driver could switch to
+              "Pengurus" and read the books. It is now a label derived from the
+              signed-in account, and the admin view below is gated on the
+              account's actual role. */}
+          <View style={styles.roleToggle}>
+            <ShieldCheck size={12} color={isAdminUser ? '#00A896' : '#93C5FD'} />
+            <Text style={styles.roleText}>{isAdminUser ? 'Pengurus' : 'Pramudi'}</Text>
+          </View>
 
           <TouchableOpacity 
             style={styles.logoutBtn}
@@ -60,7 +64,7 @@ function MainNavigation() {
       </View>
 
       {/* Navigation View */}
-      {role === 'member' ? (
+      {!isAdminUser ? (
         <Tab.Navigator
           screenOptions={{
             headerShown: false,

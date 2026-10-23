@@ -5,10 +5,12 @@ import { db } from '../services/firebase';
 import {
   collection,
   doc,
+  getDoc,
   setDoc,
   deleteDoc,
   onSnapshot,
-  runTransaction
+  runTransaction,
+  writeBatch
 } from 'firebase/firestore';
 
 const AppContext = createContext();
@@ -42,13 +44,26 @@ const normName = (s) => String(s || '')
 const vaultKeyForMethod = (method) => ((method || '').includes('Tunai') ? 'pettyCash' : 'bsiBalance');
 const vaultKeyFor = (source) => ((source || '').includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
 
+const SESSION_KEY = 'paguyuban.admin.nik';
+
 export const AppProvider = ({ children }) => {
-  // The panel is single-identity: it always acts as the cashier on duty.
-  // Drivers log in through the mobile app; there is no member mode here.
-  const currentUser = useMemo(
-    () => ({ nik: '17001589', name: 'Afrizal Firmansyah', role: 'admin', position: 'Admin Kasir & Korlap' }),
-    []
-  );
+  // The panel used to act as Afrizal no matter who opened it, behind a shared
+  // password that was compiled into the JavaScript bundle. Both are gone: the
+  // gate matches NIK + PIN against `users` and refuses anyone whose role is
+  // not `admin`.
+  //
+  // This is an application-level guard, not authorisation. Firestore rules
+  // still accept writes without `request.auth` because the mobile app has no
+  // Firebase Auth, so a caller who skips the UI can still reach the data. What
+  // this stops is the realistic case: a driver opening the panel and reading
+  // the books, or flipping `role` on their own account from the member view.
+  const [adminNik, setAdminNik] = useState(() => {
+    try {
+      return sessionStorage.getItem(SESSION_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
 
   const [users, setUsers] = useState([]);
   const [debts, setDebts] = useState([]);
@@ -152,6 +167,73 @@ export const AppProvider = ({ children }) => {
     };
   }, []);
 
+  // Identity is derived from the loaded roster, so a demoted or deactivated
+  // account loses the panel on the next snapshot instead of keeping a stale
+  // session alive.
+  const currentUser = useMemo(
+    () => users.find((u) => u.nik === adminNik) || null,
+    [users, adminNik]
+  );
+  const isAdmin = !!currentUser
+    && currentUser.role === 'admin'
+    && currentUser.status !== 'inactive';
+  const hasSession = !!adminNik;
+
+  // Drop a stored session that no longer maps to an active admin. Waits for
+  // the roster: an empty `users` while the first snapshot is in flight must
+  // not look like "this account was deleted".
+  useEffect(() => {
+    if (loading || !adminNik || users.length === 0) return;
+    const u = users.find((x) => x.nik === adminNik);
+    if (!u || u.role !== 'admin' || u.status === 'inactive') {
+      try {
+        sessionStorage.removeItem(SESSION_KEY);
+      } catch {
+        /* storage unavailable — the in-memory session is cleared below */
+      }
+      setAdminNik('');
+    }
+  }, [loading, users, adminNik]);
+
+  // Verify NIK + PIN against the roster. The default PIN is the last four
+  // digits of the NIK, matching the mobile app; nothing in Firestore stores a
+  // PIN yet, so that default — not this form — is what actually raises the bar.
+  const signIn = async (nik, pin) => {
+    const cleanNik = String(nik || '').trim();
+    if (!cleanNik) return { ok: false, error: 'Masukkan NIK.' };
+
+    try {
+      const snap = await getDoc(doc(db, 'users', cleanNik));
+      if (!snap.exists()) return { ok: false, error: 'NIK tidak terdaftar.' };
+
+      const user = snap.data();
+      if (user.status === 'inactive') return { ok: false, error: 'Akun ini dinonaktifkan.' };
+      if (user.role !== 'admin') return { ok: false, error: 'Akun ini bukan pengurus.' };
+
+      const expected = String(user.pin || cleanNik.slice(-4));
+      if (String(pin || '') !== expected) return { ok: false, error: 'PIN salah.' };
+
+      try {
+        sessionStorage.setItem(SESSION_KEY, cleanNik);
+      } catch {
+        /* private mode — the session lasts this render only */
+      }
+      setAdminNik(cleanNik);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: fsError(e) };
+    }
+  };
+
+  const signOut = () => {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* nothing to clear */
+    }
+    setAdminNik('');
+  };
+
   // Each call replaces the previous toast AND takes over its dismissal
   // timer. Without clearing the old timer, a burst of messages — exactly
   // what a bulk operation produces — would leave the first call's timeout
@@ -189,7 +271,7 @@ export const AppProvider = ({ children }) => {
       nominal: IURAN_FEE,
       date: todayId(),
       method: 'Tunai Kasir',
-      markedBy: currentUser.name
+      markedBy: currentUser?.name || 'Pengurus'
     };
     const before = iuranRecords[nik]?.[month];
 
@@ -249,7 +331,7 @@ export const AppProvider = ({ children }) => {
 
     const vaultKey = vaultKeyForMethod(entry.method);
     const nominal = Number(entry.nominal) || IURAN_FEE;
-    const verifiedBy = currentUser.name;
+    const verifiedBy = currentUser?.name || 'Pengurus';
     const verifiedAt = todayId();
     const before = entry;
 
@@ -330,6 +412,100 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Undo a confirmed iuran month. Exact inverse of verifyIuran: the month
+  // returns to `unpaid` and the vault that was credited is debited.
+  //
+  // Bank-sourced rows (`source: 'Laporan Uang Masuk'`) are refused. That money
+  // never entered the vault through this panel, so debiting it here would
+  // invent a refund that nobody paid out. Those are corrected against the
+  // statement and the seeder.
+  const unverifyIuran = async (nik, month) => {
+    const entry = iuranRecords[nik]?.[month];
+    if (!entry || entry.status !== 'lunas') {
+      showToast('Hanya iuran yang sudah lunas yang bisa dibatalkan.', 'error');
+      return false;
+    }
+    if (entry.source === 'Laporan Uang Masuk') {
+      showToast('Data ini dari laporan bank, bukan verifikasi aplikasi. Koreksi lewat laporan aslinya.', 'error');
+      return false;
+    }
+
+    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
+    const nominal = Number(entry.nominal) || 0;
+    const before = entry;
+    const reverted = {
+      status: 'unpaid',
+      nominal: 0,
+      method: entry.method || '',
+      date: entry.date || '',
+      revertedBy: currentUser?.name || 'Pengurus',
+      revertedAt: todayId(),
+      revertedFrom: {
+        status: entry.status,
+        nominal: entry.nominal,
+        method: entry.method || '',
+        date: entry.date || '',
+        verifiedBy: entry.verifiedBy || entry.markedBy || ''
+      }
+    };
+
+    if ((vault[vaultKey] || 0) < nominal) {
+      showToast(
+        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(nominal)}.`,
+        'error'
+      );
+      return false;
+    }
+
+    setIuranRecords((prev) => ({
+      ...prev,
+      [nik]: { ...(prev[nik] || {}), [month]: reverted }
+    }));
+    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const iuranRef = doc(db, 'iuran', nik);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [iuranSnap, vaultSnap] = await Promise.all([tx.get(iuranRef), tx.get(vaultRef)]);
+
+        const months = { ...(iuranSnap.exists() ? iuranSnap.data().months : {}) };
+        const current = months[month];
+        if (!current || current.status !== 'lunas') throw { code: 'not-lunas' };
+        if (current.source === 'Laporan Uang Masuk') throw { code: 'bank' };
+
+        const amount = Number(current.nominal) || 0;
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (cash < amount) throw { code: 'insufficient' };
+
+        months[month] = {
+          ...reverted,
+          revertedFrom: { ...reverted.revertedFrom, nominal: current.nominal }
+        };
+        tx.set(iuranRef, { nik, months }, { merge: true });
+        tx.set(vaultRef, { [vaultKey]: cash - amount }, { merge: true });
+      });
+
+      const name = users.find((u) => u.nik === nik)?.name || nik;
+      showToast(`Iuran ${month} a.n ${name} dibatalkan. Kas dikurangi ${rp(nominal)}.`);
+      return true;
+    } catch (e) {
+      setIuranRecords((prev) => ({ ...prev, [nik]: { ...(prev[nik] || {}), [month]: before } }));
+      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
+      showToast(
+        e?.code === 'not-lunas'
+          ? `Iuran ${month} sudah diubah pengurus lain. Muat ulang.`
+          : e?.code === 'bank'
+            ? 'Data ini dari laporan bank, bukan verifikasi aplikasi.'
+            : e?.code === 'insufficient'
+              ? `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan.`
+              : `Pembatalan GAGAL. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
   // Confirm one queued installment: it moves into `paid`, status is recomputed
   // from paid/amount, and the cash lands in the matching vault.
   const verifyInstallment = async (debtId, entryId) => {
@@ -344,6 +520,13 @@ export const AppProvider = ({ children }) => {
     const amt = Number(entry.amount);
     const name = debt.name || debtId;
     const before = debt;
+    const verifiedBy = currentUser?.name || 'Pengurus';
+    const verifiedAt = todayId();
+    // Keep the confirmed entry instead of discarding it. `paid` alone cannot
+    // be reversed: it holds no amounts, no methods and no vault, so undoing a
+    // mistaken confirmation would have to guess. This array is the audit trail
+    // `unverifyInstallment` walks.
+    const record = { ...entry, verifiedBy, verifiedAt, vault: vaultKey };
 
     setDebts((prev) => prev.map((d) => {
       if (d.id !== debtId) return d;
@@ -353,7 +536,8 @@ export const AppProvider = ({ children }) => {
         ...d,
         paid: newPaid,
         status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
-        pendingInstallments: (d.pendingInstallments || []).filter((p) => p.id !== entryId)
+        pendingInstallments: (d.pendingInstallments || []).filter((p) => p.id !== entryId),
+        verifiedInstallments: [...(d.verifiedInstallments || []), record]
       };
     }));
     setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
@@ -376,7 +560,8 @@ export const AppProvider = ({ children }) => {
         tx.update(debtRef, {
           paid: newPaid,
           status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
-          pendingInstallments: queue.filter((p) => p.id !== entryId)
+          pendingInstallments: queue.filter((p) => p.id !== entryId),
+          verifiedInstallments: [...(d.verifiedInstallments || []), { ...found, verifiedBy, verifiedAt, vault: vaultKey }]
         });
 
         const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
@@ -392,6 +577,94 @@ export const AppProvider = ({ children }) => {
         e?.code === 'not-found'
           ? 'Angsuran sudah diproses pengurus lain. Muat ulang.'
           : `Verifikasi GAGAL. ${fsError(e)}`,
+        'error'
+      );
+      return false;
+    }
+  };
+
+  // Undo a confirmation the panel recorded. Exact inverse of
+  // verifyInstallment: the entry leaves the audit trail, `paid` falls back,
+  // and the vault it credited is debited by the same amount.
+  //
+  // Only entries carrying `verifiedBy` can be undone. The seed's `paid`
+  // amounts came from paper cards with no per-installment breakdown and no
+  // record of which vault received the money, so the old aggregate is left
+  // alone rather than guessed at.
+  const unverifyInstallment = async (debtId, entryId) => {
+    const debt = debts.find((d) => d.id === debtId);
+    const entry = (debt?.verifiedInstallments || []).find((p) => p.id === entryId);
+    if (!entry) {
+      showToast('Angsuran ini tidak punya riwayat verifikasi di aplikasi.', 'error');
+      return false;
+    }
+
+    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
+    const amt = Number(entry.amount) || 0;
+    const before = debt;
+    const statusFor = (amount, paid) => {
+      if (paid >= amount) return 'Lunas';
+      if (paid <= 0) return 'Belum Mengangsur';
+      return 'Sedang Mengangsur';
+    };
+
+    // Refuse rather than drive the balance negative: a cash figure below zero
+    // is a worse lie than a blocked button.
+    if ((vault[vaultKey] || 0) < amt) {
+      showToast(
+        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(amt)}.`,
+        'error'
+      );
+      return false;
+    }
+
+    setDebts((prev) => prev.map((d) => {
+      if (d.id !== debtId) return d;
+      const newPaid = Math.max(0, (d.paid || 0) - amt);
+      return {
+        ...d,
+        paid: newPaid,
+        status: statusFor(d.amount, newPaid),
+        verifiedInstallments: (d.verifiedInstallments || []).filter((p) => p.id !== entryId)
+      };
+    }));
+    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const debtRef = doc(db, 'debts', debtId);
+        const vaultRef = doc(db, 'system', 'vault');
+        const [debtSnap, vaultSnap] = await Promise.all([tx.get(debtRef), tx.get(vaultRef)]);
+        if (!debtSnap.exists()) throw { code: 'not-found' };
+
+        const d = debtSnap.data();
+        const list = d.verifiedInstallments || [];
+        const found = list.find((p) => p.id === entryId);
+        if (!found) throw { code: 'not-recorded' };
+
+        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (cash < found.amount) throw { code: 'insufficient' };
+
+        const newPaid = Math.max(0, (d.paid || 0) - found.amount);
+        tx.update(debtRef, {
+          paid: newPaid,
+          status: statusFor(d.amount, newPaid),
+          verifiedInstallments: list.filter((p) => p.id !== entryId)
+        });
+        tx.set(vaultRef, { [vaultKey]: cash - found.amount }, { merge: true });
+      });
+
+      showToast(`Verifikasi angsuran ${debt.name || debtId} ${rp(amt)} dibatalkan. Kas dikurangi.`);
+      return true;
+    } catch (e) {
+      setDebts((prev) => prev.map((d) => (d.id === debtId ? before : d)));
+      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
+      showToast(
+        e?.code === 'not-recorded'
+          ? 'Angsuran sudah dibatalkan pengurus lain. Muat ulang.'
+          : e?.code === 'insufficient'
+            ? `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan.`
+            : `Pembatalan GAGAL. ${fsError(e)}`,
         'error'
       );
       return false;
@@ -553,7 +826,7 @@ export const AppProvider = ({ children }) => {
       paid: 0,
       status: 'Belum Mengangsur',
       body,
-      disbursedBy: currentUser.name
+      disbursedBy: currentUser?.name || 'Pengurus'
     };
 
     setDebts((prev) => [item, ...prev]);
@@ -635,6 +908,153 @@ export const AppProvider = ({ children }) => {
   };
 
   /* ---------------------------------------------------------------- *
+   * UPLOADS
+   *
+   * Photos and payment proofs ride on the owning document as base64
+   * thumbnails — the project has no Cloud Storage bucket. src/utils/image.js
+   * enforces the same 400–700px JPEG budget the mobile app uses, so a photo
+   * taken at the depot desk costs the same as one taken on a phone.
+   * ---------------------------------------------------------------- */
+
+  // Replace an incident's photo list. Capped at 3 to match validPhotos() in
+  // firestore.rules and keep the document far from the 1 MiB ceiling.
+  const updateIncidentPhotos = async (incidentId, photos) => {
+    const before = incidents.find((i) => i.id === incidentId);
+    if (!before) return false;
+
+    const list = (photos || []).filter(Boolean).slice(0, 3);
+    setIncidents((prev) => prev.map((i) => (i.id === incidentId ? { ...i, photos: list } : i)));
+
+    try {
+      await setDoc(doc(db, 'incidents', incidentId), { photos: list }, { merge: true });
+      return true;
+    } catch (e) {
+      setIncidents((prev) => prev.map((i) => (i.id === incidentId ? before : i)));
+      showToast(`Foto TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // Import a batch of repair cards. The archive is written in chunks of 400
+  // (the Firestore batch ceiling is 500) and skips ids that are already in the
+  // logbook, so re-running an import after a half-finished attempt tops it up
+  // instead of duplicating it.
+  const addIncidentsBulk = async (docs) => {
+    const known = new Set(incidents.map((i) => i.id));
+    const fresh = (docs || []).filter((d) => d?.id && !known.has(d.id));
+    const skipped = (docs || []).length - fresh.length;
+
+    if (!fresh.length) {
+      showToast('Semua kartu ini sudah ada di logbook.');
+      return { created: 0, skipped };
+    }
+
+    const written = [];
+    const CHUNK = 400;
+
+    for (let i = 0; i < fresh.length; i += CHUNK) {
+      const chunk = fresh.slice(i, i + CHUNK);
+      try {
+        const batch = writeBatch(db);
+        chunk.forEach((d) => batch.set(doc(db, 'incidents', d.id), d));
+        await batch.commit();
+        written.push(...chunk);
+      } catch (e) {
+        // Keep what landed so the board matches the database, and let the
+        // operator retry — the import is idempotent.
+        if (written.length) setIncidents((prev) => [...written, ...prev]);
+        showToast(
+          `${written.length} kartu tersimpan, sisanya GAGAL. ${fsError(e)} Coba impor ulang.`,
+          'error'
+        );
+        return { created: written.length, skipped, failed: true };
+      }
+    }
+
+    setIncidents((prev) => [...written, ...prev]);
+    showToast(`${written.length} kartu perbaikan ditambahkan${skipped ? `, ${skipped} sudah ada` : ''}.`);
+    return { created: written.length, skipped };
+  };
+
+  // Attach a transfer receipt to a queued iuran month. verifyIuran spreads the
+  // current entry into the confirmed one, so the proof survives verification.
+  const attachIuranProof = async (nik, month, proof) => {
+    const before = iuranRecords[nik]?.[month];
+    if (!before) {
+      showToast('Pembayaran tidak ditemukan.', 'error');
+      return false;
+    }
+
+    setIuranRecords((prev) => {
+      const next = { ...before };
+      if (proof) next.proof = proof; else delete next.proof;
+      return { ...prev, [nik]: { ...(prev[nik] || {}), [month]: next } };
+    });
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const ref = doc(db, 'iuran', nik);
+        const snap = await tx.get(ref);
+        const months = { ...(snap.exists() ? snap.data().months : {}) };
+        if (!months[month]) throw { code: 'missing' };
+
+        const updated = { ...months[month] };
+        if (proof) updated.proof = proof; else delete updated.proof;
+        months[month] = updated;
+        tx.set(ref, { nik, months }, { merge: true });
+      });
+
+      showToast(proof ? 'Bukti transfer dilampirkan.' : 'Bukti transfer dihapus.');
+      return true;
+    } catch (e) {
+      setIuranRecords((prev) => ({ ...prev, [nik]: { ...(prev[nik] || {}), [month]: before } }));
+      showToast(`Bukti TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  // Same for a queued installment. The proof is copied into
+  // verifiedInstallments by verifyInstallment, so it stays with the payment.
+  const attachInstallmentProof = async (debtId, entryId, proof) => {
+    const debt = debts.find((d) => d.id === debtId);
+    const entry = debt?.pendingInstallments?.find((p) => p.id === entryId);
+    if (!entry) {
+      showToast('Angsuran tidak ditemukan.', 'error');
+      return false;
+    }
+    const before = debt;
+
+    const patch = (list) => list.map((p) => {
+      if (p.id !== entryId) return p;
+      const next = { ...p };
+      if (proof) next.proof = proof; else delete next.proof;
+      return next;
+    });
+
+    setDebts((prev) => prev.map((d) => (d.id === debtId
+      ? { ...d, pendingInstallments: patch(d.pendingInstallments || []) }
+      : d)));
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const ref = doc(db, 'debts', debtId);
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw { code: 'not-found' };
+        const list = snap.data().pendingInstallments || [];
+        if (!list.some((p) => p.id === entryId)) throw { code: 'not-found' };
+        tx.update(ref, { pendingInstallments: patch(list) });
+      });
+
+      showToast(proof ? 'Bukti transfer dilampirkan.' : 'Bukti transfer dihapus.');
+      return true;
+    } catch (e) {
+      setDebts((prev) => prev.map((d) => (d.id === debtId ? before : d)));
+      showToast(`Bukti TIDAK tersimpan. ${fsError(e)}`, 'error');
+      return false;
+    }
+  };
+
+  /* ---------------------------------------------------------------- *
    * ROSTER MANAGEMENT
    *
    * Members are never hard-deleted. A driver with a debt card or a settled
@@ -686,7 +1106,7 @@ export const AppProvider = ({ children }) => {
       // last-4-of-NIK default so existing accounts are unaffected.
       ...(v.pin ? { pin: v.pin } : {}),
       createdAt: todayId(),
-      createdBy: currentUser.name
+      createdBy: currentUser?.name || 'Pengurus'
     };
 
     setUsers((prev) => [item, ...prev]);
@@ -700,6 +1120,68 @@ export const AppProvider = ({ children }) => {
       showToast(`Pramudi TIDAK tersimpan. ${fsError(e)}`, 'error');
       return false;
     }
+  };
+
+  // Batch intake. Drivers arrive in groups — a new depot roster, a transferred
+  // crew — and typing twenty rows through the single-entry form is where
+  // misspelt NIKs come from. Each row goes through the same validateMember()
+  // as the form and is written on its own, so one bad NIK cannot block the
+  // other nineteen. A NIK that already exists is skipped, never merged: the
+  // NIK is immutable and may already own iuran records and debt cards.
+  //
+  // Bulk intake never grants admin. Promotion is a deliberate, one-at-a-time
+  // decision, not something that rides in on a spreadsheet column.
+  const addMembersBulk = async (rows) => {
+    const created = [];
+    const failed = [];
+    const seen = new Set(users.map((u) => u.nik));
+
+    for (const raw of rows || []) {
+      const v = validateMember({
+        nik: raw?.nik,
+        name: raw?.name,
+        position: raw?.position,
+        pin: raw?.pin
+      });
+
+      if (!v.ok) {
+        failed.push({ nik: String(raw?.nik || ''), name: String(raw?.name || ''), error: v.error });
+        continue;
+      }
+      if (seen.has(v.nik)) {
+        failed.push({ nik: v.nik, name: v.name, error: `NIK ${v.nik} sudah terdaftar.` });
+        continue;
+      }
+
+      const item = {
+        nik: v.nik,
+        name: v.name,
+        role: 'member',
+        position: String(raw?.position || '').trim() || 'Pramudi EV 50 Cawang',
+        status: 'active',
+        ...(v.pin ? { pin: v.pin } : {}),
+        createdAt: todayId(),
+        createdBy: currentUser?.name || 'Pengurus'
+      };
+
+      try {
+        await setDoc(doc(db, 'users', item.nik), item);
+        created.push(item);
+        seen.add(v.nik);
+      } catch (e) {
+        failed.push({ nik: v.nik, name: v.name, error: fsError(e) });
+      }
+    }
+
+    if (created.length) setUsers((prev) => [...created, ...prev]);
+    showToast(
+      created.length
+        ? `${created.length} pramudi ditambahkan${failed.length ? `, ${failed.length} dilewati` : ''}.`
+        : 'Tidak ada pramudi yang bisa ditambahkan.',
+      created.length ? undefined : 'error'
+    );
+
+    return { created, failed };
   };
 
   // Edit name, position, role, or reset the PIN.
@@ -864,6 +1346,10 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{
       currentUser,
+      isAdmin,
+      hasSession,
+      signIn,
+      signOut,
       loading,
       users,
       debts,
@@ -881,16 +1367,24 @@ export const AppProvider = ({ children }) => {
       // Payment verification — the only paths that credit the vault
       verifyIuran,
       rejectIuran,
+      unverifyIuran,
       verifyInstallment,
       rejectInstallment,
+      unverifyInstallment,
       addExpense,
       deleteExpense,
       addDebt,
       deleteDebt,
       updateIncidentStatus,
       deleteIncident,
+      // Uploads — base64 thumbnails on the owning document
+      updateIncidentPhotos,
+      attachIuranProof,
+      attachInstallmentProof,
+      addIncidentsBulk,
       // Roster management
       addMember,
+      addMembersBulk,
       updateMember,
       setMemberActive,
       // Emergency contacts — route dispatch list

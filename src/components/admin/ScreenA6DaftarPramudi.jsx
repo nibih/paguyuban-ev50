@@ -7,7 +7,8 @@ import {
   X,
   ShieldCheck,
   ShieldOff,
-  Users
+  Users,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
@@ -30,7 +31,7 @@ const EMPTY_FORM = {
 // system nobody can get back into is not a system.
 export const ScreenA6DaftarPramudi = () => {
   const {
-    users, iuranRecords, debts, addMember, updateMember, setMemberActive, showToast
+    users, iuranRecords, debts, addMember, updateMember, setMemberActive, setAdminTab, showToast
   } = useApp();
 
   const [search, setSearch] = useState('');
@@ -200,13 +201,23 @@ export const ScreenA6DaftarPramudi = () => {
           </p>
         </div>
 
-        <button
-          onClick={openCreate}
-          className="px-3.5 py-2 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95 self-start"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Tambah Pramudi</span>
-        </button>
+        <div className="flex items-center gap-2 self-start">
+          <button
+            onClick={() => setAdminTab('A8')}
+            className="px-3.5 py-2 bg-white border border-slate-300 hover:border-teal-400 hover:text-teal-700 text-slate-700 text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition active:scale-95"
+            title="Pramudi baru biasanya datang sekaligus — impor satu daftar"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Tambah Massal</span>
+          </button>
+          <button
+            onClick={openCreate}
+            className="px-3.5 py-2 bg-navy-800 hover:bg-navy-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition active:scale-95"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Tambah Pramudi</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter bar */}

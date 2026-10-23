@@ -23,6 +23,15 @@ const INDEX_STUBS = EXTENSIONS.map(e => '/index' + e);
 
 const problems = [];
 
+// Node builtins that may appear without the `node:` prefix. The src/data
+// scripts are run by Node, not bundled by Metro, so `import path from 'path'`
+// is correct there even though React Native code could never use it.
+const NODE_BUILTINS = new Set([
+  'assert', 'buffer', 'child_process', 'crypto', 'events', 'fs', 'http', 'https',
+  'module', 'os', 'path', 'process', 'readline', 'stream', 'timers', 'tls',
+  'url', 'util', 'zlib'
+]);
+
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -122,6 +131,10 @@ for (const file of walk(SRC)) {
       }
     } else if (spec.startsWith('node:')) {
       // builtin, skip
+    } else if (NODE_BUILTINS.has(spec.split('/')[0])) {
+      // bare builtin ('path', 'fs'), only valid in the Node-side tools under
+      // src/data — React Native code cannot reach these, but the maintenance
+      // scripts legitimately can.
     } else if (!packageEntryExists(spec)) {
       problems.push(`${path.relative(ROOT, file)}:${line}  ->  ${spec}   (package not installed)`);
     }

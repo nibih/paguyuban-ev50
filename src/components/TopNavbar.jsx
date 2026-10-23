@@ -19,7 +19,7 @@ const Stat = ({ icon: Icon, value, label, tone }) => (
 );
 
 export const TopNavbar = () => {
-  const { currentUser, users, debts, iuranRecords } = useApp();
+  const { currentUser, users, debts, iuranRecords, signOut } = useApp();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -90,17 +90,22 @@ export const TopNavbar = () => {
           <span>{time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} WIB</span>
         </div>
 
-        {/* Cashier identity */}
-        <div className="flex items-center gap-2 bg-blue-950/80 border border-blue-700/60 rounded-xl px-3 py-1.5 shadow-sm" title={`Masuk sebagai ${currentUser.name}`}>
+        {/* Cashier identity. The panel now has a real account behind it, so
+            the identity block doubles as the sign-out control. */}
+        <button
+          onClick={signOut}
+          className="flex items-center gap-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-700/60 rounded-xl px-3 py-1.5 shadow-sm transition group"
+          title={`Keluar dari akun ${currentUser?.name || ''}`}
+        >
           <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-teal-500 to-blue-600 flex items-center justify-center text-[10px] font-black shrink-0">
-            {currentUser.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
+            {(currentUser?.name || 'Pengurus').split(' ').map((w) => w[0]).slice(0, 2).join('')}
           </div>
-          <div className="hidden sm:block leading-tight">
-            <div className="text-[11px] font-bold text-white">{currentUser.name}</div>
-            <div className="text-[9px] text-teal-300 font-semibold uppercase tracking-wide">{currentUser.position}</div>
+          <div className="hidden sm:block leading-tight text-left">
+            <div className="text-[11px] font-bold text-white">{currentUser?.name || 'Pengurus'}</div>
+            <div className="text-[9px] text-teal-300 font-semibold uppercase tracking-wide">{currentUser?.position || 'Pengurus'}</div>
           </div>
-          <LogOut className="w-3.5 h-3.5 text-blue-300 hidden sm:block ml-1" />
-        </div>
+          <LogOut className="w-3.5 h-3.5 text-blue-300 group-hover:text-rose-300 hidden sm:block ml-1 transition" />
+        </button>
       </div>
     </header>
   );

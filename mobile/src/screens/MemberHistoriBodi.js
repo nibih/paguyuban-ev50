@@ -186,6 +186,15 @@ export default function MemberHistoriBodi() {
                         value={selected.needMechanic ? 'Diminta' : 'Tidak diminta'}
                       />
                     )}
+                    {/* Fields only the paper kartu perbaikan carries. */}
+                    {selected.kind ? <DetailRow label="Jenis perbaikan" value={selected.kind} /> : null}
+                    {selected.part ? <DetailRow label="Spare part" value={selected.part} /> : null}
+                    {selected.partPrice > 0 ? (
+                      <DetailRow
+                        label="Harga part"
+                        value={`Rp${Number(selected.partPrice).toLocaleString('id-ID')}`}
+                      />
+                    ) : null}
                   </View>
 
                   {selected.notes ? (
