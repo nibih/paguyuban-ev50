@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { rp } from '../utils/format';
 import { IURAN_FEE, MONTHS } from '../constants';
 import { db } from '../services/firebase';
@@ -140,9 +140,16 @@ export const AppProvider = ({ children }) => {
     };
   }, []);
 
+  // Each call replaces the previous toast AND takes over its dismissal
+  // timer. Without clearing the old timer, a burst of messages — exactly
+  // what a bulk operation produces — would leave the first call's timeout
+  // to fire 3.5s in and wipe the newest message, so the summary the cashier
+  // needed most would be the one that vanished first.
+  const toastTimer = useRef(null);
   const showToast = (message, type = 'success') => {
     setToast({ message, type, id: Date.now() });
-    setTimeout(() => setToast(null), 3500);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
   };
 
   /* ---------------------------------------------------------------- *

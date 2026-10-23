@@ -9,12 +9,13 @@ import {
   User, 
   DollarSign,
   ChevronRight,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const ScreenA5LogbookArmada = () => {
-  const { incidents, updateIncidentStatus } = useApp();
+  const { incidents, updateIncidentStatus, deleteIncident } = useApp();
   const [selectedIncident, setSelectedIncident] = useState(null);
 
   const COLUMNS = [
@@ -212,6 +213,21 @@ export const ScreenA5LogbookArmada = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  if (window.confirm(`Hapus catatan kerusakan ${selectedIncident.body}? Foto dan riwayat pada kartu ini ikut terhapus.`)) {
+                    deleteIncident(selectedIncident.id);
+                    setSelectedIncident(null);
+                  }
+                }}
+                className="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-rose-200 transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Catatan (Koreksi Admin)</span>
+              </button>
             </div>
 
             <button

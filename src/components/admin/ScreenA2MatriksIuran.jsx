@@ -32,6 +32,12 @@ export const ScreenA2MatriksIuran = () => {
   const [filter, setFilter] = useState('Semua');
   const [expandedNik, setExpandedNik] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
+  // Bulk selection over the pending queue. A Set of queue keys — never
+  // indices: the queue is rebuilt from a live Firestore snapshot and
+  // re-sorted by date, so an index could point at a different payment by
+  // the time the button is pressed.
+  const [picked, setPicked] = useState(() => new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Every month sitting in the queue, newest claim first.
   const queue = useMemo(() => {
@@ -59,6 +65,68 @@ export const ScreenA2MatriksIuran = () => {
     setBusyKey(item.key);
     await rejectIuran(item.nik, item.month);
     setBusyKey(null);
+  };
+
+  const togglePick = (key) =>
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const pickedItems = queue.filter((q) => picked.has(q.key));
+  const pickedTotal = pickedItems.reduce((s, q) => s + (Number(q.nominal) || 0), 0);
+  const allPicked = queue.length > 0 && pickedItems.length === queue.length;
+  const clearPicked = () => setPicked(new Set());
+
+  // Bulk verify / reject.
+  //
+  // It calls verifyIuran or rejectIuran once per item and reimplements
+  // nothing. Those are the only paths that credit the vault, and running
+  // them N times gives N individually atomic transactions rather than one
+  // batched mutation — so if three fail halfway, the books are exactly as
+  // correct as they were after any single verification.
+  //
+  // What it does NOT do is report a blanket success. Partial runs are
+  // reported as partial, naming enough of the failures for the cashier to
+  // redo them.
+  const runBulk = async (kind) => {
+    if (bulkBusy || pickedItems.length === 0) return;
+    const items = pickedItems;
+    const total = pickedTotal;
+
+    const question =
+      kind === 'verify'
+        ? `Verifikasi ${items.length} klaim senilai ${rp(total)}?\n\nIni mengkredit kas. Cocokkan dengan mutasi BSI / hitung kas kecil dulu.`
+        : `Tolak ${items.length} klaim senilai ${rp(total)}?\n\nUang ini TIDAK dicatat masuk kas.`;
+
+    if (!window.confirm(question)) return;
+
+    setBulkBusy(true);
+    let ok = 0;
+    const failed = [];
+    for (const q of items) {
+      const good = kind === 'verify'
+        ? await verifyIuran(q.nik, q.month)
+        : await rejectIuran(q.nik, q.month);
+      if (good) ok += 1;
+      else failed.push(`${q.name} · ${q.month}`);
+    }
+    setBulkBusy(false);
+
+    if (failed.length === 0) {
+      showToast(
+        kind === 'verify'
+          ? `${ok} pembayaran terverifikasi, kas dikredit.`
+          : `${ok} klaim ditolak, kas tidak berubah.`
+      );
+    } else {
+      const shown = failed.slice(0, 3).join(', ');
+      const more = failed.length > 3 ? `, +${failed.length - 3} lainnya` : '';
+      showToast(`${ok} dari ${items.length} berhasil. Gagal: ${shown}${more}`, 'error');
+    }
+    clearPicked();
   };
 
   const rows = useMemo(() => users
@@ -235,11 +303,54 @@ export const ScreenA2MatriksIuran = () => {
             Belum masuk kas. Cocokkan dulu dengan mutasi BSI / hitung kas kecil, baru tekan centang.
           </p>
 
+          {/* Bulk controls */}
+          <div className="flex flex-wrap items-center gap-3 mb-3 p-2.5 bg-white/70 rounded-xl border border-amber-200">
+            <label className="flex items-center gap-2 text-[11px] font-bold text-amber-900 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={allPicked}
+                onChange={(e) => setPicked(e.target.checked ? new Set(queue.map((q) => q.key)) : new Set())}
+                className="w-4 h-4 accent-teal-600"
+              />
+              Pilih semua
+            </label>
+
+            <span className="text-[11px] text-slate-500 font-medium">
+              {pickedItems.length} dipilih
+              {pickedItems.length > 0 ? ` · ${rp(pickedTotal)}` : ''}
+            </span>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => runBulk('reject')}
+                disabled={bulkBusy || pickedItems.length === 0}
+                className="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 text-[11px] font-bold hover:bg-rose-50 transition disabled:opacity-40"
+              >
+                Tolak Terpilih
+              </button>
+              <button
+                onClick={() => runBulk('verify')}
+                disabled={bulkBusy || pickedItems.length === 0}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-500 transition disabled:opacity-40"
+              >
+                {bulkBusy ? 'Memproses…' : 'Verifikasi Terpilih'}
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-2">
             {queue.map((q) => {
               const busy = busyKey === q.key;
               return (
                 <div key={q.key} className="flex items-center gap-3 bg-white rounded-xl border border-amber-200 p-3">
+                  <input
+                    type="checkbox"
+                    checked={picked.has(q.key)}
+                    onChange={() => togglePick(q.key)}
+                    disabled={busy || bulkBusy}
+                    className="w-4 h-4 accent-teal-600 shrink-0"
+                    aria-label={`Pilih ${q.name} — ${q.month}`}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-bold text-slate-900 truncate">{q.name}</div>
                     <div className="text-[11px] text-slate-500 mt-0.5 truncate">
@@ -249,7 +360,7 @@ export const ScreenA2MatriksIuran = () => {
                   </div>
                   <button
                     onClick={() => runVerify(q)}
-                    disabled={busy}
+                    disabled={busy || bulkBusy}
                     className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition disabled:opacity-40"
                     title="Cocokkan dengan bank, lalu konfirmasi — ini yang mengkredit kas"
                   >
@@ -257,7 +368,7 @@ export const ScreenA2MatriksIuran = () => {
                   </button>
                   <button
                     onClick={() => runReject(q)}
-                    disabled={busy}
+                    disabled={busy || bulkBusy}
                     className="w-8 h-8 rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center transition disabled:opacity-40"
                     title="Tolak klaim — uang tidak dicatat"
                   >

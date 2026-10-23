@@ -30,7 +30,7 @@ const EMPTY_FORM = {
 // system nobody can get back into is not a system.
 export const ScreenA6DaftarPramudi = () => {
   const {
-    users, iuranRecords, debts, addMember, updateMember, setMemberActive
+    users, iuranRecords, debts, addMember, updateMember, setMemberActive, showToast
   } = useApp();
 
   const [search, setSearch] = useState('');
@@ -107,6 +107,59 @@ export const ScreenA6DaftarPramudi = () => {
     const active = u.status === 'inactive';
     if (!active && !window.confirm(`Nonaktifkan ${u.name}? Riwayat keuangannya tetap tersimpan.`)) return;
     await setMemberActive(u.nik, active);
+  };
+
+  // Bulk activate / deactivate over the roster.
+  //
+  // setMemberActive stays the only path, called once per driver, which means
+  // its last-admin guard applies to every row: selecting both admins and
+  // deactivating them succeeds on the first and refuses the second rather
+  // than locking the pengurus out of their own panel. That one refusal is
+  // reported, not swallowed.
+  const [picked, setPicked] = useState(() => new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const togglePick = (nik) =>
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(nik)) next.delete(nik);
+      else next.add(nik);
+      return next;
+    });
+
+  const pickedRows = rows.filter((u) => picked.has(u.nik));
+  const allPicked = rows.length > 0 && pickedRows.length === rows.length;
+  const clearPicked = () => setPicked(new Set());
+
+  const runBulkStatus = async (active) => {
+    if (bulkBusy || pickedRows.length === 0) return;
+    const items = pickedRows;
+
+    const question = active
+      ? `Aktifkan kembali ${items.length} pramudi?`
+      : `Nonaktifkan ${items.length} pramudi?\n\nRiwayat keuangannya tetap tersimpan; kartu piutang tidak dihapus.`;
+    if (!window.confirm(question)) return;
+
+    setBulkBusy(true);
+    let ok = 0;
+    const failed = [];
+    for (const u of items) {
+      const good = await setMemberActive(u.nik, active);
+      if (good) ok += 1;
+      else failed.push(u.name);
+    }
+    setBulkBusy(false);
+
+    // Partial results are reported as partial — a batch where the last admin
+    // was refused is not a success, and the cashier needs to know who stuck.
+    if (failed.length === 0) {
+      showToast(`${ok} pramudi ${active ? 'diaktifkan kembali' : 'dinonaktifkan'}.`);
+    } else {
+      const shown = failed.slice(0, 3).join(', ');
+      const more = failed.length > 3 ? `, +${failed.length - 3} lainnya` : '';
+      showToast(`${ok} dari ${items.length} berhasil. Gagal: ${shown}${more}`, 'error');
+    }
+    clearPicked();
   };
 
   const pill = (u) => {
@@ -191,10 +244,52 @@ export const ScreenA6DaftarPramudi = () => {
           <span className="text-[11px] text-slate-400">{rows.length} ditampilkan</span>
         </div>
 
+        {/* Bulk status controls */}
+        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex flex-wrap items-center gap-3">
+          <span className="text-[11px] text-slate-600 font-medium">
+            <span className="font-black text-slate-900">{pickedRows.length}</span> dipilih
+            {pickedRows.length > 0 ? ` dari ${rows.length}` : ''}
+          </span>
+          {pickedRows.length > 0 && (
+            <button
+              onClick={clearPicked}
+              className="text-[11px] text-slate-500 underline hover:text-slate-700 transition"
+            >
+              Bersihkan
+            </button>
+          )}
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => runBulkStatus(true)}
+              disabled={bulkBusy || pickedRows.length === 0}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-500 transition disabled:opacity-40"
+            >
+              Aktifkan Terpilih
+            </button>
+            <button
+              onClick={() => runBulkStatus(false)}
+              disabled={bulkBusy || pickedRows.length === 0}
+              className="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 text-[11px] font-bold hover:bg-rose-50 transition disabled:opacity-40"
+            >
+              {bulkBusy ? 'Memproses…' : 'Nonaktifkan Terpilih'}
+            </button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <th className="py-3 px-4 text-center w-10">
+                  <input
+                    type="checkbox"
+                    checked={allPicked}
+                    onChange={(e) => setPicked(e.target.checked ? new Set(rows.map((u) => u.nik)) : new Set())}
+                    className="w-4 h-4 accent-teal-600"
+                    aria-label="Pilih semua pramudi yang ditampilkan"
+                  />
+                </th>
                 <th className="py-3 px-4 text-center w-10">No</th>
                 <th className="py-3 px-4">NIK</th>
                 <th className="py-3 px-4">Nama Pramudi</th>
@@ -206,7 +301,17 @@ export const ScreenA6DaftarPramudi = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((u, idx) => (
-                <tr key={u.nik} className="hover:bg-slate-50/80 transition">
+                <tr key={u.nik} className={picked.has(u.nik) ? 'bg-teal-50/70 transition' : 'hover:bg-slate-50/80 transition'}>
+                  <td className="py-3 px-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={picked.has(u.nik)}
+                      onChange={() => togglePick(u.nik)}
+                      disabled={bulkBusy}
+                      className="w-4 h-4 accent-teal-600"
+                      aria-label={`Pilih ${u.name}`}
+                    />
+                  </td>
                   <td className="py-3 px-4 text-center font-mono text-slate-400">{idx + 1}</td>
                   <td className="py-3 px-4 font-mono font-bold text-slate-800">{u.nik}</td>
                   <td className="py-3 px-4">

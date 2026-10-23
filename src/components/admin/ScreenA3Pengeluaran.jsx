@@ -10,13 +10,14 @@ import {
   Check, 
   X,
   Upload,
-  AlertTriangle
+  AlertTriangle,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 
 export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
-  const { expenses, addExpense, vault } = useApp();
+  const { expenses, addExpense, deleteExpense, vault } = useApp();
   const pettyCash = vault?.pettyCash ?? 0;
   const bsiBalance = vault?.bsiBalance ?? 0;
   const [activeTab, setActiveTab] = useState('Semua');
@@ -384,9 +385,29 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
               </div>
             </div>
 
+            {/* Delete lives behind the receipt preview on purpose: you see the
+                full record — date, PIC, source, nominal — before removing it. */}
+            <div className="pt-3">
+              <button
+                onClick={() => {
+                  if (window.confirm(`Hapus pengeluaran "${viewReceiptItem.title}" senilai ${rp(viewReceiptItem.amount)}? Saldo vault akan menyesuaikan.`)) {
+                    // deleteExpense takes the whole record, not the id — it
+                    // needs expense.source to know which vault bucket to
+                    // refund and expense.amount for how much.
+                    deleteExpense(viewReceiptItem);
+                    setViewReceiptItem(null);
+                  }
+                }}
+                className="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-rose-200 transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Pengeluaran (Koreksi Admin)</span>
+              </button>
+            </div>
+
             <button
               onClick={() => setViewReceiptItem(null)}
-              className="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-bold"
+              className="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-bold mt-2"
             >
               Tutup
             </button>

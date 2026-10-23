@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import seedData from '../data/seedData.json';
 import { db } from '../services/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, runTransaction } from 'firebase/firestore';
@@ -133,9 +133,15 @@ export const AppProvider = ({ children }) => {
 
   const [toast, setToast] = useState(null);
 
+  // Each call replaces the previous toast AND takes over its dismissal
+  // timer. Without clearing the old timer, two messages in quick succession
+  // — a failed write followed by a listener refresh, for instance — would
+  // leave the first call's timeout to wipe the second message early.
+  const toastTimer = useRef(null);
   const showToast = (message, type = 'success') => {
     setToast({ message, type, id: Date.now() });
-    setTimeout(() => setToast(null), 3500);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
   };
 
   // Login by NIK + PIN.
