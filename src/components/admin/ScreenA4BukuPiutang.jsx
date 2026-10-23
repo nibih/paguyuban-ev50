@@ -104,8 +104,12 @@ export const ScreenA4BukuPiutang = () => {
   return (
     <div className="space-y-6">
 
-      {/* Summary banner */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-rose-500/10 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Summary banner — sticky so Tambah Piutang stays reachable down the
+          whole receivables book. The gradient is translucent, so the opaque
+          base colour is what stops the debt list showing through while the
+          banner is stuck; it is the same #F8FAFC the page already paints,
+          so the banner looks exactly as it did. */}
+      <div className="sticky top-16 z-30 bg-[#F8FAFC] bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-rose-500/10 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
             <Wallet className="w-6 h-6" />

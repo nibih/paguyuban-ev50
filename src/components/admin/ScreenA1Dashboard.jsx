@@ -149,8 +149,9 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
   return (
     <div className="space-y-6">
 
-      {/* Header + actions */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header + actions — sticky so Catat Pengeluaran stays reachable on
+          a long report, without scrolling back to the top. */}
+      <div className="sticky top-16 z-30 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />

@@ -142,8 +142,17 @@ export const AdminContainer = () => {
         </div>
       </aside>
 
-      {/* Main Content Viewport */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+      {/* Main Content Viewport
+          Deliberately NO overflow-y-auto. The shell above is min-h, not a
+          fixed height, so this column grows with its content and the
+          DOCUMENT is what actually scrolls — main never overflows, so that
+          axis could never move. But an overflow axis still makes this the
+          nearest scrollport for everything inside it, and sticky then sticks
+          to a scrollport that never travels: the screen headers below would
+          silently refuse to stick. Letting the document scroll instead lets
+          them stick under the TopNavbar (top-16 = its 64px), the same way
+          TopNavbar itself sticks to the page. */}
+      <main className="flex-1 p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
           {renderActiveScreen()}
         </div>

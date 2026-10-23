@@ -77,8 +77,9 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
   return (
     <div className="space-y-6">
       
-      {/* 1. Header with Add Button */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 1. Header with Add Button — sticky, so recording an expense never
+          means scrolling back up through the whole ledger. */}
+      <div className="sticky top-16 z-30 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Buku Kas Pengeluaran & Pembelanjaan</h2>
           <p className="text-xs text-slate-500 mt-0.5">

@@ -187,8 +187,9 @@ export const ScreenA6DaftarPramudi = () => {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header — sticky: with 128 pramudi below it, the Tambah Pramudi
+          button would otherwise scroll off the top of the roster. */}
+      <div className="sticky top-16 z-30 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-navy-800" />

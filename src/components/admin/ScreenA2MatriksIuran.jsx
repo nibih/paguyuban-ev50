@@ -272,8 +272,9 @@ export const ScreenA2MatriksIuran = () => {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header — sticky, so the matrix export and filters stay put while
+          scrolling the 128-driver grid. */}
+      <div className="sticky top-16 z-30 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Iuran: Verifikasi &amp; Buku Pemasukan</h2>
           <p className="text-xs text-slate-500 mt-0.5">

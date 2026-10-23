@@ -27,8 +27,9 @@ export const ScreenA5LogbookArmada = () => {
   return (
     <div className="space-y-6">
       
-      {/* 1. Header */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1. Header — sticky, so the logbook title bar does not vanish
+          behind the board's long columns. */}
+      <div className="sticky top-16 z-30 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Logbook Teknik, Bodi Armada EV & Suket</h2>
           <p className="text-xs text-slate-500 mt-0.5">
