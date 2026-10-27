@@ -6,16 +6,24 @@ import {
   Clock,
   X,
   AlertTriangle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 import { MONTHS, IURAN_FEE } from '../../constants';
 import { ImageUpload } from '../ImageUpload';
+import { ImagePreview } from '../ImagePreview';
 
 // Provenance dot in the legend. Module-scope so React can reconcile it by
 // identity rather than treating it as a fresh component type each render.
 const ProvDot = ({ color }) => <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />;
+
+// Transfer proof. The web panel writes `proof`; the mobile app historically
+// wrote `receipt` for the same image, so both keys are read. Normalising the
+// write side is a mobile change; until every phone runs it, old rows still
+// carry the other name.
+const proofOf = (entry) => entry?.proof || entry?.receipt || '';
 
 // A2: the reconciliation matrix.
 //
@@ -39,6 +47,8 @@ export const ScreenA2MatriksIuran = () => {
   // the time the button is pressed.
   const [picked, setPicked] = useState(() => new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  // Proof currently open in the viewer: { src, title, note } or null.
+  const [viewing, setViewing] = useState(null);
 
   // Every month sitting in the queue, newest claim first.
   const queue = useMemo(() => {
@@ -382,9 +392,14 @@ export const ScreenA2MatriksIuran = () => {
                     </div>
                   </div>
                   <ImageUpload
-                    value={q.proof}
+                    value={proofOf(q)}
                     className="w-9 h-9"
-                    title={q.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                    title={proofOf(q) ? 'Bukti transfer' : 'Lampirkan bukti transfer'}
+                    onView={() => setViewing({
+                      src: proofOf(q),
+                      title: `Bukti transfer — ${q.name}`,
+                      note: `${q.month} · ${q.method || 'Tunai Kasir'} · ${rp(q.nominal)}`
+                    })}
                     onChange={(proof) => attachIuranProof(q.nik, q.month, proof)}
                   />
                   <button
@@ -599,24 +614,40 @@ export const ScreenA2MatriksIuran = () => {
                         const key = `${user.nik}-${month}`;
                         return (
                           <td key={month} className="py-3 px-2 text-center">
-                            <button
-                              type="button"
-                              disabled={busyKey === key || bank}
-                              onClick={() => runUnverify({ nik: user.nik, name: user.name, month, key }, d)}
-                              title={
-                                bank
-                                  ? 'Berasal dari laporan bank — koreksi lewat laporan aslinya'
-                                  : `Lunas: ${d.date || '-'} via ${d.method || 'BSI'}${d.verifiedBy ? ` · diverifikasi ${d.verifiedBy}` : ''}\nKlik untuk membatalkan (kas dikurangi).`
-                              }
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
-                                bank
-                                  ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
-                                  : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
-                              }`}
-                            >
-                              <Check className="w-3 h-3" />
-                              {d.nominal ? rp(d.nominal) : '—'}
-                            </button>
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                disabled={busyKey === key || bank}
+                                onClick={() => runUnverify({ nik: user.nik, name: user.name, month, key }, d)}
+                                title={
+                                  bank
+                                    ? 'Berasal dari laporan bank — koreksi lewat laporan aslinya'
+                                    : `Lunas: ${d.date || '-'} via ${d.method || 'BSI'}${d.verifiedBy ? ` · diverifikasi ${d.verifiedBy}` : ''}\nKlik untuk membatalkan (kas dikurangi).`
+                                }
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
+                                  bank
+                                    ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                                    : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300'
+                                }`}
+                              >
+                                <Check className="w-3 h-3" />
+                                {d.nominal ? rp(d.nominal) : '—'}
+                              </button>
+                              {proofOf(d) && (
+                                <button
+                                  type="button"
+                                  onClick={() => setViewing({
+                                    src: proofOf(d),
+                                    title: `Bukti transfer — ${user.name}`,
+                                    note: `${month} · ${d.method || 'BSI'} · ${rp(d.nominal)}${d.verifiedBy ? ` · oleh ${d.verifiedBy}` : ''}`
+                                  })}
+                                  className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-teal-700 hover:border-teal-300 flex items-center justify-center transition"
+                                  title="Lihat bukti transfer"
+                                >
+                                  <ImageIcon className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         );
                       }
@@ -624,13 +655,29 @@ export const ScreenA2MatriksIuran = () => {
                       if (isPending) {
                         return (
                           <td key={month} className="py-3 px-2 text-center">
-                            <span
-                              title={`Menunggu verifikasi — ${d.method || 'Tunai Kasir'} · ${d.date || '-'}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 cursor-help"
-                            >
-                              <Clock className="w-3 h-3 text-amber-600" />
-                              Antre
-                            </span>
+                            <div className="inline-flex items-center gap-1">
+                              <span
+                                title={`Menunggu verifikasi — ${d.method || 'Tunai Kasir'} · ${d.date || '-'}`}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 cursor-help"
+                              >
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                Antre
+                              </span>
+                              {proofOf(d) && (
+                                <button
+                                  type="button"
+                                  onClick={() => setViewing({
+                                    src: proofOf(d),
+                                    title: `Bukti transfer — ${user.name}`,
+                                    note: `${month} · ${d.method || 'Tunai Kasir'} · ${rp(d.nominal)} · menunggu verifikasi`
+                                  })}
+                                  className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-teal-700 hover:border-teal-300 flex items-center justify-center transition"
+                                  title="Lihat bukti transfer"
+                                >
+                                  <ImageIcon className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         );
                       }
@@ -681,6 +728,14 @@ export const ScreenA2MatriksIuran = () => {
         )}
       </div>
 
+      {viewing && (
+        <ImagePreview
+          src={viewing.src}
+          title={viewing.title}
+          note={viewing.note}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { fileToBase64, base64Src } from '../utils/image';
 export const ImageUpload = ({
   value,
   onChange,
+  onView,
   disabled = false,
   title = 'Lampirkan foto',
   className = 'w-10 h-10'
@@ -32,13 +33,28 @@ export const ImageUpload = ({
   };
 
   if (value) {
+    const thumb = (
+      <img
+        src={base64Src(value)}
+        alt={title}
+        className={`${className} object-cover rounded-lg border border-slate-200`}
+      />
+    );
+
     return (
       <div className="relative shrink-0" title={title}>
-        <img
-          src={base64Src(value)}
-          alt={title}
-          className={`${className} object-cover rounded-lg border border-slate-200`}
-        />
+        {onView ? (
+          <button
+            type="button"
+            onClick={onView}
+            className="block rounded-lg hover:ring-2 hover:ring-teal-400 transition"
+            title={`${title} — klik untuk memperbesar`}
+          >
+            {thumb}
+          </button>
+        ) : (
+          thumb
+        )}
         <button
           type="button"
           onClick={() => onChange(null)}

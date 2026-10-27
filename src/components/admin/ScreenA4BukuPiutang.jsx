@@ -6,11 +6,18 @@ import {
   X,
   AlertTriangle,
   Plus,
-  Undo2
+  Undo2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 import { ImageUpload } from '../ImageUpload';
+import { ImagePreview } from '../ImagePreview';
+import { base64Src } from '../../utils/image';
+
+// Transfer proof: the web writes `proof`, older mobile builds wrote `receipt`
+// for the same image. Read both until every phone is updated.
+const proofOf = (entry) => entry?.proof || entry?.receipt || '';
 
 
 // A4: the receivables book and the installment verification queue.
@@ -29,6 +36,8 @@ export const ScreenA4BukuPiutang = () => {
   const { debts, users, verifyInstallment, rejectInstallment, unverifyInstallment, attachInstallmentProof, deleteDebt, addDebt, showToast } = useApp();
   const [selectedDebt, setSelectedDebt] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
+  // Proof open in the viewer: { src, title, note } or null.
+  const [viewing, setViewing] = useState(null);
 
   // New debt card (dana talangan).
   //
@@ -190,9 +199,14 @@ export const ScreenA4BukuPiutang = () => {
                     </div>
                   </div>
                   <ImageUpload
-                    value={q.proof}
+                    value={proofOf(q)}
                     className="w-9 h-9"
-                    title={q.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                    title={proofOf(q) ? 'Bukti transfer' : 'Lampirkan bukti transfer'}
+                    onView={() => setViewing({
+                      src: proofOf(q),
+                      title: `Bukti transfer — ${q.name}`,
+                      note: `Angsuran ${rp(q.amount)} · ${q.method || 'Tunai'} · ${q.date || '-'}`
+                    })}
                     onChange={(proof) => attachInstallmentProof(q.debtId, q.id, proof)}
                   />
                   <button
@@ -396,9 +410,14 @@ export const ScreenA4BukuPiutang = () => {
                           </div>
                         </div>
                         <ImageUpload
-                          value={p.proof}
+                          value={proofOf(p)}
                           className="w-8 h-8"
-                          title={p.proof ? 'Ganti bukti transfer' : 'Lampirkan bukti transfer'}
+                          title={proofOf(p) ? 'Bukti transfer' : 'Lampirkan bukti transfer'}
+                          onView={() => setViewing({
+                            src: proofOf(p),
+                            title: `Bukti transfer — ${liveSelected.name}`,
+                            note: `Angsuran ${rp(p.amount)} · ${p.method || 'Tunai'} · ${p.date || '-'}`
+                          })}
                           onChange={(proof) => attachInstallmentProof(liveSelected.id, p.id, proof)}
                         />
                         <button
@@ -440,6 +459,19 @@ export const ScreenA4BukuPiutang = () => {
                             {p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}
                           </div>
                         </div>
+                        {proofOf(p) && (
+                          <button
+                            onClick={() => setViewing({
+                              src: proofOf(p),
+                              title: `Bukti transfer — ${liveSelected.name}`,
+                              note: `Angsuran ${rp(p.amount)} · ${p.method || 'Tunai'} · ${p.date || '-'}${p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}`
+                            })}
+                            className="w-9 h-9 rounded-lg overflow-hidden border border-emerald-300 hover:ring-2 hover:ring-teal-400 transition shrink-0"
+                            title="Lihat bukti transfer"
+                          >
+                            <img src={base64Src(proofOf(p))} alt="Bukti transfer" className="w-full h-full object-cover" />
+                          </button>
+                        )}
                         <button
                           onClick={() => runUnverify(liveSelected, p)}
                           disabled={busyKey === key}
@@ -584,6 +616,14 @@ export const ScreenA4BukuPiutang = () => {
         </div>
       )}
 
+      {viewing && (
+        <ImagePreview
+          src={viewing.src}
+          title={viewing.title}
+          note={viewing.note}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 };

@@ -1,9 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert, Modal, Image } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Check, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react-native';
 import { rp } from '../../utils/format';
 import { MONTHS } from '../../constants';
+
+// Transfer proof: the web panel writes `proof`, older mobile builds wrote
+// `receipt` for the same image, so both are read.
+const proofOf = (entry) => entry?.proof || entry?.receipt || '';
+const dataUri = (b64) => (b64 ? `data:image/jpeg;base64,${b64}` : null);
 
 // A2: the reconciliation matrix.
 //
@@ -20,6 +25,7 @@ export default function AdminIuran() {
   const [filter, setFilter] = useState('Semua');
   const [expandedNik, setExpandedNik] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
+  const [viewingProof, setViewingProof] = useState(null);
 
   // Every month sitting in the queue, newest claim first.
   const queue = useMemo(() => {
@@ -64,13 +70,28 @@ export default function AdminIuran() {
       );
       return;
     }
+    const buttons = [];
+    if (proofOf(entry)) {
+      buttons.push({
+        text: 'Lihat Bukti',
+        onPress: () => setViewingProof({
+          src: proofOf(entry),
+          title: `Bukti transfer — ${item.name}`,
+          note: `${month} · ${entry.method || 'BSI'} · ${rp(entry.nominal || 0)}${entry.verifiedBy ? ` · oleh ${entry.verifiedBy}` : ''}`
+        })
+      });
+    }
+    buttons.push({ text: 'Batal', style: 'cancel' });
+    buttons.push({
+      text: 'Batalkan',
+      style: 'destructive',
+      onPress: () => unverifyIuran(item.nik, month)
+    });
+
     Alert.alert(
       'Batalkan verifikasi?',
       `Iuran ${month} a.n ${item.name} (${rp(entry.nominal || 0)}) kembali ke Belum Bayar dan kas dikurangi sebesar itu.`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        { text: 'Batalkan', style: 'destructive', onPress: () => unverifyIuran(item.nik, month) }
-      ]
+      buttons
     );
   };
 
@@ -419,6 +440,18 @@ export default function AdminIuran() {
                   {q.markedBy ? ` · ditandai ${q.markedBy}` : ''}
                 </Text>
               </View>
+              {proofOf(q) ? (
+                <TouchableOpacity
+                  style={styles.proofBtn}
+                  onPress={() => setViewingProof({
+                    src: proofOf(q),
+                    title: `Bukti transfer — ${q.name}`,
+                    note: `${q.month} · ${q.method || 'Tunai Kasir'} · ${rp(q.nominal || 0)}`
+                  })}
+                >
+                  <Image source={{ uri: dataUri(proofOf(q)) }} style={styles.proofThumb} />
+                </TouchableOpacity>
+              ) : null}
               <TouchableOpacity
                 style={[styles.qBtn, styles.qBtnOk, busyKey === q.key && styles.qBtnDisabled]}
                 disabled={busyKey === q.key}
@@ -477,6 +510,37 @@ export default function AdminIuran() {
         removeClippedSubviews
         contentContainerStyle={{ paddingBottom: 32 }}
       />
+
+      <Modal
+        visible={!!viewingProof}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewingProof(null)}
+      >
+        <View style={styles.proofBackdrop}>
+          <View style={styles.proofCard}>
+            <View style={styles.proofHead}>
+              <Text style={styles.proofTitle} numberOfLines={1}>
+                {viewingProof?.title || 'Bukti transfer'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setViewingProof(null)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <X size={16} color="#0F172A" />
+              </TouchableOpacity>
+            </View>
+            {viewingProof?.note ? (
+              <Text style={styles.proofNote}>{viewingProof.note}</Text>
+            ) : null}
+            <Image
+              source={{ uri: dataUri(viewingProof?.src) }}
+              style={styles.proofImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -610,6 +674,24 @@ const styles = StyleSheet.create({
   qBtnOk: { backgroundColor: '#059669' },
   qBtnNo: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA' },
   qBtnDisabled: { opacity: 0.4 },
+
+  proofBtn: {
+    width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#CBD5E1', backgroundColor: '#F1F5F9'
+  },
+  proofThumb: { width: '100%', height: '100%' },
+  proofBackdrop: {
+    flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.85)',
+    alignItems: 'center', justifyContent: 'center', padding: 16
+  },
+  proofCard: {
+    width: '100%', maxHeight: '85%',
+    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12
+  },
+  proofHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  proofTitle: { flex: 1, fontSize: 13, fontWeight: '900', color: '#0F172A' },
+  proofNote: { fontSize: 10, color: '#64748B', marginTop: 3, marginBottom: 8 },
+  proofImage: { width: '100%', height: 420, borderRadius: 10, backgroundColor: '#0F172A' },
 
   searchWrap: {
     flexDirection: 'row',

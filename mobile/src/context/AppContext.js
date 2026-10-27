@@ -245,7 +245,10 @@ export const AppProvider = ({ children }) => {
       nominal: IURAN_FEE,
       date: today,
       method,
-      ...(receipt?.base64 ? { receipt: receipt.base64 } : {})
+      // `proof` is the same key the web panel writes, so a cashier can open a
+      // driver's transfer receipt from either client. Older builds wrote
+      // `receipt` for this image; the panel still reads that as a fallback.
+      ...(receipt?.base64 ? { proof: receipt.base64 } : {})
     };
 
     const prevForNik = iuranRecords[nik] || {};

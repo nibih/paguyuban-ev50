@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  FlatList, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Alert
+  FlatList, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Alert, Image
 } from 'react-native';
 import { useApp } from '../../context/AppContext';
 import { Search, Plus, X, Trash2, Wallet, Check, AlertTriangle, Clock, Undo2 } from 'lucide-react-native';
@@ -9,6 +9,10 @@ import { rp } from '../../utils/format';
 import { IURAN_FEE } from '../../constants';
 
 const METHODS = ['Cash ke Admin', 'Transfer BSI', 'Potong Gaji'];
+
+// Transfer proof: web writes `proof`, older mobile builds wrote `receipt`.
+const proofOf = (entry) => entry?.proof || entry?.receipt || '';
+const dataUri = (b64) => (b64 ? `data:image/jpeg;base64,${b64}` : null);
 
 // A4: the receivables book.
 //
@@ -26,6 +30,7 @@ export default function AdminPiutang() {
   const [busy, setBusy] = useState(false);
   const [busyIns, setBusyIns] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [viewingProof, setViewingProof] = useState(null);
 
   // Installment form
   const [instNominal, setInstNominal] = useState(String(IURAN_FEE));
@@ -222,6 +227,18 @@ export default function AdminPiutang() {
                   {rp(Number(q.amount) || 0)} · {q.method} · {q.date}
                 </Text>
               </View>
+              {proofOf(q) ? (
+                <TouchableOpacity
+                  style={styles.proofBtn}
+                  onPress={() => setViewingProof({
+                    src: proofOf(q),
+                    title: `Bukti transfer — ${q.debtName}`,
+                    note: `Angsuran ${rp(Number(q.amount) || 0)} · ${q.method || 'Tunai'} · ${q.date || '-'}`
+                  })}
+                >
+                  <Image source={{ uri: dataUri(proofOf(q)) }} style={styles.proofThumb} />
+                </TouchableOpacity>
+              ) : null}
               <TouchableOpacity
                 style={[styles.qBtn, styles.qBtnOk, busyIns === q.key && styles.qBtnDisabled]}
                 disabled={busyIns === q.key}
@@ -377,6 +394,18 @@ export default function AdminPiutang() {
                             {p.method} · {p.date}{p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}
                           </Text>
                         </View>
+                        {proofOf(p) ? (
+                          <TouchableOpacity
+                            style={styles.verifiedProof}
+                            onPress={() => setViewingProof({
+                              src: proofOf(p),
+                              title: `Bukti transfer — ${selected.name}`,
+                              note: `Angsuran ${rp(p.amount)} · ${p.method || 'Tunai'} · ${p.date || '-'}${p.verifiedBy ? ` · oleh ${p.verifiedBy}` : ''}`
+                            })}
+                          >
+                            <Image source={{ uri: dataUri(proofOf(p)) }} style={styles.proofThumb} />
+                          </TouchableOpacity>
+                        ) : null}
                         <TouchableOpacity
                           style={styles.undoBtn}
                           onPress={() => confirmUndo(selected, p)}
@@ -528,6 +557,37 @@ export default function AdminPiutang() {
                 <Text style={styles.confirmText}>HAPUS</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={!!viewingProof}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewingProof(null)}
+      >
+        <View style={styles.proofBackdrop}>
+          <View style={styles.proofCard}>
+            <View style={styles.proofHead}>
+              <Text style={styles.proofTitle} numberOfLines={1}>
+                {viewingProof?.title || 'Bukti transfer'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setViewingProof(null)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <X size={16} color="#0F172A" />
+              </TouchableOpacity>
+            </View>
+            {viewingProof?.note ? (
+              <Text style={styles.proofNote}>{viewingProof.note}</Text>
+            ) : null}
+            <Image
+              source={{ uri: dataUri(viewingProof?.src) }}
+              style={styles.proofImage}
+              resizeMode="contain"
+            />
           </View>
         </View>
       </Modal>
@@ -703,6 +763,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA',
     alignItems: 'center', justifyContent: 'center'
   },
+
+  proofBtn: {
+    width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#CBD5E1', backgroundColor: '#F1F5F9'
+  },
+  verifiedProof: {
+    width: 28, height: 28, borderRadius: 8, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#A7F3D0', backgroundColor: '#FFFFFF'
+  },
+  proofThumb: { width: '100%', height: '100%' },
+  proofBackdrop: {
+    flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.85)',
+    alignItems: 'center', justifyContent: 'center', padding: 16
+  },
+  proofCard: {
+    width: '100%', maxHeight: '85%',
+    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12
+  },
+  proofHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  proofTitle: { flex: 1, fontSize: 13, fontWeight: '900', color: '#0F172A' },
+  proofNote: { fontSize: 10, color: '#64748B', marginTop: 3, marginBottom: 8 },
+  proofImage: { width: '100%', height: 420, borderRadius: 10, backgroundColor: '#0F172A' },
 
   userPick: {
     flexDirection: 'row', alignItems: 'center',
