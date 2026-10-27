@@ -4,12 +4,78 @@
 // monthly fee was hardcoded at nine call sites — so extending the collection
 // period meant remembering every copy, and a single miss showed members wrong
 // money. Both surfaces now read them from here.
-//
-// This is a fixed May–September collection period, not "the current month": the
-// paguyuban is collecting for a defined window, which is why screens show
-// September as the final month regardless of today's date.
 export const IURAN_FEE = 100000;
-export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+
+// The collection period, in order, and the month being collected right now.
+//
+// One list drives the matrix columns, the CSV headers, the member picker and
+// the dashboard's month rows, so a new month is one edit here.
+//
+// Keys are the Indonesian month names the paper book and the BSI statement
+// use, not YYYY-MM. The installed Android build predates OTA updates and
+// cannot be replaced remotely: changing the key shape would make every phone
+// in the field write months the rules reject, so the year-month migration is a
+// forced-rollout job, not a code change.
+export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+export const LAST_MONTH = MONTHS[MONTHS.length - 1];
+
+// Month name -> '05'..'12', derived so the two cannot drift.
+export const MONTH_NO = Object.fromEntries(
+  MONTHS.map((m, i) => [m, String(((4 + i) % 12) + 1).padStart(2, '0')])
+);
+
+// The month the depot is collecting for: the calendar month while it is inside
+// the period, otherwise the last month the list knows. Derived from the clock
+// so nobody edits a screen when the month turns over — which is exactly how
+// October ended up uncollectable while the period was hardcoded to September.
+//
+// shortcut: after December the list has no January, so the app keeps treating
+// December as current and the rules refuse a Januari key. Upgrade path is the
+// YYYY-MM key migration above, gated on the APK rollout.
+export const COLLECTION_MONTH = MONTHS.find(
+  (m) => MONTH_NO[m] === String(new Date().getMonth() + 1).padStart(2, '0')
+) || LAST_MONTH;
+
+// The month before the current one, for the arrears filter.
+export const PREVIOUS_MONTH = MONTHS[Math.max(0, MONTHS.indexOf(COLLECTION_MONTH) - 1)];
+
+// The months one driver actually owes: from the month they joined until the
+// month being collected.
+//
+// New drivers arrive in batches, sometimes on the 25th of a month, and a
+// straight count of every month in the book made them look six months behind
+// on day one. `createdAt` (dd/mm/yyyy, written when the account is created) is
+// the only join date the roster has; entries imported from the paper book have
+// none, and those have been paying since Mei.
+//
+// shortcut: only the month name is read, not the year, so a createdAt after
+// the period (e.g. Januari 2027) matches nothing and owes nothing — correct —
+// but the same name in a later year would match this year's month. Upgrade
+// path is the YYYY-MM migration, together with the January cliff above.
+export const dueMonths = (user) => {
+  const mm = String(user?.createdAt || '').split('/')[1];
+  const start = mm ? MONTHS.findIndex((m) => MONTH_NO[m] === mm) : 0;
+  if (start === -1) return [];
+  return MONTHS.slice(start, MONTHS.indexOf(COLLECTION_MONTH) + 1);
+};
+
+// Which vault a rupiah actually lands in.
+//
+// The payment forms store the method as free text, so this has to be an exact
+// lookup. It used to be `method.includes('Tunai')`, which sent every cash
+// method the depot actually uses ("Cash ke Kasir Depo", "Cash ke Admin") into
+// the BSI balance, and invented bank cash for "Potong Gaji" — money that
+// entered neither account. A method absent from this map moves no vault at
+// all, which is the honest answer for a salary deduction and forces a new
+// method to be added here deliberately instead of silently picking a vault.
+export const VAULT_FOR_METHOD = {
+  'Tunai Kasir': 'pettyCash',
+  'Cash ke Kasir Depo': 'pettyCash',
+  'Cash ke Admin': 'pettyCash',
+  'Transfer BSI': 'bsiBalance',
+  'Transfer Bank BSI': 'bsiBalance',
+  'Potong Gaji': null
+};
 
 // Emergency contact routes, in the order the dispatcher wants them.
 //

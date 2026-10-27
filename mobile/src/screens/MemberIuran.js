@@ -5,13 +5,17 @@ import { Check, Building, X, Camera, Copy, ImagePlus, Clock } from 'lucide-react
 import * as Clipboard from 'expo-clipboard';
 import { captureThumbnail } from '../utils/thumbnails';
 import { rp } from '../utils/format';
-import { MONTHS, IURAN_FEE } from '../constants';
+import { dueMonths, IURAN_FEE, COLLECTION_MONTH } from '../constants';
 
-const BSI_ACCOUNT = '720510945';
+const BSI_ACCOUNT = '7352135571';
 const BSI_HOLDER = 'Paguyuban EV50 Cawang';
 
+// Only the months this driver owes are offered: from the month they joined
+// until the month being collected. A driver who joined this month must not be
+// invited to pay for Mei, and nobody can pay a future month early.
 export default function MemberIuran() {
   const { currentUser, iuranRecords, payIuran, vault } = useApp();
+  const payableMonths = dueMonths(currentUser);
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [receipt, setReceipt] = useState(null);
@@ -76,7 +80,7 @@ export default function MemberIuran() {
         </View>
 
         <View style={styles.list}>
-          {MONTHS.map(m => {
+          {payableMonths.map(m => {
             const isLunas = userIuran[m]?.status === 'lunas';
             const isPending = userIuran[m]?.status === 'pending';
             const isSelected = selectedMonths.includes(m);

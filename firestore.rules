@@ -85,18 +85,20 @@ service cloud.firestore {
         onlyKeys(request.resource.data, ['bsiBalance', 'pettyCash', 'accountNo', 'bankName', 'accountHolder'])
         && isNum(request.resource.data.bsiBalance, -1000000000000, 1000000000000)
         && isNum(request.resource.data.pettyCash, -1000000000000, 1000000000000)
-        && isStr(request.resource.data.accountNo)
+        && request.resource.data.accountNo == '7352135571'
         && isStr(request.resource.data.bankName)
         && isStr(request.resource.data.accountHolder);
 
-      // The bank identity must stay byte-identical to what is stored. This
-      // is the one invariant worth holding without auth: nobody can point
-      // the paguyuban's money at a new account.
+      // The bank identity must stay identical to what is stored, except that
+      // the account number is pinned to the paguyuban's real BSI account in
+      // this file. This is the one invariant worth holding without auth:
+      // nobody can point the paguyuban's money at a new account — changing it
+      // takes a rules deploy, not a browser write.
       allow update: if
         onlyKeys(request.resource.data, ['bsiBalance', 'pettyCash', 'accountNo', 'bankName', 'accountHolder'])
         && isNum(request.resource.data.bsiBalance, -1000000000000, 1000000000000)
         && isNum(request.resource.data.pettyCash, -1000000000000, 1000000000000)
-        && request.resource.data.accountNo == resource.data.accountNo
+        && request.resource.data.accountNo == '7352135571'
         && request.resource.data.bankName == resource.data.bankName
         && request.resource.data.accountHolder == resource.data.accountHolder;
 
@@ -150,14 +152,14 @@ service cloud.firestore {
         request.resource.data.keys().hasOnly(['nik', 'months'])
         && request.resource.data.nik == nik
         && request.resource.data.months is map
-        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September'])
+        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'])
         && validMonthMap(request.resource.data.months);
 
       allow update: if
         request.resource.data.keys().hasOnly(['nik', 'months'])
         && request.resource.data.nik == resource.data.nik
         && request.resource.data.months is map
-        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September'])
+        && request.resource.data.months.keys().hasOnly(['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'])
         && validMonthMap(request.resource.data.months);
 
       allow delete: if false;
@@ -201,7 +203,7 @@ service cloud.firestore {
 
       allow create: if
         selfKeyed(request.resource.data, 'id', id)
-        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body'])
+        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body', 'relatedNik', 'relatedDebtId'])
         && isNum(request.resource.data.amount, 0, 1000000000000)
         && isStr(request.resource.data.title)
         && request.resource.data.title.size() <= 200
@@ -210,7 +212,7 @@ service cloud.firestore {
 
       allow update: if
         request.resource.data.id == resource.data.id
-        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body'])
+        && onlyKeys(request.resource.data, ['id', 'date', 'title', 'category', 'amount', 'pic', 'source', 'body', 'relatedNik', 'relatedDebtId'])
         && isNum(request.resource.data.amount, 0, 1000000000000)
         && isStr(request.resource.data.title)
         && request.resource.data.title.size() <= 200
@@ -310,7 +312,10 @@ function validMonthMap(months) {
       && validMonth(months, 'Juni')
       && validMonth(months, 'Juli')
       && validMonth(months, 'Agustus')
-      && validMonth(months, 'September');
+      && validMonth(months, 'September')
+      && validMonth(months, 'Oktober')
+      && validMonth(months, 'November')
+      && validMonth(months, 'Desember');
 }
 
 function validMonth(months, m) {

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
-import { MONTHS, IURAN_FEE } from '../../constants';
+import { MONTHS, IURAN_FEE, COLLECTION_MONTH, dueMonths } from '../../constants';
 import { ImageUpload } from '../ImageUpload';
 import { ImagePreview } from '../ImagePreview';
 
@@ -167,13 +167,12 @@ export const ScreenA2MatriksIuran = () => {
       const q = search.trim().toLowerCase();
       if (q && !u.name.toLowerCase().includes(q) && !u.nik.includes(q)) return false;
 
-      const sept = u.rec['September']?.status === 'lunas';
-      const ags = u.rec['Agustus']?.status === 'lunas';
+      const unpaid = dueMonths(u).filter((m) => u.rec[m]?.status !== 'lunas').length;
       const anyPending = MONTHS.some((m) => u.rec[m]?.status === 'pending');
-      if (filter === 'Lunas') return sept;
+      if (filter === 'Lunas') return unpaid === 0;
       if (filter === 'Menunggu') return anyPending;
-      if (filter === 'Tunggak 1') return !sept && ags;
-      if (filter === 'Tunggak >2') return !sept && !ags;
+      if (filter === 'Tunggak 1') return unpaid === 1;
+      if (filter === 'Tunggak >2') return unpaid > 1;
       return true;
     }), [users, iuranRecords, search, filter]);
 
@@ -182,10 +181,11 @@ export const ScreenA2MatriksIuran = () => {
     users.forEach((u) => {
       const r = iuranRecords[u.nik] || {};
       if (MONTHS.some((m) => r[m]?.status === 'pending')) pending += 1;
-      const sept = r['September']?.status === 'lunas';
-      const ags = r['Agustus']?.status === 'lunas';
-      if (sept) lunas += 1;
-      else if (ags) t1 += 1;
+      // Arrears are counted against the months this driver owes, so someone
+      // who joined this month is one month late, not six.
+      const unpaid = dueMonths(u).filter((m) => r[m]?.status !== 'lunas').length;
+      if (unpaid === 0) lunas += 1;
+      else if (unpaid === 1) t1 += 1;
       else t2 += 1;
     });
     return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak >2': t2, Menunggu: pending };
@@ -591,7 +591,7 @@ export const ScreenA2MatriksIuran = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((user, idx) => {
                 const rec = user.rec;
-                const isSeptPaid = rec['September']?.status === 'lunas';
+                const isCurrentPaid = rec[COLLECTION_MONTH]?.status === 'lunas';
                 const hasPending = MONTHS.some((m) => rec[m]?.status === 'pending');
 
                 return (
@@ -701,11 +701,11 @@ export const ScreenA2MatriksIuran = () => {
                           <Clock className="w-3 h-3" />
                           Di antrean
                         </span>
-                      ) : isSeptPaid ? (
+                      ) : isCurrentPaid ? (
                         <span className="text-[11px] text-slate-400 font-medium">Terverifikasi</span>
                       ) : (
                         <button
-                          onClick={() => markIuranPaidCash(user.nik, 'September')}
+                          onClick={() => markIuranPaidCash(user.nik, COLLECTION_MONTH)}
                           className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-lg text-xs font-bold transition active:scale-95"
                           title="Tandai Lunas Tunai Kasir — masuk antrean verifikasi"
                         >

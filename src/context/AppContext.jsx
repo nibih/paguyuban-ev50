@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { rp, normalizePhone } from '../utils/format';
-import { IURAN_FEE, MONTHS } from '../constants';
+import { IURAN_FEE, MONTHS, VAULT_FOR_METHOD } from '../constants';
 import { db } from '../services/firebase';
 import {
   collection,
@@ -32,16 +32,9 @@ export { IURAN_FEE, MONTHS };
 
 const todayId = () => new Date().toLocaleDateString('id-ID');
 
-// Loose name normalisation for matching a free-text PIC field to a driver.
-const normName = (s) => String(s || '')
-  .toLowerCase()
-  .replace(/[^a-z ]/g, ' ')
-  .replace(/\s+/g, ' ')
-  .trim();
-
-// Which vault a payment belongs to. Cash handed to the cashier lives in the
-// tin; anything arriving through the bank lives in BSI.
-const vaultKeyForMethod = (method) => ((method || '').includes('Tunai') ? 'pettyCash' : 'bsiBalance');
+// Which vault a payment belongs to, by exact method — see ../constants.
+// `null` means the payment moved no cash between the two accounts.
+const vaultKeyForMethod = (method) => (method in VAULT_FOR_METHOD ? VAULT_FOR_METHOD[method] : null);
 const vaultKeyFor = (source) => ((source || '').includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
 
 const SESSION_KEY = 'paguyuban.admin.session';
@@ -333,9 +326,14 @@ export const AppProvider = ({ children }) => {
         const ref = doc(db, 'iuran', nik);
         const snap = await tx.get(ref);
         const months = { ...(snap.exists() ? snap.data().months : {}) };
-        // Refuse to queue twice, and never touch a month already confirmed.
-        if (months[month]?.status === 'lunas') throw { code: 'already-paid' };
-        if (months[month]?.status === 'pending') throw { code: 'already-pending' };
+        // Refuse to queue twice, and never overwrite a month that already
+        // holds money. `partial` is the case that bit: a 50k transfer from the
+        // bank report was replaced by a fresh 100k cash claim, so verifying it
+        // credited 100k while the 50k already received vanished from the books.
+        const status = months[month]?.status;
+        if (status === 'lunas') throw { code: 'already-paid' };
+        if (status === 'pending') throw { code: 'already-pending' };
+        if (status && status !== 'unpaid') throw { code: 'partial' };
         months[month] = payment;
         tx.set(ref, { nik, months }, { merge: true });
       });
@@ -354,7 +352,9 @@ export const AppProvider = ({ children }) => {
           ? `Iuran ${month} sudah lunas tercatat di server.`
           : e?.code === 'already-pending'
             ? `Iuran ${month} sudah menunggu verifikasi.`
-            : `Iuran TIDAK tersimpan. ${fsError(e)}`,
+            : e?.code === 'partial'
+              ? `Iuran ${month} sudah punya pembayaran tercatat. Periksa di buku iuran, jangan ditandai tunai lagi.`
+              : `Iuran TIDAK tersimpan. ${fsError(e)}`,
         'error'
       );
       return false;
@@ -387,7 +387,7 @@ export const AppProvider = ({ children }) => {
       ...prev,
       [nik]: { ...(prev[nik] || {}), [month]: { ...entry, status: 'lunas', verifiedBy, verifiedAt } }
     }));
-    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
+    if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
 
     try {
       await runTransaction(db, async (tx) => {
@@ -404,8 +404,10 @@ export const AppProvider = ({ children }) => {
         months[month] = { ...current, status: 'lunas', verifiedBy, verifiedAt };
         tx.set(iuranRef, { nik, months }, { merge: true });
 
-        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
-        tx.set(vaultRef, { [vaultKey]: cash + nominal }, { merge: true });
+        if (vaultKey) {
+          const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+          tx.set(vaultRef, { [vaultKey]: cash + nominal }, { merge: true });
+        }
       });
 
       const name = users.find((u) => u.nik === nik)?.name || nik;
@@ -416,7 +418,7 @@ export const AppProvider = ({ children }) => {
         ...prev,
         [nik]: { ...(prev[nik] || {}), [month]: before }
       }));
-      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
+      if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
       showToast(
         e?.code === 'not-pending'
           ? `Iuran ${month} sudah diproses pengurus lain. Muat ulang.`
@@ -478,7 +480,7 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
+    const vaultKey = entry.vault ?? vaultKeyForMethod(entry.method);
     const nominal = Number(entry.nominal) || 0;
     const before = entry;
     const reverted = {
@@ -497,7 +499,7 @@ export const AppProvider = ({ children }) => {
       }
     };
 
-    if ((vault[vaultKey] || 0) < nominal) {
+    if (vaultKey && (vault[vaultKey] || 0) < nominal) {
       showToast(
         `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(nominal)}.`,
         'error'
@@ -509,7 +511,7 @@ export const AppProvider = ({ children }) => {
       ...prev,
       [nik]: { ...(prev[nik] || {}), [month]: reverted }
     }));
-    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
+    if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - nominal }));
 
     try {
       await runTransaction(db, async (tx) => {
@@ -523,15 +525,15 @@ export const AppProvider = ({ children }) => {
         if (current.source === 'Laporan Uang Masuk') throw { code: 'bank' };
 
         const amount = Number(current.nominal) || 0;
-        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
-        if (cash < amount) throw { code: 'insufficient' };
+        const cash = vaultKey && vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (vaultKey && cash < amount) throw { code: 'insufficient' };
 
         months[month] = {
           ...reverted,
           revertedFrom: { ...reverted.revertedFrom, nominal: current.nominal }
         };
         tx.set(iuranRef, { nik, months }, { merge: true });
-        tx.set(vaultRef, { [vaultKey]: cash - amount }, { merge: true });
+        if (vaultKey) tx.set(vaultRef, { [vaultKey]: cash - amount }, { merge: true });
       });
 
       const name = users.find((u) => u.nik === nik)?.name || nik;
@@ -539,7 +541,7 @@ export const AppProvider = ({ children }) => {
       return true;
     } catch (e) {
       setIuranRecords((prev) => ({ ...prev, [nik]: { ...(prev[nik] || {}), [month]: before } }));
-      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
+      if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + nominal }));
       showToast(
         e?.code === 'not-lunas'
           ? `Iuran ${month} sudah diubah pengurus lain. Muat ulang.`
@@ -565,7 +567,23 @@ export const AppProvider = ({ children }) => {
     }
 
     const vaultKey = vaultKeyForMethod(entry.method);
-    const amt = Number(entry.amount);
+    const claimed = Number(entry.amount) || 0;
+    if (claimed <= 0) {
+      showToast('Nominal angsuran tidak valid. Tolak angsuran ini.', 'error');
+      return false;
+    }
+    // Cap what this entry may move. Two queued claims can each fit inside the
+    // outstanding balance and still total more than it (a driver tapping
+    // "bayar" twice, or two devices). The second verify would then write
+    // `paid + amount > amount`, a shape the rules reject — leaving the entry
+    // unverifiable forever. Book only what is still owed and report the
+    // excess; `applied` is what the undo path reverses.
+    const applied = Math.min(claimed, Math.max(0, Number(debt.amount || 0) - Number(debt.paid || 0)));
+    if (applied <= 0) {
+      showToast(`Kartu ${debt.name || debtId} sudah lunas. Tolak angsuran ini.`, 'error');
+      return false;
+    }
+    const amt = applied;
     const name = debt.name || debtId;
     const before = debt;
     const verifiedBy = currentUser?.name || 'Pengurus';
@@ -574,7 +592,7 @@ export const AppProvider = ({ children }) => {
     // be reversed: it holds no amounts, no methods and no vault, so undoing a
     // mistaken confirmation would have to guess. This array is the audit trail
     // `unverifyInstallment` walks.
-    const record = { ...entry, verifiedBy, verifiedAt, vault: vaultKey };
+    const record = { ...entry, verifiedBy, verifiedAt, vault: vaultKey, applied };
 
     setDebts((prev) => prev.map((d) => {
       if (d.id !== debtId) return d;
@@ -588,7 +606,7 @@ export const AppProvider = ({ children }) => {
         verifiedInstallments: [...(d.verifiedInstallments || []), record]
       };
     }));
-    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
+    if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
 
     try {
       await runTransaction(db, async (tx) => {
@@ -602,29 +620,39 @@ export const AppProvider = ({ children }) => {
         const found = queue.find((p) => p.id === entryId);
         if (!found) throw { code: 'not-found' };
 
-        const newPaid = (d.paid || 0) + found.amount;
+        const booked = Math.min(Number(found.amount) || 0, Math.max(0, Number(d.amount || 0) - Number(d.paid || 0)));
+        if (booked <= 0) throw { code: 'settled' };
+        const newPaid = (d.paid || 0) + booked;
         const remaining = Math.max(0, d.amount - newPaid);
 
         tx.update(debtRef, {
           paid: newPaid,
           status: remaining === 0 ? 'Lunas' : 'Sedang Mengangsur',
           pendingInstallments: queue.filter((p) => p.id !== entryId),
-          verifiedInstallments: [...(d.verifiedInstallments || []), { ...found, verifiedBy, verifiedAt, vault: vaultKey }]
+          verifiedInstallments: [...(d.verifiedInstallments || []), { ...found, verifiedBy, verifiedAt, vault: vaultKey, applied: booked }]
         });
 
-        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
-        tx.set(vaultRef, { [vaultKey]: cash + found.amount }, { merge: true });
+        if (vaultKey) {
+          const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+          tx.set(vaultRef, { [vaultKey]: cash + booked }, { merge: true });
+        }
       });
 
-      showToast(`Angsuran ${name} ${rp(amt)} terverifikasi.`);
+      showToast(
+        claimed > amt
+          ? `Angsuran ${name} ${rp(amt)} terverifikasi. Klaim ${rp(claimed)} melebihi sisa — ${rp(claimed - amt)} tidak dibukukan, kembalikan ke pramudi.`
+          : `Angsuran ${name} ${rp(amt)} terverifikasi.`
+      );
       return true;
     } catch (e) {
       setDebts((prev) => prev.map((d) => (d.id === debtId ? before : d)));
-      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
+      if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
       showToast(
         e?.code === 'not-found'
           ? 'Angsuran sudah diproses pengurus lain. Muat ulang.'
-          : `Verifikasi GAGAL. ${fsError(e)}`,
+          : e?.code === 'settled'
+            ? 'Kartu ini sudah lunas di server. Tolak angsuran ini.'
+            : `Verifikasi GAGAL. ${fsError(e)}`,
         'error'
       );
       return false;
@@ -647,8 +675,11 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const vaultKey = entry.vault || vaultKeyForMethod(entry.method);
-    const amt = Number(entry.amount) || 0;
+    // `applied` is what the verify path actually booked (see verifyInstallment);
+    // records written before that field existed carry only `amount`, which is
+    // the same figure for them.
+    const vaultKey = entry.vault ?? vaultKeyForMethod(entry.method);
+    const amt = Number(entry.applied ?? entry.amount) || 0;
     const before = debt;
     const statusFor = (amount, paid) => {
       if (paid >= amount) return 'Lunas';
@@ -658,7 +689,7 @@ export const AppProvider = ({ children }) => {
 
     // Refuse rather than drive the balance negative: a cash figure below zero
     // is a worse lie than a blocked button.
-    if ((vault[vaultKey] || 0) < amt) {
+    if (vaultKey && (vault[vaultKey] || 0) < amt) {
       showToast(
         `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(amt)}.`,
         'error'
@@ -676,7 +707,7 @@ export const AppProvider = ({ children }) => {
         verifiedInstallments: (d.verifiedInstallments || []).filter((p) => p.id !== entryId)
       };
     }));
-    setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
+    if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amt }));
 
     try {
       await runTransaction(db, async (tx) => {
@@ -690,23 +721,24 @@ export const AppProvider = ({ children }) => {
         const found = list.find((p) => p.id === entryId);
         if (!found) throw { code: 'not-recorded' };
 
-        const cash = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
-        if (cash < found.amount) throw { code: 'insufficient' };
+        const booked = Number(found.applied ?? found.amount) || 0;
+        const cash = vaultKey && vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
+        if (vaultKey && cash < booked) throw { code: 'insufficient' };
 
-        const newPaid = Math.max(0, (d.paid || 0) - found.amount);
+        const newPaid = Math.max(0, (d.paid || 0) - booked);
         tx.update(debtRef, {
           paid: newPaid,
           status: statusFor(d.amount, newPaid),
           verifiedInstallments: list.filter((p) => p.id !== entryId)
         });
-        tx.set(vaultRef, { [vaultKey]: cash - found.amount }, { merge: true });
+        if (vaultKey) tx.set(vaultRef, { [vaultKey]: cash - booked }, { merge: true });
       });
 
       showToast(`Verifikasi angsuran ${debt.name || debtId} ${rp(amt)} dibatalkan. Kas dikurangi.`);
       return true;
     } catch (e) {
       setDebts((prev) => prev.map((d) => (d.id === debtId ? before : d)));
-      setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
+      if (vaultKey) setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amt }));
       showToast(
         e?.code === 'not-recorded'
           ? 'Angsuran sudah dibatalkan pengurus lain. Muat ulang.'
@@ -765,13 +797,26 @@ export const AppProvider = ({ children }) => {
     }
 
     const vaultKey = vaultKeyFor(newExpense.source || 'Kas Kecil');
-    const id = `EXP-${Date.now().toString().slice(-6)}`;
-    const item = { ...newExpense, id, amount };
-
-    // Find a debtor when this is a talangan, so the debt card grows with it.
-    const relatedNik = newExpense.relatedNik
-      || users.find((u) => normName(u.name).includes(normName(newExpense.pic || '')))?.nik;
-    const relatedDebt = relatedNik ? debts.find((d) => d.nik === relatedNik) : null;
+    const id = `EXP-${Date.now()}`;
+    // Full millisecond stamp on purpose: the old `slice(-6)` repeated every
+    // ~17 minutes, and a repeated id makes setDoc overwrite the earlier
+    // expense while the vault was already debited for both.
+    // A talangan grows the card the cashier picked, never a name match. The
+    // old heuristic attached the amount to the first driver whose name
+    // contained the PIC text — and to `users[0]` when the PIC was blank,
+    // because every string contains ''. The chosen card id is stored on the
+    // expense so deleting it can take the amount back off (deleteExpense).
+    const relatedNik = newExpense.relatedNik || null;
+    const relatedDebt = relatedNik
+      ? debts.find((d) => d.nik === relatedNik && d.amount - (d.paid || 0) > 0)
+        || debts.find((d) => d.nik === relatedNik)
+      : null;
+    const item = {
+      ...newExpense,
+      id,
+      amount,
+      ...(relatedDebt ? { relatedDebtId: relatedDebt.id } : {})
+    };
 
     setExpenses((prev) => [item, ...prev]);
     setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amount }));
@@ -828,8 +873,42 @@ export const AppProvider = ({ children }) => {
     const vaultKey = vaultKeyFor(expense.source || 'Kas Kecil');
     const amount = Number(expense.amount) || 0;
 
+    // If this expense grew a talangan card, take the amount back off it in the
+    // same transaction. Refunding only the cash left the card holding a debt
+    // the paguyuban had already been paid back, so the books disagreed with
+    // the tin in the opposite direction.
+    const linked = expense.relatedDebtId
+      ? debts.find((d) => d.id === expense.relatedDebtId)
+      : null;
+
+    // The card cannot end up smaller than the money already paid against it —
+    // the rules refuse `paid > amount`, so the whole delete would abort with a
+    // generic error after the cash refund had already been staged. Say why.
+    if (linked && Number(linked.paid || 0) > Math.max(0, Number(linked.amount || 0) - amount)) {
+      showToast(
+        `Kartu ${linked.name} sudah dibayar ${rp(linked.paid)}. Hapus pengeluaran ini akan membuat sisa kartu lebih kecil dari pembayaran.`,
+        'error'
+      );
+      return false;
+    }
+
+    const statusFor = (card) => {
+      const paid = Number(card.paid) || 0;
+      const left = Number(card.amount) || 0;
+      if (left <= paid) return 'Lunas';
+      if (paid <= 0) return 'Belum Mengangsur';
+      return 'Sedang Mengangsur';
+    };
+
     setExpenses((prev) => prev.filter((x) => x.id !== expense.id));
     setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) + amount }));
+    if (linked) {
+      setDebts((prev) => prev.map((d) => {
+        if (d.id !== linked.id) return d;
+        const next = { ...d, amount: Math.max(0, (d.amount || 0) - amount) };
+        return { ...next, status: statusFor(next) };
+      }));
+    }
 
     try {
       await runTransaction(db, async (tx) => {
@@ -837,13 +916,29 @@ export const AppProvider = ({ children }) => {
         const vaultSnap = await tx.get(vaultRef);
         const current = vaultSnap.exists() ? (vaultSnap.data()[vaultKey] || 0) : 0;
         tx.delete(doc(db, 'expenses', expense.id));
+
+        if (linked) {
+          const debtRef = doc(db, 'debts', linked.id);
+          const debtSnap = await tx.get(debtRef);
+          if (debtSnap.exists()) {
+            const d = debtSnap.data();
+            const next = { ...d, amount: Math.max(0, (d.amount || 0) - amount) };
+            tx.update(debtRef, { amount: next.amount, status: statusFor(next) });
+          }
+        }
+
         tx.set(vaultRef, { [vaultKey]: current + amount }, { merge: true });
       });
-      showToast(`Pengeluaran dihapus, ${rp(amount)} dikembalikan ke kas.`);
+      showToast(
+        linked
+          ? `Pengeluaran dihapus, ${rp(amount)} dikembalikan ke kas dan kartu ${linked.name} disesuaikan.`
+          : `Pengeluaran dihapus, ${rp(amount)} dikembalikan ke kas.`
+      );
       return true;
     } catch (e) {
       setExpenses((prev) => [expense, ...prev]);
       setVault((v) => ({ ...v, [vaultKey]: (v[vaultKey] || 0) - amount }));
+      if (linked) setDebts((prev) => prev.map((d) => (d.id === linked.id ? linked : d)));
       showToast(`Gagal menghapus. ${fsError(e)}`, 'error');
       return false;
     }
@@ -862,7 +957,7 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const id = `DEBT-${Date.now().toString().slice(-6)}`;
+    const id = `DEBT-${Date.now()}`;
     const item = {
       id,
       nik,
@@ -903,6 +998,18 @@ export const AppProvider = ({ children }) => {
   const deleteDebt = async (debtId) => {
     const before = debts.find((d) => d.id === debtId);
     if (!before) return false;
+
+    // A card with money against it is a financial record, not a typo: verified
+    // installments have already credited the vault, and a queued entry is
+    // someone's receipt. Deleting either erases the only trace of the money,
+    // so this refuses and points at the undo paths instead.
+    const paid = Number(before.paid) || 0;
+    const hasInstallments = (before.verifiedInstallments || []).length > 0
+      || (before.pendingInstallments || []).length > 0;
+    if (paid > 0 || hasInstallments) {
+      showToast('Kartu ini sudah ada angsuran. Batalkan verifikasinya dulu, kartu tidak bisa dihapus.', 'error');
+      return false;
+    }
 
     setDebts((prev) => prev.filter((d) => d.id !== debtId));
     try {
@@ -1244,10 +1351,22 @@ export const AppProvider = ({ children }) => {
     }
 
     // An empty PIN means "leave it as it is", not "clear it".
+    const role = (fields.role ?? before.role) === 'admin' ? 'admin' : 'member';
+    // Demoting the last admin is the same lockout as deactivating them, and
+    // this path never had that guard.
+    if (before.role === 'admin' && role !== 'admin' && before.status !== 'inactive') {
+      const adminsLeft = users.filter(
+        (u) => u.role === 'admin' && u.status !== 'inactive' && u.nik !== nik
+      );
+      if (adminsLeft.length === 0) {
+        showToast('Tidak bisa menurunkan admin terakhir. Angkat pengurus lain dulu.', 'error');
+        return false;
+      }
+    }
     const patch = {
       name: v.name,
       position: String(fields.position ?? before.position ?? '').trim(),
-      role: (fields.role ?? before.role) === 'admin' ? 'admin' : 'member',
+      role,
       ...(v.pin ? { pin: v.pin } : {})
     };
 

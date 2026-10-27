@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#061a38" />
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="Unduh aplikasi Pramudi Paguyuban EV50 — DAMRI SBU Transbusway Cawang EV 50. Kas, iuran, piutang, dan laporan perbaikan armada."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300A896'><path d='M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z'/></svg>"
+    />
+    <title>Unduh Aplikasi Pramudi — Paguyuban EV50</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy-900: #061a38;
+        --navy-800: #0b2f64;
+        --teal: #00a896;
+        --ink: #eaf1fb;
+        --muted: #9db2d0;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(900px 500px at 15% -10%, rgba(0, 168, 150, 0.22), transparent 60%),
+          radial-gradient(700px 420px at 95% 8%, rgba(29, 81, 157, 0.34), transparent 62%),
+          linear-gradient(170deg, var(--navy-900), #04122a 70%);
+        background-attachment: fixed;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 28px 20px 44px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 26px;
+      }
+
+      header img {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      .brand { font-size: 12px; font-weight: 800; letter-spacing: 0.14em; }
+      .brand span { display: block; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); margin-top: 3px; }
+
+      .card {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 22px;
+        padding: 22px;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 20px 50px rgba(2, 10, 24, 0.45);
+      }
+
+      h1 { font-size: 27px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.02em; }
+      .lede { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 18px 0 16px;
+      }
+
+      .pill {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 6px 11px;
+        border-radius: 999px;
+        background: rgba(0, 168, 150, 0.16);
+        border: 1px solid rgba(0, 168, 150, 0.4);
+        color: #6ff0df;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .pill.plain {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.14);
+        color: var(--muted);
+      }
+
+      .cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 17px 20px;
+        border-radius: 16px;
+        border: 0;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        color: #04121f;
+        background: linear-gradient(180deg, #2bd6c2, var(--teal));
+        text-decoration: none;
+        box-shadow: 0 14px 30px rgba(0, 168, 150, 0.32);
+      }
+
+      .cta:active { transform: translateY(1px); }
+
+      .cta[aria-disabled='true'] {
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--muted);
+        box-shadow: none;
+      }
+
+      .cta svg { width: 20px; height: 20px; }
+
+      .under {
+        margin: 12px 0 0;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin: 30px 0 12px;
+      }
+
+      ol, ul { margin: 0; padding-left: 20px; }
+
+      li { font-size: 13.5px; line-height: 1.7; margin-bottom: 10px; color: #d7e4f7; }
+      li b { color: #fff; }
+
+      .steps li::marker { color: var(--teal); font-weight: 800; }
+
+      .notes li { margin-bottom: 6px; }
+
+      .tip {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(255, 193, 7, 0.09);
+        border: 1px solid rgba(255, 193, 7, 0.32);
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: #ffe4a3;
+      }
+
+      .tip b { color: #ffd166; }
+
+      footer {
+        margin-top: 34px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 11.5px;
+        line-height: 1.7;
+        color: #7f93b3;
+        text-align: center;
+      }
+
+      .hidden { display: none; }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <header>
+        <img src="assets/icon.png" alt="" width="44" height="44" />
+        <div class="brand">
+          PAGUYUBAN EV50
+          <span>DAMRI SBU Transbusway Cawang EV 50</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <h1>Aplikasi Pramudi</h1>
+        <p class="lede">
+          Kartu iuran, saldo talangan, dan laporan perbaikan armada — dalam satu
+          aplikasi. Khusus anggota Paguyuban EV50.
+        </p>
+
+        <div class="meta">
+          <span class="pill" id="version">Versi terbaru</span>
+          <span class="pill plain" id="size">Memuat ukuran…</span>
+          <span class="pill plain" id="date"></span>
+        </div>
+
+        <a
+          class="cta"
+          id="download"
+          href="https://github.com/nibih/paguyuban-ev50/releases/latest/download/paguyuban-ev50.apk"
+          rel="noopener"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12" /><path d="m7 12 5 5 5-5" /><path d="M4 21h16" />
+          </svg>
+          Unduh APK
+        </a>
+        <p class="under" id="under">Android 7 ke atas · tanpa Play Store</p>
+      </section>
+
+      <section id="notesBlock" class="hidden">
+        <h2>Apa yang baru</h2>
+        <ul class="notes" id="notes"></ul>
+      </section>
+
+      <h2>Cara pasang</h2>
+      <ol class="steps">
+        <li>Buka halaman ini <b>di HP</b>, lalu ketuk <b>Unduh APK</b>.</li>
+        <li>
+          Buka file yang selesai terunduh. Kalau Chrome bertanya, pilih
+          <b>Tetap unduh</b>.
+        </li>
+        <li>
+          Kalau muncul <b>“Demi keamanan, ponsel tidak diizinkan memasang aplikasi
+          dari sumber ini”</b>, ketuk <b>Setelan</b> → izinkan dari sumber
+          tersebut → lalu <b>Instal</b>.
+        </li>
+        <li>
+          Selesai. Buka aplikasi dan masuk dengan NIK serta PIN yang diberikan
+          pengurus.
+        </li>
+      </ol>
+
+      <div class="tip">
+        <b>Play Protect bilang “aplikasi tidak aman”?</b> Itu peringatan biasa
+        untuk aplikasi yang dipasang di luar Play Store, bukan tanda virus.
+        Ketuk <b>Detail lainnya</b> → <b>Tetap instal</b>. Jangan matikan Play
+        Protect untuk ponsel ini.
+      </div>
+
+      <h2>Sudah pernah memasang?</h2>
+      <ul>
+        <li>
+          Pasang APK di atas seperti biasa — <b>tanpa</b> menghapus aplikasi
+          lama. Data, PIN, dan riwayat tetap ada.
+        </li>
+        <li>
+          Setelah versi ini terpasang, pembaruan berikutnya masuk otomatis saat
+          aplikasi dibuka. Tidak perlu mengunduh ulang dari halaman ini.
+        </li>
+      </ul>
+
+      <footer>
+        APK resmi dari pengurus Paguyuban EV50. Jangan pasang file yang dikirim
+        ulang lewat chat dari sumber lain.<br />
+        Paguyuban EV50 · Cawang
+      </footer>
+    </main>
+
+    <script>
+      // The page never guesses a version: it reads what `publish-apk.mjs` wrote,
+      // and refuses to offer a download it cannot describe.
+      const file = (n) => (n / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
+
+      fetch('version.json', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no version.json'))))
+        .then((v) => {
+          document.getElementById('version').textContent = 'Versi ' + v.version;
+          if (v.sizeBytes) document.getElementById('size').textContent = file(v.sizeBytes);
+          if (v.publishedAt) {
+            document.getElementById('date').textContent = new Date(v.publishedAt)
+              .toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+          }
+          if (Array.isArray(v.notes) && v.notes.length) {
+            const list = document.getElementById('notes');
+            v.notes.forEach((n) => {
+              const li = document.createElement('li');
+              li.textContent = n;
+              list.appendChild(li);
+            });
+            document.getElementById('notesBlock').classList.remove('hidden');
+          }
+        })
+        .catch(() => {
+          // No published build behind this page yet — say so instead of handing
+          // out a 404 as if it were an APK.
+          const cta = document.getElementById('download');
+          cta.setAttribute('aria-disabled', 'true');
+          cta.removeAttribute('href');
+          document.getElementById('version').textContent = 'Belum tersedia';
+          document.getElementById('size').textContent = '';
+          document.getElementById('under').textContent =
+            'APK belum diunggah. Hubungi pengurus.';
+        });
+    </script>
+  </body>
+</html>

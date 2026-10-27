@@ -26,6 +26,10 @@ dist-ssr
 # Vercel
 .vercel
 
+# The APK is a build artifact and lives on a GitHub release, never in git — a
+# 70 MB binary in the tree would grow every clone and every deploy.
+*.apk
+
 # Local env files. VITE_* values are read at build time and end up in the
 # public JS bundle, so anything holding a real secret must stay out of git.
 # `.env.local` matches the *.local rule below; `.env` is excluded too.

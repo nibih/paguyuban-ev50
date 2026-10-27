@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
-import { MONTHS } from '../../constants';
+import { dueMonths } from '../../constants';
 
 const EMPTY_FORM = {
   nik: '',
@@ -43,11 +43,12 @@ export const ScreenA6DaftarPramudi = () => {
   const rows = useMemo(() => users
     .map((u) => {
       const rec = iuranRecords[u.nik] || {};
-      const paid = MONTHS.filter((m) => rec[m]?.status === 'lunas').length;
-      const pending = MONTHS.filter((m) => rec[m]?.status === 'pending').length;
+      const due = dueMonths(u);
+      const paid = due.filter((m) => rec[m]?.status === 'lunas').length;
+      const pending = due.filter((m) => rec[m]?.status === 'pending').length;
       const debt = debts.find((d) => d.nik === u.nik);
       const outstanding = debt ? debt.amount - debt.paid : 0;
-      return { ...u, paid, pending, outstanding };
+      return { ...u, dueCount: due.length, paid, pending, outstanding };
     })
     .filter((u) => {
       const q = search.trim().toLowerCase();
@@ -112,11 +113,12 @@ export const ScreenA6DaftarPramudi = () => {
 
   // Bulk activate / deactivate over the roster.
   //
-  // setMemberActive stays the only path, called once per driver, which means
-  // its last-admin guard applies to every row: selecting both admins and
-  // deactivating them succeeds on the first and refuses the second rather
-  // than locking the pengurus out of their own panel. That one refusal is
-  // reported, not swallowed.
+  // setMemberActive is still the only writer, called once per driver, but its
+  // last-admin guard cannot see the writes the loop has already made: every
+  // call in a batch reads `users` from this render, where admins earlier in
+  // the batch are still active. Selecting both admins and deactivating them
+  // therefore used to succeed twice and lock the panel out of its account
+  // gate. The batch is now checked as a whole before the first write.
   const [picked, setPicked] = useState(() => new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
 
@@ -135,6 +137,16 @@ export const ScreenA6DaftarPramudi = () => {
   const runBulkStatus = async (active) => {
     if (bulkBusy || pickedRows.length === 0) return;
     const items = pickedRows;
+
+    if (!active) {
+      const adminsLeft = users.filter(
+        (u) => u.role === 'admin' && u.status !== 'inactive' && !picked.has(u.nik)
+      );
+      if (adminsLeft.length === 0) {
+        showToast('Tidak bisa menonaktifkan semua admin. Sisakan satu pengurus aktif.', 'error');
+        return;
+      }
+    }
 
     const question = active
       ? `Aktifkan kembali ${items.length} pramudi?`
@@ -331,8 +343,8 @@ export const ScreenA6DaftarPramudi = () => {
                     <div className="text-[10px] text-slate-400">{u.position}</div>
                   </td>
                   <td className="py-3 px-4 text-center">
-                    <span className={`font-mono text-[11px] font-bold ${u.paid === MONTHS.length ? 'text-emerald-600' : 'text-slate-600'}`}>
-                      {u.paid}/{MONTHS.length}
+                    <span className={`font-mono text-[11px] font-bold ${u.dueCount > 0 && u.paid === u.dueCount ? 'text-emerald-600' : 'text-slate-600'}`}>
+                      {u.paid}/{u.dueCount}
                     </span>
                     {u.pending > 0 && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200">

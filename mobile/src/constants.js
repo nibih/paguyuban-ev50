@@ -4,12 +4,47 @@
 // was hardcoded at nine call sites — so extending the collection period meant
 // remembering every copy, and a single miss showed members wrong money.
 // Everything now reads them from here.
-//
-// This is a fixed May–September collection period, not "the current month": the
-// paguyuban is collecting for a defined window, which is why MemberDashboard
-// shows September as the final month regardless of today's date.
 export const IURAN_FEE = 100000;
-export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September'];
+
+// The collection period, in order, and the month being collected right now —
+// see the web copy of these constants for why the keys are month names rather
+// than YYYY-MM, and for the January cliff.
+export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+export const LAST_MONTH = MONTHS[MONTHS.length - 1];
+
+export const MONTH_NO = Object.fromEntries(
+  MONTHS.map((m, i) => [m, String(((4 + i) % 12) + 1).padStart(2, '0')])
+);
+
+// The month the depot is collecting for: the calendar month while it is inside
+// the period, otherwise the last month the list knows.
+export const COLLECTION_MONTH = MONTHS.find(
+  (m) => MONTH_NO[m] === String(new Date().getMonth() + 1).padStart(2, '0')
+) || LAST_MONTH;
+
+export const PREVIOUS_MONTH = MONTHS[Math.max(0, MONTHS.indexOf(COLLECTION_MONTH) - 1)];
+
+// The months one driver actually owes — see the web copy of `dueMonths` for
+// why a driver who joined this month must not read as six months behind.
+export const dueMonths = (user) => {
+  const mm = String(user?.createdAt || '').split('/')[1];
+  const start = mm ? MONTHS.findIndex((m) => MONTH_NO[m] === mm) : 0;
+  if (start === -1) return [];
+  return MONTHS.slice(start, MONTHS.indexOf(COLLECTION_MONTH) + 1);
+};
+
+// Which vault a rupiah actually lands in — see the web copy of this constant
+// for why the lookup is exact rather than a substring match. Mobile and web
+// are separate bundles, so the table is defined once per surface; both must
+// list the same methods or the two apps disagree about where money went.
+export const VAULT_FOR_METHOD = {
+  'Tunai Kasir': 'pettyCash',
+  'Cash ke Kasir Depo': 'pettyCash',
+  'Cash ke Admin': 'pettyCash',
+  'Transfer BSI': 'bsiBalance',
+  'Transfer Bank BSI': 'bsiBalance',
+  'Potong Gaji': null
+};
 
 // The hazard board belongs to ANOTHER TEAM. The paguyuban has no control over
 // this form, cannot add a trigger to it, and cannot read what gets submitted —

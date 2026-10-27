@@ -28,7 +28,7 @@ Aplikasi ini ditujukan untuk memecahkan masalah operasional fisik di Depo Cawang
 | | Password Hash / OTP SMS | 🔴 **Post-MVP** | ❌ Belum | Butuh gateway SMS/WA API & registrasi rumit. |
 | | Biometric Fingerprint/FaceID | 🔴 **Post-MVP** | ❌ Belum | *Nice-to-have*, bukan kebutuhan mendesak. |
 | **Iuran Bulanan** | Status Iuran Mei–September | 🟢 **MVP** | ✅ Selesai | Kebutuhan paling vital bagi 126 pramudi. |
-| | Info Transfer Rekening BSI 720510945 | 🟢 **MVP** | ✅ Selesai | 90% supir mentransfer langsung ke rekening paguyuban. |
+| | Info Transfer Rekening BSI 7352135571 | 🟢 **MVP** | ✅ Selesai | 90% supir mentransfer langsung ke rekening paguyuban. |
 | | Upload Bukti Transfer Bank | 🟢 **MVP** | ✅ Selesai | **Wajib** untuk transfer manual (`8b84148`). |
 | | Tandai Lunas Tunai oleh Kasir | 🟢 **MVP** | ✅ Selesai | `markIuranPaidCash`, transaksional ke kas kecil. |
 | | **Verifikasi Sebelum Lunas** | 🟢 **MVP (gagal)** | ❌ **Celah** | Lihat bagian 5 — ini masalah MVP, bukan Fase 2. |
@@ -63,7 +63,7 @@ Aplikasi ini ditujukan untuk memecahkan masalah operasional fisik di Depo Cawang
 ├────────────────────────────────────────────────────────────────────────────┤
 │ ✅ 1. Login NIK & PIN Pramudi + 1-Click Demo Accounts                      │
 │ ✅ 2. Tab Beranda: Ringkasan iuran, kas, & kartu utang aktif               │
-│ ✅ 3. Tab Iuran: Status per bulan + Instruksi Rekening BSI 720510945        │
+│ ✅ 3. Tab Iuran: Status per bulan + Instruksi Rekening BSI 7352135571        │
 │ ✅ 4. Tab Talangan: Kartu utang individu + setoran cicilan                 │
 │ ✅ 5. Tab Lapor Perbaikan: Form armada, checklist bodi, & foto kamera      │
 │ ✅ 6. Tab Kas Terbuka: Transparansi 15 pengeluaran + filter kategori       │

@@ -8,11 +8,11 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
-import { MONTHS } from '../../constants';
+import { MONTHS, MONTH_NO } from '../../constants';
 
 // Expense records carry ISO dates (2026-09-01); the iuran book is keyed by
-// month name. Map one to the other so a per-month row can line them up.
-const MONTH_NO = { Mei: '05', Juni: '06', Juli: '07', Agustus: '08', September: '09' };
+// month name. MONTH_NO maps one to the other so a per-month row can line them
+// up, and it is derived in constants from the same list the columns use.
 
 
 // A1: the money in and the money out.

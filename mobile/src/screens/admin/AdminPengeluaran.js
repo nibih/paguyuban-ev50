@@ -17,7 +17,7 @@ const CATEGORIES = ['Bansos', 'Talangan', 'Servis & Sparepart', 'Konsumsi Kegiat
 // same transaction; deleting refunds it. Both are confirmed, because a wrong
 // tap here moves real money.
 export default function AdminPengeluaran() {
-  const { expenses, addExpense, deleteExpense } = useApp();
+  const { expenses, addExpense, deleteExpense, users } = useApp();
   const [sourceTab, setSourceTab] = useState(SOURCES[1]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
@@ -33,6 +33,23 @@ export default function AdminPengeluaran() {
   const [formPic, setFormPic] = useState('');
   const [formBody, setFormBody] = useState('');
   const [formSource, setFormSource] = useState(SOURCES[1]);
+  // Which driver's debt card this talangan belongs to. Empty means the money
+  // came out of the paguyuban's own pocket, not a loan to anybody.
+  const [formRelatedNik, setFormRelatedNik] = useState('');
+  const [driverPicker, setDriverPicker] = useState(false);
+  const [driverQuery, setDriverQuery] = useState('');
+
+  const driverMatches = useMemo(() => {
+    const q = driverQuery.trim().toLowerCase();
+    const list = q
+      ? users.filter(u => u.name.toLowerCase().includes(q) || u.nik.includes(q))
+      : users;
+    return [...list]
+      .sort((a, b) => a.name.localeCompare(b.name, 'id'))
+      .slice(0, 40);
+  }, [users, driverQuery]);
+
+  const selectedDriver = users.find(u => u.nik === formRelatedNik) || null;
 
   const sourceFiltered = useMemo(
     () => expenses.filter(e => (e.source || '').includes(formSource.includes('Kas Kecil') ? 'Kecil' : 'BSI')),
@@ -80,6 +97,9 @@ export default function AdminPengeluaran() {
     setFormAmount('');
     setFormPic('');
     setFormBody('');
+    setFormRelatedNik('');
+    setDriverPicker(false);
+    setDriverQuery('');
   };
 
   const submit = async () => {
@@ -95,7 +115,8 @@ export default function AdminPengeluaran() {
       amount: nominal,
       pic: formPic.trim() || '-',
       body: formBody.trim() || '-',
-      source: formSource
+      source: formSource,
+      ...(formCategory === 'Talangan' && formRelatedNik ? { relatedNik: formRelatedNik } : {})
     });
     setBusy(false);
 
@@ -208,7 +229,7 @@ export default function AdminPengeluaran() {
       />
 
       {/* Floating add */}
-      <TouchableOpacity style={styles.fab} onPress={() => setOpenAdd(true)} activeOpacity={0.85}>
+      <TouchableOpacity style={styles.fab} onPress={() => { setDriverPicker(false); setOpenAdd(true); }} activeOpacity={0.85}>
         <Plus size={22} color="#FFFFFF" />
       </TouchableOpacity>
 
@@ -295,6 +316,36 @@ export default function AdminPengeluaran() {
               onChangeText={setFormPic}
             />
 
+            {formCategory === 'Talangan' && (
+              <>
+                <Text style={styles.label}>Talangan untuk Pramudi</Text>
+                <TouchableOpacity
+                  style={styles.driverPick}
+                  onPress={() => { setDriverQuery(''); setDriverPicker(true); }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.driverPickText, !selectedDriver && styles.driverPickEmpty]}>
+                    {selectedDriver ? selectedDriver.name : 'Pilih pramudi...'}
+                  </Text>
+                  {selectedDriver ? (
+                    <TouchableOpacity
+                      onPress={() => setFormRelatedNik('')}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <X size={16} color="#64748B" />
+                    </TouchableOpacity>
+                  ) : (
+                    <Search size={16} color="#94A3B8" />
+                  )}
+                </TouchableOpacity>
+                <Text style={styles.hint}>
+                  Nominal ini menambah kartu piutang pramudi yang dipilih, dan
+                  ikut batal kalau pengeluaran ini dihapus. Kosongkan kalau
+                  bukan talangan anggota.
+                </Text>
+              </>
+            )}
+
             <Text style={styles.label}>Catatan</Text>
             <TextInput
               style={[styles.input, { height: 64, textAlignVertical: 'top' }]}
@@ -323,6 +374,52 @@ export default function AdminPengeluaran() {
               {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitText}>SIMPAN PENGELUARAN</Text>}
             </TouchableOpacity>
             <View style={{ height: 20 }} />
+
+            {/* Driver picker for talangan, layered inside the form sheet rather
+                than opened as a second Modal: two simultaneous Modals are
+                unreliable on iOS, and this keeps the chosen name in view. */}
+            {driverPicker && (
+              <View style={styles.pickerOverlay}>
+                <View style={styles.sheetHeader}>
+                  <Text style={styles.sheetTitle}>PILIH PRAMUDI</Text>
+                  <TouchableOpacity onPress={() => setDriverPicker(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <X size={20} color="#64748B" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.searchRow}>
+                  <Search size={15} color="#94A3B8" />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Cari nama atau NIK..."
+                    placeholderTextColor="#94A3B8"
+                    value={driverQuery}
+                    onChangeText={setDriverQuery}
+                    autoFocus
+                  />
+                </View>
+                <FlatList
+                  data={driverMatches}
+                  keyExtractor={u => u.nik}
+                  keyboardShouldPersistTaps="handled"
+                  style={{ flex: 1 }}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.driverRow}
+                      onPress={() => { setFormRelatedNik(item.nik); setDriverPicker(false); }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.driverName}>{item.name}</Text>
+                        <Text style={styles.driverNik}>{item.nik}</Text>
+                      </View>
+                      {item.nik === formRelatedNik && <Check size={16} color="#00A896" />}
+                    </TouchableOpacity>
+                  )}
+                  ListEmptyComponent={
+                    <Text style={styles.hint}>Tidak ada pramudi yang cocok.</Text>
+                  }
+                />
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -443,6 +540,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: '#0F172A'
   },
   amountPreview: { fontSize: 11, fontWeight: 'bold', color: '#00A896', marginTop: 5 },
+
+  driverPick: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC', borderRadius: 12,
+    borderWidth: 1, borderColor: '#E2E8F0',
+    paddingHorizontal: 12, paddingVertical: 11
+  },
+  driverPickText: { fontSize: 12, fontWeight: 'bold', color: '#0F172A', flex: 1 },
+  driverPickEmpty: { fontWeight: 'normal', color: '#94A3B8' },
+  hint: { fontSize: 10, color: '#94A3B8', marginTop: 5, lineHeight: 15 },
+
+  pickerOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 18
+  },
+  searchRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#F8FAFC', borderRadius: 12,
+    borderWidth: 1, borderColor: '#E2E8F0',
+    paddingHorizontal: 12, paddingVertical: 9, marginTop: 10
+  },
+  driverRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#F1F5F9'
+  },
+  driverName: { fontSize: 12, fontWeight: 'bold', color: '#0F172A' },
+  driverNik: { fontSize: 10, color: '#94A3B8', marginTop: 1 },
 
   sourcePick: { flexDirection: 'row', gap: 8 },
   sourceOption: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Plus, 
   Search, 
@@ -9,7 +9,6 @@ import {
   Tag, 
   Check, 
   X,
-  Upload,
   AlertTriangle,
   Trash2
 } from 'lucide-react';
@@ -17,12 +16,18 @@ import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 
 export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
-  const { expenses, addExpense, deleteExpense, vault } = useApp();
+  const { expenses, addExpense, deleteExpense, vault, users } = useApp();
   const pettyCash = vault?.pettyCash ?? 0;
   const bsiBalance = vault?.bsiBalance ?? 0;
   const [activeTab, setActiveTab] = useState('Semua');
   const [search, setSearch] = useState('');
   const [viewReceiptItem, setViewReceiptItem] = useState(null);
+
+  // Driver list for the talangan picker, alphabetical like the roster.
+  const drivers = useMemo(
+    () => [...users].sort((a, b) => String(a.name).localeCompare(String(b.name), 'id')),
+    [users]
+  );
 
   // New Expense Form State
   const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
@@ -32,7 +37,9 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
   const [formPic, setFormPic] = useState('');
   const [formBody, setFormBody] = useState('-');
   const [formSource, setFormSource] = useState('Kas Kecil Tunai (Kholiq)');
-  const [receiptFile, setReceiptFile] = useState(null);
+  // Which driver's debt card this talangan belongs to. Empty means "cash out
+  // of the paguyuban's own pocket", not a loan to anybody.
+  const [formRelatedNik, setFormRelatedNik] = useState('');
 
   const TABS = [
     { label: 'Semua', count: expenses.length },
@@ -64,13 +71,14 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
       pic: formPic || 'Admin Depo',
       body: formBody,
       source: formSource,
-      receipt: receiptFile || 'nota_upload.jpg'
+      ...(formCategory === 'Talangan' && formRelatedNik ? { relatedNik: formRelatedNik } : {})
     });
 
     // Reset
     setFormTitle('');
     setFormAmount('');
     setFormPic('');
+    setFormRelatedNik('');
     setIsModalOpen(false);
   };
 
@@ -297,6 +305,26 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                 </div>
               </div>
 
+              {formCategory === 'Talangan' && (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Talangan untuk Pramudi</label>
+                  <select
+                    value={formRelatedNik}
+                    onChange={(e) => setFormRelatedNik(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">- Bukan talangan anggota (tidak menambah kartu) -</option>
+                    {drivers.map((u) => (
+                      <option key={u.nik} value={u.nik}>{u.name} · {u.nik}</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Nominal ini menambah kartu piutang pramudi yang dipilih, dan
+                    dihapus lagi kalau pengeluaran ini dihapus.
+                  </p>
+                </div>
+              )}
+
               {/* Overdraft check warning */}
               {formSource.includes('Kas Kecil') && Number(formAmount) > pettyCash && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800">
@@ -307,21 +335,12 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                 </div>
               )}
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Upload Bukti Nota / Kuitansi</label>
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center bg-slate-50 cursor-pointer relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setReceiptFile(e.target.files[0]?.name || 'nota.jpg')}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <Upload className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                  <span className="text-slate-600 font-medium">
-                    {receiptFile ? receiptFile : 'Pilih file struk pembelian / kuitansi'}
-                  </span>
-                </div>
-              </div>
+              {/* The receipt is the printable record opened by the Nota button,
+                  not an uploaded photo: the old file picker stored only the
+                  filename, so it promised evidence it never kept — and the
+                  extra `receipt` key was rejected by the expense rules, which
+                  made every web save fail. Photos would need a real upload
+                  path and a storage decision first. */}
 
               <div className="pt-2 flex items-center gap-3">
                 <button

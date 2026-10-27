@@ -9,7 +9,7 @@ Panduan ini ditujukan bagi programmer baru atau AI coding agent yang mengambil a
 Aplikasi ini mendigitalkan paguyuban pengemudi bus listrik DAMRI SBU Transbusway Cawang EV 50 (Depo Cawang).
 
 ### 3 Domain Operasional Inti:
-1. **Iuran Kas Bulanan:** Setiap pramudi wajib membayar kas Rp100.000/bulan untuk dana sosial, perlindungan operasional, dan kas bersama. Saldo ditampung di Bank Syariah Indonesia (BSI) No. Rek `720510945` a.n **PAGUYUBAN EV 50 CAWANG**.
+1. **Iuran Kas Bulanan:** Setiap pramudi wajib membayar kas Rp100.000/bulan untuk dana sosial, perlindungan operasional, dan kas bersama. Saldo ditampung di Bank Syariah Indonesia (BSI) No. Rek `7352135571` a.n **PAGUYUBAN EV 50 CAWANG**.
 2. **Dana Talangan / Piutang Anggota:** Dana pinjaman darurat jika terjadi laka lantas atau kebutuhan jalur mendesak. Pembayaran dicatat dalam "Kartu Utang" bertempo 1–3 bulan.
 3. **Lapor Perbaikan Bodi & Armada EV:** Kerusakan bodi bus (Body 237–285) seperti baret, gompal, atau spion pecah dilaporkan oleh pengemudi, dikoordinasikan dengan Mekanik KLI / Uday, serta pengurusan Surat Keterangan (Suket) kepolisian yang biayanya ditalangi paguyuban.
 

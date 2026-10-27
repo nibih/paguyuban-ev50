@@ -17,7 +17,7 @@ Dokumen ini memetakan seluruh fitur yang telah dibangun, membandingkan antara ap
 | | Password Hash / OTP SMS | ❌ Belum Ada | ❌ Belum Ada | Masih validasi NIK & PIN 4 digit di sisi klien. |
 | **Iuran Bulanan (M2)** | Tracking Multi-Bulan (Mei–Sept) | ✅ Sudah Ada | ✅ Sudah Ada | Listener `onSnapshot` per NIK; merge per pengemudi agar riwayat lain tidak hilang. |
 | | Simulasi QRIS Midtrans | ✅ Sudah Ada | ✅ Sudah Ada | QR visual, countdown, tester webhook. |
-| | Transfer Manual BSI | ✅ Sudah Ada | ✅ **Wajib** | Rekening asli `720510945`. Bukti transfer **wajib** untuk transfer manual (`8b84148`). |
+| | Transfer Manual BSI | ✅ Sudah Ada | ✅ **Wajib** | Rekening asli `7352135571`. Bukti transfer **wajib** untuk transfer manual (`8b84148`). |
 | | Tandai Lunas Tunai (Admin) | ✅ Sudah Ada | ✅ **Sudah Ada** | `markIuranPaidCash` — transaksional, menggeser kas kecil. |
 | | Status Tertunda / Verifikasi | ❌ Belum Ada | ❌ **Belum Ada** | **Celah desain utama.** Lihat bagian 3. |
 | | Midtrans API Production | ⚠️ Simulasi | ⚠️ Simulasi | Mock webhook client-side. |

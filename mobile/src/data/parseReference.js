@@ -358,7 +358,7 @@ const seedData = {
   vault: {
     bsiBalance: 12450000,
     pettyCash: 131500,
-    accountNo: '720510945',
+    accountNo: '7352135571',
     bankName: 'Bank Syariah Indonesia (BSI)',
     accountHolder: 'PAGUYUBAN EV 50 CAWANG'
   }

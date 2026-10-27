@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, M
 import { useApp } from '../context/AppContext';
 import { ShieldCheck, CreditCard, AlertCircle, AlertTriangle, Wrench, HeartHandshake, CheckCircle, ArrowRight, PhoneCall } from 'lucide-react-native';
 import { rp } from '../utils/format';
-import { IURAN_FEE, HAZARD_FORM_URL } from '../constants';
+import { IURAN_FEE, HAZARD_FORM_URL, COLLECTION_MONTH } from '../constants';
 import MemberKontakDarurat from './MemberKontakDarurat';
 
 // The hazard board belongs to another team, so this is a plain handoff: the
@@ -29,7 +29,7 @@ export default function MemberDashboard({ navigation }) {
   const [contactsOpen, setContactsOpen] = useState(false);
 
   const userIuran = iuranRecords[currentUser.nik] || {};
-  const isPaid = userIuran['September']?.status === 'lunas';
+  const isPaid = userIuran[COLLECTION_MONTH]?.status === 'lunas';
 
   const userDebt = debts.find(d => d.nik === currentUser.nik);
   const remainingDebt = userDebt ? (userDebt.amount - userDebt.paid) : 0;
@@ -62,7 +62,7 @@ export default function MemberDashboard({ navigation }) {
             </View>
           )}
         </View>
-        <Text style={styles.heroTitle}>September 2026</Text>
+        <Text style={styles.heroTitle}>{COLLECTION_MONTH} 2026</Text>
         <Text style={styles.heroAmount}>{rp(IURAN_FEE)}</Text>
         
         {!isPaid ? (

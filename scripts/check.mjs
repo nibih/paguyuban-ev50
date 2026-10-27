@@ -146,6 +146,24 @@ if (provided.size === 0) {
   }
 }
 
+// ---- 4. due months --------------------------------------------------------
+// A driver owes from the month they joined, not from the start of the book.
+// Both iuran screens, the arrears filters and the member pay screen rely on
+// this, so the one branch worth pinning is pinned.
+const { MONTHS, COLLECTION_MONTH, dueMonths } = await import('../src/constants.js');
+
+const dueFailures = [];
+const expectDue = (label, got, want) => {
+  if (JSON.stringify(got) !== JSON.stringify(want)) {
+    dueFailures.push(`${label}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+  }
+};
+
+expectDue('roster tanpa createdAt mulai dari Mei', dueMonths({})[0], MONTHS[0]);
+expectDue('bergabung 27/10/2026 mulai dari Oktober', dueMonths({ createdAt: '27/10/2026' })[0], 'Oktober');
+expectDue('bergabung setelah periode belum menunggak', dueMonths({ createdAt: '05/01/2027' }), []);
+expectDue('bulan terakhir yang dihitung = bulan berjalan', dueMonths({}).at(-1), COLLECTION_MONTH);
+
 // ---- report ---------------------------------------------------------------
 let failed = false;
 
@@ -170,9 +188,17 @@ if (problems.length) {
   console.log('');
 }
 
+if (dueFailures.length) {
+  failed = true;
+  console.log(`DUE-MONTH RULES (${dueFailures.length}):\n`);
+  for (const p of dueFailures) console.log('  ' + p);
+  console.log('');
+}
+
 if (failed) process.exit(1);
 
 console.log(
   `OK  ${files.length} files · every file parses · every import resolves · ` +
-  `${provided.size} context fields verified against their consumers`
+  `${provided.size} context fields verified against their consumers · ` +
+  `4 due-month rules hold`
 );

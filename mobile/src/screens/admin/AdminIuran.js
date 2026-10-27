@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert, M
 import { useApp } from '../../context/AppContext';
 import { Search, Check, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react-native';
 import { rp } from '../../utils/format';
-import { MONTHS } from '../../constants';
+import { MONTHS, COLLECTION_MONTH, dueMonths } from '../../constants';
 
 // Transfer proof: the web panel writes `proof`, older mobile builds wrote
 // `receipt` for the same image, so both are read.
@@ -102,13 +102,12 @@ export default function AdminIuran() {
         const q = search.trim().toLowerCase();
         if (q && !u.name.toLowerCase().includes(q) && !u.nik.includes(q)) return false;
 
-        const sept = u.rec['September']?.status === 'lunas';
-        const ags = u.rec['Agustus']?.status === 'lunas';
+        const unpaid = dueMonths(u).filter(m => u.rec[m]?.status !== 'lunas').length;
         const anyPending = MONTHS.some(m => u.rec[m]?.status === 'pending');
-        if (filter === 'Lunas') return sept;
+        if (filter === 'Lunas') return unpaid === 0;
         if (filter === 'Menunggu') return anyPending;
-        if (filter === 'Tunggak 1') return !sept && ags;
-        if (filter === 'Tunggak >2') return !sept && !ags;
+        if (filter === 'Tunggak 1') return unpaid === 1;
+        if (filter === 'Tunggak >2') return unpaid > 1;
         return true;
       });
   }, [users, iuranRecords, search, filter]);
@@ -118,10 +117,11 @@ export default function AdminIuran() {
     users.forEach(u => {
       const r = iuranRecords[u.nik] || {};
       if (MONTHS.some(m => r[m]?.status === 'pending')) pending++;
-      const sept = r['September']?.status === 'lunas';
-      const ags = r['Agustus']?.status === 'lunas';
-      if (sept) lunas++;
-      else if (ags) t1++;
+      // Counted against what this driver owes, not the whole book — a driver
+      // who joined this month is one month late, not six.
+      const unpaid = dueMonths(u).filter(m => r[m]?.status !== 'lunas').length;
+      if (unpaid === 0) lunas++;
+      else if (unpaid === 1) t1++;
       else t2++;
     });
     return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak >2': t2, Menunggu: pending };
@@ -135,12 +135,12 @@ export default function AdminIuran() {
     { key: 'Tunggak >2', label: 'Tunggak >2', count: counts['Tunggak >2'] }
   ];
 
-  const paidCount = (rec) => MONTHS.filter(m => rec[m]?.status === 'lunas').length;
-
   const renderRow = ({ item }) => {
     const isExpanded = expandedNik === item.nik;
-    const paid = paidCount(item.rec);
-    const septLunas = item.rec['September']?.status === 'lunas';
+    const due = dueMonths(item);
+    const paid = due.filter(m => item.rec[m]?.status === 'lunas').length;
+    const fullyPaid = due.length > 0 && paid === due.length;
+    const currentLunas = item.rec[COLLECTION_MONTH]?.status === 'lunas';
 
     return (
       <TouchableOpacity
@@ -152,12 +152,12 @@ export default function AdminIuran() {
           <View style={{ flex: 1 }}>
             <Text style={styles.rowName}>{item.name}</Text>
             <Text style={styles.rowNik}>
-              {item.nik} · {paid}/{MONTHS.length} bulan lunas
+              {item.nik} · {paid}/{due.length} bulan lunas
             </Text>
           </View>
-          <View style={[styles.pill, paid === MONTHS.length ? styles.pillGreen : styles.pillRed]}>
-            <Text style={[styles.pillText, paid === MONTHS.length ? styles.pillTextGreen : styles.pillTextRed]}>
-              {paid === MONTHS.length ? 'LUNAS' : `${paid} LUNAS`}
+          <View style={[styles.pill, fullyPaid ? styles.pillGreen : styles.pillRed]}>
+            <Text style={[styles.pillText, fullyPaid ? styles.pillTextGreen : styles.pillTextRed]}>
+              {fullyPaid ? 'LUNAS' : `${paid} LUNAS`}
             </Text>
           </View>
         </View>
@@ -202,7 +202,7 @@ export default function AdminIuran() {
           </View>
         )}
 
-        {!isExpanded && !septLunas && (
+        {!isExpanded && !currentLunas && (
           <View style={styles.warnStrip}>
             <AlertTriangle size={11} color="#D97706" />
             <Text style={styles.warnText}>Belum lunas bulan ini</Text>
