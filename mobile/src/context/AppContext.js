@@ -316,7 +316,7 @@ export const AppProvider = ({ children }) => {
     // installments are excluded: unverified claims must not reserve money.
     const outstanding = before.amount - before.paid;
     if (amt > outstanding) {
-      showToast(`Setoran melebihi sisa hutang (${rp(outstanding)}).`, 'error');
+      showToast(`Setoran melebihi sisa utang (${rp(outstanding)}).`, 'error');
       return false;
     }
 
@@ -356,7 +356,7 @@ export const AppProvider = ({ children }) => {
       setDebts(prev => prev.map(d => (d.id === debtId ? { ...d, pendingInstallments: pendingBefore } : d)));
       showToast(
         e?.code === 'overpaid'
-          ? 'Sisa hutang berubah — muat ulang dan periksa kembali.'
+          ? 'Sisa utang berubah — muat ulang dan periksa kembali.'
           : `Cicilan TIDAK tersimpan. ${fsError(e)}`,
         'error'
       );

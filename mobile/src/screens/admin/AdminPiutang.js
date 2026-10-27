@@ -74,7 +74,7 @@ export default function AdminPiutang() {
   const confirmUndo = (debt, entry) => {
     Alert.alert(
       'Batalkan verifikasi?',
-      `Angsuran ${debt.name} ${rp(entry.amount)} dibatalkan. Sisa hutang bertambah dan kas dikurangi sebesar itu.`,
+      `Angsuran ${debt.name} ${rp(entry.amount)} dibatalkan. Sisa utang bertambah dan kas dikurangi sebesar itu.`,
       [
         { text: 'Batal', style: 'cancel' },
         {
@@ -217,7 +217,7 @@ export default function AdminPiutang() {
             <Text style={styles.queueTotal}>{rp(queueTotal)}</Text>
           </View>
           <Text style={styles.queueNote}>
-            Belum mengurangi hutang dan belum masuk kas. Cocokkan dengan mutasi BSI / kas kecil dulu.
+            Belum mengurangi utang dan belum masuk kas. Cocokkan dengan mutasi BSI / kas kecil dulu.
           </Text>
           {queue.slice(0, 25).map(q => (
             <View key={q.key} style={styles.queueRow}>

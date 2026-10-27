@@ -89,7 +89,7 @@ export default function MemberDashboard({ navigation }) {
           <Text style={styles.statVal}>{rp(vault.bsiBalance)}</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>HUTANG SAYA</Text>
+          <Text style={styles.statLabel}>UTANG SAYA</Text>
           <Text style={[styles.statVal, { color: remainingDebt > 0 ? '#E11D48' : '#059669' }]}>
             {rp(remainingDebt)}
           </Text>

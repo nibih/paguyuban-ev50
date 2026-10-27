@@ -85,7 +85,7 @@ export const ScreenA4BukuPiutang = () => {
   const runUnverify = async (debt, entry) => {
     const ok = window.confirm(
       `Batalkan verifikasi angsuran ${debt.name} ${rp(entry.amount)}?\n\n` +
-      `Sisa hutang bertambah dan kas dikurangi ${rp(entry.amount)}.`
+      `Sisa utang bertambah dan kas dikurangi ${rp(entry.amount)}.`
     );
     if (!ok) return;
     setBusyKey(`${debt.id}-${entry.id}`);
@@ -179,7 +179,7 @@ export const ScreenA4BukuPiutang = () => {
             <span className="text-sm font-black font-mono text-amber-800">{rp(queueTotal)}</span>
           </div>
           <p className="text-[11px] text-amber-700 leading-relaxed mb-4">
-            Setoran dari pramudi, belum mengurangi sisa hutang dan belum masuk kas.
+            Setoran dari pramudi, belum mengurangi sisa utang dan belum masuk kas.
             Hitung uangnya dulu, baru konfirmasi.
           </p>
 
@@ -213,7 +213,7 @@ export const ScreenA4BukuPiutang = () => {
                     onClick={() => runVerify(q)}
                     disabled={busy}
                     className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition disabled:opacity-40"
-                    title="Konfirmasi — mengurangi sisa hutang dan mengkredit kas"
+                    title="Konfirmasi — mengurangi sisa utang dan mengkredit kas"
                   >
                     <Check className="w-4 h-4" />
                   </button>
@@ -476,7 +476,7 @@ export const ScreenA4BukuPiutang = () => {
                           onClick={() => runUnverify(liveSelected, p)}
                           disabled={busyKey === key}
                           className="w-7 h-7 rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center transition disabled:opacity-40"
-                          title="Batalkan verifikasi — sisa hutang bertambah, kas dikurangi"
+                          title="Batalkan verifikasi — sisa utang bertambah, kas dikurangi"
                         >
                           <Undo2 className="w-3.5 h-3.5" />
                         </button>

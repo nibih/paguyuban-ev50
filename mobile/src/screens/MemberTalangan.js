@@ -130,7 +130,7 @@ export default function MemberTalangan() {
                   <AlertCircle size={13} color="#D97706" />
                   <Text style={styles.pendingText}>
                     {rp(queued)} menunggu verifikasi bendahara — belum mengurangi
-                    sisa hutang.
+                    sisa utang.
                   </Text>
                 </View>
               )}
@@ -214,7 +214,7 @@ export default function MemberTalangan() {
                   <Text style={styles.submitBtnText}>Kirim untuk Verifikasi Bendahara</Text>
                 </TouchableOpacity>
                 <Text style={styles.submitNote}>
-                  Setoran dicatat dulu sebagai ANTREAN. Sisa hutang baru berkurang setelah bendahara
+                  Setoran dicatat dulu sebagai ANTREAN. Sisa utang baru berkurang setelah bendahara
                   mencocokkan uangnya dengan mutasi BSI / kas kecil.
                 </Text>
               </>
