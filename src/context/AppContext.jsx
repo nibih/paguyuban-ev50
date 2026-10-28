@@ -35,9 +35,19 @@ const todayId = () => new Date().toLocaleDateString('id-ID');
 // Which vault a payment belongs to, by exact method — see ../constants.
 // `null` means the payment moved no cash between the two accounts.
 const vaultKeyForMethod = (method) => (method in VAULT_FOR_METHOD ? VAULT_FOR_METHOD[method] : null);
+
 // One balance. Cash in the tin and money in the bank are the same pot now, so
 // the expense source no longer picks an account — there is only one.
 const vaultKeyFor = () => 'bsiBalance';
+
+// One balance on screen. This build never writes `pettyCash` any more, but a
+// phone still on an older bundle moves cash into it — folding it into the
+// displayed balance keeps that money visible instead of vanishing into a field
+// no screen reads. Drop this with the last old install.
+const withOneBalance = (v) => ({
+  ...v,
+  bsiBalance: (Number(v?.bsiBalance) || 0) + (Number(v?.pettyCash) || 0)
+});
 
 const SESSION_KEY = 'paguyuban.admin.session';
 
@@ -178,7 +188,7 @@ export const AppProvider = ({ children }) => {
       }), safe(() => {})));
 
       unsubs.push(onSnapshot(doc(db, 'system', 'vault'), safe((snap) => {
-        if (snap.exists()) setVault(snap.data());
+        if (snap.exists()) setVault(withOneBalance(snap.data()));
       }), safe(() => {})));
     } catch (e) {
       console.warn('Firestore unreachable — falling back to the bundled seed data.', e);

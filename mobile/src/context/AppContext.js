@@ -19,6 +19,19 @@ const fsError = (e) => FS_MESSAGES[e?.code] || e?.message || 'Gagal menyinkronka
 
 const todayId = () => new Date().toLocaleDateString('id-ID');
 
+// One balance: cash and bank money are the same pot, so the expense source no
+// longer picks an account.
+const vaultKeyFor = () => 'bsiBalance';
+
+// One balance on screen. This build never writes `pettyCash` any more, but a
+// phone still on an older bundle moves cash into it — folding it into the
+// displayed balance keeps that money visible instead of vanishing into a field
+// no screen reads. Drop this with the last old install.
+const withOneBalance = (v) => ({
+  ...v,
+  bsiBalance: (Number(v?.bsiBalance) || 0) + (Number(v?.pettyCash) || 0)
+});
+
 export const AppProvider = ({ children }) => {
   // Authentication & active driver
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,7 +71,7 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     try {
       const unsubVault = onSnapshot(doc(db, 'system', 'vault'), (snap) => {
-        if (snap.exists()) setVault(snap.data());
+        if (snap.exists()) setVault(withOneBalance(snap.data()));
       }, () => {});
 
       const unsubDebts = onSnapshot(collection(db, 'debts'), (snap) => {
@@ -399,15 +412,11 @@ export const AppProvider = ({ children }) => {
    * a cashier must never see a success state that Firestore rejected.
    * ---------------------------------------------------------------- */
 
-  // One balance: cash and bank money are the same pot, so the expense source no
-// longer picks an account.
-const vaultKeyFor = () => 'bsiBalance';
-
   // A2: cashier ticks a driver's month as paid in cash.
   //
   // The tick records a CLAIM that cash changed hands. It does not move the
   // tin — `verifyIuran` does that, once a bendahara has counted it against
-  // the physical kas kecil. A tap is not evidence of money.
+  // the BSI statement. A tap is not evidence of money.
   const markIuranPaidCash = async (nik, month) => {
     const fee = IURAN_FEE;
     const payment = {

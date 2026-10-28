@@ -9,7 +9,6 @@ import {
   Tag, 
   Check, 
   X,
-  AlertTriangle,
   Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
