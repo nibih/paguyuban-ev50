@@ -7,7 +7,6 @@ import { useApp } from '../../context/AppContext';
 import { Search, Plus, X, Trash2, Receipt, Check } from 'lucide-react-native';
 import { rp } from '../../utils/format';
 
-const SOURCES = ['BSI (Bank)', 'Kas Kecil Tunai (Kholiq)'];
 const CATEGORIES = ['Bansos', 'Talangan', 'Servis & Sparepart', 'Konsumsi Kegiatan', 'Operasional Harian', 'Lain-lain'];
 // The filter chips are derived from the records rather than hardcoded, because
 // the ledger's categories come from the parsed reference sheets and a fixed
@@ -18,7 +17,6 @@ const CATEGORIES = ['Bansos', 'Talangan', 'Servis & Sparepart', 'Konsumsi Kegiat
 // tap here moves real money.
 export default function AdminPengeluaran() {
   const { expenses, addExpense, deleteExpense, users } = useApp();
-  const [sourceTab, setSourceTab] = useState(SOURCES[1]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
   const [openAdd, setOpenAdd] = useState(false);
@@ -32,7 +30,6 @@ export default function AdminPengeluaran() {
   const [formAmount, setFormAmount] = useState('');
   const [formPic, setFormPic] = useState('');
   const [formBody, setFormBody] = useState('');
-  const [formSource, setFormSource] = useState(SOURCES[1]);
   // Which driver's debt card this talangan belongs to. Empty means the money
   // came out of the paguyuban's own pocket, not a loan to anybody.
   const [formRelatedNik, setFormRelatedNik] = useState('');
@@ -51,22 +48,17 @@ export default function AdminPengeluaran() {
 
   const selectedDriver = users.find(u => u.nik === formRelatedNik) || null;
 
-  const sourceFiltered = useMemo(
-    () => expenses.filter(e => (e.source || '').includes(formSource.includes('Kas Kecil') ? 'Kecil' : 'BSI')),
-    [expenses, formSource]
-  );
-
   // Derive the chips from whatever categories actually exist in this source,
   // most frequent first. "Semua" is always available and always resets.
   const FILTERS = useMemo(() => {
     const counts = {};
-    sourceFiltered.forEach(e => {
+    expenses.forEach(e => {
       const c = String(e.category || 'Lain-lain').trim();
       counts[c] = (counts[c] || 0) + 1;
     });
     const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
     return ['Semua', ...sorted];
-  }, [sourceFiltered]);
+  }, [expenses]);
 
   // Switching source can leave a chip that no longer exists in the new list.
   const activeFilter = FILTERS.includes(filter) ? filter : 'Semua';
@@ -76,7 +68,7 @@ export default function AdminPengeluaran() {
     // The chips are categories, so match against `category` — not the title.
     // Derived chips carry the full label, so an exact match is correct here.
     const chip = activeFilter === 'Semua' ? null : activeFilter.toLowerCase();
-    return sourceFiltered.filter(e => {
+    return expenses.filter(e => {
       const title = (e.title || '').toLowerCase();
       const pic = String(e.pic || '').toLowerCase();
       if (q && !title.includes(q) && !pic.includes(q)) return false;
@@ -86,9 +78,9 @@ export default function AdminPengeluaran() {
       }
       return true;
     });
-  }, [sourceFiltered, search, activeFilter]);
+  }, [expenses, search, activeFilter]);
 
-  const totalSource = sourceFiltered.reduce((a, b) => a + (b.amount || 0), 0);
+  const totalSource = expenses.reduce((a, b) => a + (b.amount || 0), 0);
 
   const resetForm = () => {
     setFormDate(new Date().toISOString().split('T')[0]);
@@ -115,7 +107,7 @@ export default function AdminPengeluaran() {
       amount: nominal,
       pic: formPic.trim() || '-',
       body: formBody.trim() || '-',
-      source: formSource,
+      source: 'BSI (Bank)',
       ...(formCategory === 'Talangan' && formRelatedNik ? { relatedNik: formRelatedNik } : {})
     });
     setBusy(false);
@@ -158,31 +150,6 @@ export default function AdminPengeluaran() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Source account segmented control */}
-      <View style={styles.segment}>
-        {SOURCES.map(s => {
-          const active = formSource === s;
-          const key = s.includes('Kas Kecil') ? 'Kecil' : 'BSI';
-          const sum = expenses
-            .filter(e => (e.source || '').includes(key))
-            .reduce((a, b) => a + (b.amount || 0), 0);
-          return (
-            <TouchableOpacity
-              key={s}
-              style={[styles.segmentItem, active && styles.segmentItemActive]}
-              onPress={() => setFormSource(s)}
-            >
-              <Text style={[styles.segmentLabel, active && styles.segmentLabelActive]}>
-                {s.includes('Kas Kecil') ? 'KAS KECIL' : 'BSI (BANK)'}
-              </Text>
-              <Text style={[styles.segmentSum, active && styles.segmentSumActive]}>
-                −{rp(sum)}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
       <View style={styles.searchWrap}>
         <Search size={15} color="#94A3B8" style={{ marginRight: 8 }} />
         <TextInput
@@ -246,25 +213,6 @@ export default function AdminPengeluaran() {
               <TouchableOpacity onPress={() => setOpenAdd(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <X size={20} color="#64748B" />
               </TouchableOpacity>
-            </View>
-
-            <Text style={styles.label}>Sumber Kas</Text>
-            <View style={styles.sourcePick}>
-              {SOURCES.map(s => {
-                const active = formSource === s;
-                return (
-                  <TouchableOpacity
-                    key={s}
-                    style={[styles.sourceOption, active && styles.sourceOptionActive]}
-                    onPress={() => setFormSource(s)}
-                  >
-                    {active && <Check size={13} color="#FFFFFF" />}
-                    <Text style={[styles.sourceText, active && styles.sourceTextActive]}>
-                      {s.includes('Kas Kecil') ? 'Kas Kecil (Kholiq)' : 'Rekening BSI'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
             </View>
 
             <Text style={styles.label}>Kategori</Text>
@@ -431,7 +379,7 @@ export default function AdminPengeluaran() {
             <Text style={styles.confirmTitle}>HAPUS TRANSAKSI?</Text>
             <Text style={styles.confirmBody}>
               {pendingDelete?.title} senilai {rp(pendingDelete?.amount || 0)} akan dihapus
-              dan nominalnya dikembalikan ke kas {pendingDelete?.source?.includes('Kas Kecil') ? 'kecil' : 'BSI'}.
+              dan nominalnya dikembalikan ke saldo kas.
             </Text>
             <View style={styles.confirmRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setPendingDelete(null)}>

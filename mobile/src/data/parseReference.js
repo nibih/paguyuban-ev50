@@ -356,8 +356,8 @@ const seedData = {
   iuran,
   incidents,
   vault: {
-    bsiBalance: 12450000,
-    pettyCash: 131500,
+    bsiBalance: 12581500,
+    pettyCash: 0,
     accountNo: '7352135571',
     bankName: 'Bank Syariah Indonesia (BSI)',
     accountHolder: 'PAGUYUBAN EV 50 CAWANG'

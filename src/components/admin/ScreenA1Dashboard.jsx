@@ -253,9 +253,6 @@ export const ScreenA1Dashboard = ({ onOpenExpenseModal }) => {
             </tr>
           </tfoot>
         </table>
-        <div className="px-5 py-3 text-[10px] text-slate-400 leading-relaxed border-t border-slate-100">
-          Pengeluaran baru tercatat mulai September, jadi bulan sebelumnya memang kosong.
-        </div>
       </div>
 
       {/* CSV export */}

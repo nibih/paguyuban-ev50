@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bus, Lock, User, KeyRound, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Lock, User, KeyRound, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 // Admin gate.
@@ -93,11 +93,11 @@ export const LoginGate = ({ children }) => {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="flex flex-col items-center mb-6 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-400 to-sky-500 p-0.5 shadow-lg flex items-center justify-center mb-4">
-            <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
-              <Bus className="w-7 h-7 text-teal-400" />
-            </div>
-          </div>
+          <img
+            src="/logo.png"
+            alt="Logo Paguyuban Pramudi DAMRI Cawang EV 50"
+            className="w-24 h-24 rounded-full mb-4 shadow-lg ring-1 ring-white/10"
+          />
           <h1 className="text-xl font-extrabold text-white tracking-wide">
             PAGUYUBAN EV50
           </h1>

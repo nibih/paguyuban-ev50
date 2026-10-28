@@ -81,11 +81,7 @@ export default function MemberDashboard({ navigation }) {
       {/* Vault Mini Stats */}
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>KAS BERJALAN</Text>
-          <Text style={styles.statVal}>{rp(vault.pettyCash)}</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statLabel}>REKENING BSI</Text>
+          <Text style={styles.statLabel}>SALDO KAS</Text>
           <Text style={styles.statVal}>{rp(vault.bsiBalance)}</Text>
         </View>
         <View style={styles.statBox}>

@@ -42,7 +42,7 @@ export const ScreenA4BukuPiutang = () => {
   // New debt card (dana talangan).
   //
   // addDebt looks the driver up by NIK, refuses unknown NIKs, and debits
-  // pettyCash for the full nominal in the same transaction — so this form
+  // the one balance for the full nominal in the same transaction — so this form
   // picks from the roster rather than accepting a free-text name, and says
   // plainly that saving pays money out.
   const emptyAdd = { nik: '', amount: '', incident: '', tenor: '1 BULAN', body: 'Armada EV Cawang' };
@@ -105,7 +105,7 @@ export const ScreenA4BukuPiutang = () => {
 
     setAddBusy(true);
     // addDebt validates the NIK against the roster itself and debits
-    // pettyCash for the full nominal, so this is a real cash-out.
+    // the balance for the full nominal, so this is a real cash-out.
     const ok = await addDebt({
       nik: addForm.nik,
       incident: addForm.incident.trim(),
@@ -591,7 +591,7 @@ export const ScreenA4BukuPiutang = () => {
               <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-amber-800 leading-relaxed">
-                  Menyimpan langsung <span className="font-black">mengurangi Kas Kecil</span> sebesar
+                  Menyimpan langsung <span className="font-black">mengurangi saldo kas</span> sebesar
                   nominal talangan. Kartu terbuka dengan status "Belum Mengangsur".
                 </p>
               </div>

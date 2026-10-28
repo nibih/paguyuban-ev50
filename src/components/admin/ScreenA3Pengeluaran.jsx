@@ -16,9 +16,7 @@ import { useApp } from '../../context/AppContext';
 import { rp } from '../../utils/format';
 
 export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
-  const { expenses, addExpense, deleteExpense, vault, users } = useApp();
-  const pettyCash = vault?.pettyCash ?? 0;
-  const bsiBalance = vault?.bsiBalance ?? 0;
+  const { expenses, addExpense, deleteExpense, users } = useApp();
   const [activeTab, setActiveTab] = useState('Semua');
   const [search, setSearch] = useState('');
   const [viewReceiptItem, setViewReceiptItem] = useState(null);
@@ -36,7 +34,7 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
   const [formAmount, setFormAmount] = useState('');
   const [formPic, setFormPic] = useState('');
   const [formBody, setFormBody] = useState('-');
-  const [formSource, setFormSource] = useState('Kas Kecil Tunai (Kholiq)');
+  const [formSource, setFormSource] = useState('Debet Rekening BSI Paguyuban');
   // Which driver's debt card this talangan belongs to. Empty means "cash out
   // of the paguyuban's own pocket", not a loan to anybody.
   const [formRelatedNik, setFormRelatedNik] = useState('');
@@ -292,17 +290,6 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Sumber Kas</label>
-                  <select
-                    value={formSource}
-                    onChange={(e) => setFormSource(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-xl font-medium outline-none"
-                  >
-                    <option value="Kas Kecil Tunai (Kholiq)">Kas Kecil Tunai (Kholiq)</option>
-                    <option value="Debet Rekening BSI Paguyuban">Debet Rekening BSI Paguyuban</option>
-                  </select>
-                </div>
               </div>
 
               {formCategory === 'Talangan' && (
@@ -322,16 +309,6 @@ export const ScreenA3Pengeluaran = ({ isModalOpen, setIsModalOpen }) => {
                     Nominal ini menambah kartu piutang pramudi yang dipilih, dan
                     dihapus lagi kalau pengeluaran ini dihapus.
                   </p>
-                </div>
-              )}
-
-              {/* Overdraft check warning */}
-              {formSource.includes('Kas Kecil') && Number(formAmount) > pettyCash && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>
-                    Perhatian: Nominal melebihi saldo kas kecil tunai ({rp(pettyCash)}). Kas akan bertransisi ke defisit sementara.
-                  </span>
                 </div>
               )}
 

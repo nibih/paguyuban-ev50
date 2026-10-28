@@ -107,7 +107,7 @@ export default function AdminIuran() {
         if (filter === 'Lunas') return unpaid === 0;
         if (filter === 'Menunggu') return anyPending;
         if (filter === 'Tunggak 1') return unpaid === 1;
-        if (filter === 'Tunggak >2') return unpaid > 1;
+        if (filter === 'Tunggak 2+') return unpaid > 1;
         return true;
       });
   }, [users, iuranRecords, search, filter]);
@@ -124,7 +124,7 @@ export default function AdminIuran() {
       else if (unpaid === 1) t1++;
       else t2++;
     });
-    return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak >2': t2, Menunggu: pending };
+    return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak 2+': t2, Menunggu: pending };
   }, [users, iuranRecords]);
 
   const FILTERS = [
@@ -132,7 +132,7 @@ export default function AdminIuran() {
     { key: 'Menunggu', label: 'Menunggu', count: counts.Menunggu },
     { key: 'Lunas', label: 'Lunas', count: counts.Lunas },
     { key: 'Tunggak 1', label: 'Tunggak 1', count: counts['Tunggak 1'] },
-    { key: 'Tunggak >2', label: 'Tunggak >2', count: counts['Tunggak >2'] }
+    { key: 'Tunggak 2+', label: 'Tunggak 2+', count: counts['Tunggak 2+'] }
   ];
 
   const renderRow = ({ item }) => {
@@ -284,7 +284,7 @@ export default function AdminIuran() {
       .filter(Boolean).sort();
 
     return {
-      vaultTotal: (vault.bsiBalance || 0) + (vault.pettyCash || 0),
+      vaultTotal: vault.bsiBalance || 0,
       totalExpense: expenses.reduce((a, e) => a + (e.amount || 0), 0),
       talanganOutstanding: debts.reduce((a, d) => a + (d.amount - d.paid), 0),
       overlap,
@@ -392,7 +392,7 @@ export default function AdminIuran() {
           </Text>
         </View>
         <View style={styles.reconRow}>
-          <Text style={styles.reconLabel}>Saldo kas saat ini (BSI + Kas Kecil)</Text>
+          <Text style={styles.reconLabel}>Saldo kas saat ini</Text>
           <Text style={[styles.reconVal, { fontWeight: '900', color: '#0F172A' }]}>
             {rp(recon.vaultTotal)}
           </Text>
@@ -429,7 +429,7 @@ export default function AdminIuran() {
             <Text style={styles.queueTotal}>{rp(pendingTotal)}</Text>
           </View>
           <Text style={styles.queueNote}>
-            Belum masuk kas. Cocokkan dulu dengan mutasi BSI / hitung kas kecil.
+            Belum masuk kas. Cocokkan dulu dengan mutasi BSI.
           </Text>
           {queue.slice(0, 25).map(q => (
             <View key={q.key} style={styles.queueRow}>

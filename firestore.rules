@@ -78,6 +78,11 @@ service cloud.firestore {
 
     // Bank identity is fixed. Balances are the only mutable part, because
     // every payment and expense in the app adjusts them.
+    //
+    // `pettyCash` is still allowed by these rules but is no longer read or
+    // written by either app: kas kecil was merged into `bsiBalance`. It stays
+    // legal so a phone still running an older build can finish a transaction
+    // instead of failing at the rules.
     match /system/vault {
       allow read: if true;
 

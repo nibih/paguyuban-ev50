@@ -9,12 +9,12 @@ export const IURAN_FEE = 100000;
 // The collection period, in order, and the month being collected right now —
 // see the web copy of these constants for why the keys are month names rather
 // than YYYY-MM, and for the January cliff.
-export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+export const MONTHS = ['September', 'Oktober', 'November', 'Desember'];
 export const LAST_MONTH = MONTHS[MONTHS.length - 1];
 
-export const MONTH_NO = Object.fromEntries(
-  MONTHS.map((m, i) => [m, String(((4 + i) % 12) + 1).padStart(2, '0')])
-);
+// Month name -> '09'..'12' — see the web copy for why this is written out
+// instead of derived from the array index.
+export const MONTH_NO = { September: '09', Oktober: '10', November: '11', Desember: '12' };
 
 // The month the depot is collecting for: the calendar month while it is inside
 // the period, otherwise the last month the list knows.
@@ -22,7 +22,6 @@ export const COLLECTION_MONTH = MONTHS.find(
   (m) => MONTH_NO[m] === String(new Date().getMonth() + 1).padStart(2, '0')
 ) || LAST_MONTH;
 
-export const PREVIOUS_MONTH = MONTHS[Math.max(0, MONTHS.indexOf(COLLECTION_MONTH) - 1)];
 
 // The months one driver actually owes — see the web copy of `dueMonths` for
 // why a driver who joined this month must not read as six months behind.
@@ -38,9 +37,9 @@ export const dueMonths = (user) => {
 // are separate bundles, so the table is defined once per surface; both must
 // list the same methods or the two apps disagree about where money went.
 export const VAULT_FOR_METHOD = {
-  'Tunai Kasir': 'pettyCash',
-  'Cash ke Kasir Depo': 'pettyCash',
-  'Cash ke Admin': 'pettyCash',
+  'Tunai Kasir': 'bsiBalance',
+  'Cash ke Kasir Depo': 'bsiBalance',
+  'Cash ke Admin': 'bsiBalance',
   'Transfer BSI': 'bsiBalance',
   'Transfer Bank BSI': 'bsiBalance',
   'Potong Gaji': null

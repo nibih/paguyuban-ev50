@@ -130,7 +130,7 @@ export const ScreenA2MatriksIuran = () => {
 
     const question =
       kind === 'verify'
-        ? `Verifikasi ${items.length} klaim senilai ${rp(total)}?\n\nIni mengkredit kas. Cocokkan dengan mutasi BSI / hitung kas kecil dulu.`
+        ? `Verifikasi ${items.length} klaim senilai ${rp(total)}?\n\nIni mengkredit kas. Cocokkan dengan mutasi BSI dulu.`
         : `Tolak ${items.length} klaim senilai ${rp(total)}?\n\nUang ini TIDAK dicatat masuk kas.`;
 
     if (!window.confirm(question)) return;
@@ -172,7 +172,7 @@ export const ScreenA2MatriksIuran = () => {
       if (filter === 'Lunas') return unpaid === 0;
       if (filter === 'Menunggu') return anyPending;
       if (filter === 'Tunggak 1') return unpaid === 1;
-      if (filter === 'Tunggak >2') return unpaid > 1;
+      if (filter === 'Tunggak 2+') return unpaid > 1;
       return true;
     }), [users, iuranRecords, search, filter]);
 
@@ -188,7 +188,7 @@ export const ScreenA2MatriksIuran = () => {
       else if (unpaid === 1) t1 += 1;
       else t2 += 1;
     });
-    return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak >2': t2, Menunggu: pending };
+    return { Lunas: lunas, 'Tunggak 1': t1, 'Tunggak 2+': t2, Menunggu: pending };
   }, [users, iuranRecords]);
 
   const FILTERS = [
@@ -196,7 +196,7 @@ export const ScreenA2MatriksIuran = () => {
     { key: 'Menunggu', label: 'Menunggu', count: counts.Menunggu },
     { key: 'Lunas', label: 'Lunas', count: counts.Lunas },
     { key: 'Tunggak 1', label: 'Tunggak 1', count: counts['Tunggak 1'] },
-    { key: 'Tunggak >2', label: 'Tunggak >2', count: counts['Tunggak >2'] }
+    { key: 'Tunggak 2+', label: 'Tunggak 2+', count: counts['Tunggak 2+'] }
   ];
 
   // Pemasukan iuran — the full recorded history, NOT just what flowed through
@@ -250,8 +250,8 @@ export const ScreenA2MatriksIuran = () => {
   // "closes" would be a lie a cashier would eventually discover the hard way.
   // Two concrete gaps are computed and named instead:
   //
-  //   1. The expense book only covers September, while iuran spans five
-  //      months, so four months of spending are simply absent.
+  //   1. The expense book and the iuran book cover different months, so
+  //      months of spending or income are simply absent.
   //   2. Some talangan advances were booked as expenses AND as debt
   //      principal, so subtracting both would double-count them.
   const recon = useMemo(() => {
@@ -268,7 +268,7 @@ export const ScreenA2MatriksIuran = () => {
       .filter(Boolean).sort();
 
     return {
-      vaultTotal: (vault.bsiBalance || 0) + (vault.pettyCash || 0),
+      vaultTotal: vault.bsiBalance || 0,
       totalExpense: expenses.reduce((a, e) => a + (e.amount || 0), 0),
       talanganOutstanding: debts.reduce((a, d) => a + (d.amount - d.paid), 0),
       overlap,
@@ -333,7 +333,7 @@ export const ScreenA2MatriksIuran = () => {
             <span className="text-sm font-black font-mono text-amber-800">{rp(pendingTotal)}</span>
           </div>
           <p className="text-[11px] text-amber-700 leading-relaxed mb-4">
-            Belum masuk kas. Cocokkan dulu dengan mutasi BSI / hitung kas kecil, baru tekan centang.
+            Belum masuk kas. Cocokkan dulu dengan mutasi BSI, baru tekan centang.
           </p>
 
           {/* Bulk controls */}
@@ -508,7 +508,7 @@ export const ScreenA2MatriksIuran = () => {
           {[
             { label: 'Pemasukan iuran tercatat', value: rp(income.totalRecorded), cls: 'text-slate-900' },
             { label: 'Pengeluaran tercatat', value: `−${rp(recon.totalExpense)}`, cls: 'text-rose-700' },
-            { label: 'Saldo kas saat ini (BSI + Kas Kecil)', value: rp(recon.vaultTotal), cls: 'text-slate-900 font-black' },
+            { label: 'Saldo kas saat ini', value: rp(recon.vaultTotal), cls: 'text-slate-900 font-black' },
             { label: 'Piutang talangan belum kembali', value: rp(recon.talanganOutstanding), cls: 'text-amber-700' }
           ].map((r) => (
             <div key={r.label} className="flex items-center justify-between gap-4 bg-slate-50 rounded-lg px-3 py-2.5">

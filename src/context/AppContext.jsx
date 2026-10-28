@@ -35,7 +35,9 @@ const todayId = () => new Date().toLocaleDateString('id-ID');
 // Which vault a payment belongs to, by exact method — see ../constants.
 // `null` means the payment moved no cash between the two accounts.
 const vaultKeyForMethod = (method) => (method in VAULT_FOR_METHOD ? VAULT_FOR_METHOD[method] : null);
-const vaultKeyFor = (source) => ((source || '').includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
+// One balance. Cash in the tin and money in the bank are the same pot now, so
+// the expense source no longer picks an account — there is only one.
+const vaultKeyFor = () => 'bsiBalance';
 
 const SESSION_KEY = 'paguyuban.admin.session';
 
@@ -501,7 +503,7 @@ export const AppProvider = ({ children }) => {
 
     if (vaultKey && (vault[vaultKey] || 0) < nominal) {
       showToast(
-        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(nominal)}.`,
+        `Saldo kas tidak cukup untuk membatalkan ${rp(nominal)}.`,
         'error'
       );
       return false;
@@ -548,7 +550,7 @@ export const AppProvider = ({ children }) => {
           : e?.code === 'bank'
             ? 'Data ini dari laporan bank, bukan verifikasi aplikasi.'
             : e?.code === 'insufficient'
-              ? `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan.`
+              ? `Saldo kas tidak cukup untuk membatalkan.`
               : `Pembatalan GAGAL. ${fsError(e)}`,
         'error'
       );
@@ -691,7 +693,7 @@ export const AppProvider = ({ children }) => {
     // is a worse lie than a blocked button.
     if (vaultKey && (vault[vaultKey] || 0) < amt) {
       showToast(
-        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(amt)}.`,
+        `Saldo kas tidak cukup untuk membatalkan ${rp(amt)}.`,
         'error'
       );
       return false;
@@ -743,7 +745,7 @@ export const AppProvider = ({ children }) => {
         e?.code === 'not-recorded'
           ? 'Angsuran sudah dibatalkan pengurus lain. Muat ulang.'
           : e?.code === 'insufficient'
-            ? `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan.`
+            ? `Saldo kas tidak cukup untuk membatalkan.`
             : `Pembatalan GAGAL. ${fsError(e)}`,
         'error'
       );
@@ -796,7 +798,7 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const vaultKey = vaultKeyFor(newExpense.source || 'Kas Kecil');
+    const vaultKey = vaultKeyFor(newExpense.source);
     const id = `EXP-${Date.now()}`;
     // Full millisecond stamp on purpose: the old `slice(-6)` repeated every
     // ~17 minutes, and a repeated id makes setDoc overwrite the earlier
@@ -870,7 +872,7 @@ export const AppProvider = ({ children }) => {
 
   // A3: delete an expense and refund the cash account it was drawn from.
   const deleteExpense = async (expense) => {
-    const vaultKey = vaultKeyFor(expense.source || 'Kas Kecil');
+    const vaultKey = vaultKeyFor(expense.source);
     const amount = Number(expense.amount) || 0;
 
     // If this expense grew a talangan card, take the amount back off it in the
@@ -973,22 +975,22 @@ export const AppProvider = ({ children }) => {
     };
 
     setDebts((prev) => [item, ...prev]);
-    setVault((v) => ({ ...v, pettyCash: (v.pettyCash || 0) - nominal }));
+    setVault((v) => ({ ...v, bsiBalance: (v.bsiBalance || 0) - nominal }));
 
     try {
       await runTransaction(db, async (tx) => {
         const debtRef = doc(db, 'debts', id);
         const vaultRef = doc(db, 'system', 'vault');
         const vaultSnap = await tx.get(vaultRef);
-        const cash = vaultSnap.exists() ? (vaultSnap.data().pettyCash || 0) : 0;
+        const cash = vaultSnap.exists() ? (vaultSnap.data().bsiBalance || 0) : 0;
         tx.set(debtRef, item);
-        tx.set(vaultRef, { pettyCash: cash - nominal }, { merge: true });
+        tx.set(vaultRef, { bsiBalance: cash - nominal }, { merge: true });
       });
       showToast(`Talangan ${rp(nominal)} untuk ${user.name} dicatat.`);
       return true;
     } catch (e) {
       setDebts((prev) => prev.filter((d) => d.id !== id));
-      setVault((v) => ({ ...v, pettyCash: (v.pettyCash || 0) + nominal }));
+      setVault((v) => ({ ...v, bsiBalance: (v.bsiBalance || 0) + nominal }));
       showToast(`Talangan TIDAK tersimpan. ${fsError(e)}`, 'error');
       return false;
     }

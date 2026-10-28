@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bus, Clock, LogOut, Zap, Users, Wallet, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { MONTHS } from '../constants';
 
 // Admin panel top bar: identity, live clock, and the three counts a cashier
 // glances at before deciding which screen to open.
@@ -32,8 +33,8 @@ export const TopNavbar = () => {
   const pendingClaims = React.useMemo(() => {
     let n = 0;
     Object.values(iuranRecords).forEach((months) => {
-      Object.values(months || {}).forEach((entry) => {
-        if (entry?.status === 'pending') n += 1;
+      MONTHS.forEach((m) => {
+        if (months?.[m]?.status === 'pending') n += 1;
       });
     });
     debts.forEach((d) => { n += (d.pendingInstallments || []).length; });

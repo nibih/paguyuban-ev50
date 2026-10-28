@@ -217,7 +217,7 @@ export default function AdminPiutang() {
             <Text style={styles.queueTotal}>{rp(queueTotal)}</Text>
           </View>
           <Text style={styles.queueNote}>
-            Belum mengurangi utang dan belum masuk kas. Cocokkan dengan mutasi BSI / kas kecil dulu.
+            Belum mengurangi utang dan belum masuk kas. Cocokkan dengan mutasi BSI dulu.
           </Text>
           {queue.slice(0, 25).map(q => (
             <View key={q.key} style={styles.queueRow}>
@@ -516,7 +516,7 @@ export default function AdminPiutang() {
             <View style={styles.notice}>
               <AlertTriangle size={13} color="#D97706" />
               <Text style={styles.noticeText}>
-                Nominal akan didebet dari Kas Kecil Tunai saat disimpan.
+                Nominal akan mengurangi saldo kas saat disimpan.
               </Text>
             </View>
 

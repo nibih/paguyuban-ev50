@@ -13,6 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { MONTHS } from '../../constants';
 import { ScreenA1Dashboard } from './ScreenA1Dashboard';
 import { ScreenA2MatriksIuran } from './ScreenA2MatriksIuran';
 import { ScreenA3Pengeluaran } from './ScreenA3Pengeluaran';
@@ -32,8 +33,8 @@ export const AdminContainer = () => {
   const pendingIuran = useMemo(() => {
     let n = 0;
     Object.values(iuranRecords || {}).forEach((months) => {
-      Object.values(months || {}).forEach((entry) => {
-        if (entry?.status === 'pending') n += 1;
+      MONTHS.forEach((m) => {
+        if (months?.[m]?.status === 'pending') n += 1;
       });
     });
     return n;

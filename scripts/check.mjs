@@ -150,7 +150,8 @@ if (provided.size === 0) {
 // A driver owes from the month they joined, not from the start of the book.
 // Both iuran screens, the arrears filters and the member pay screen rely on
 // this, so the one branch worth pinning is pinned.
-const { MONTHS, COLLECTION_MONTH, dueMonths } = await import('../src/constants.js');
+const { MONTH_NO, COLLECTION_MONTH, dueMonths, VAULT_FOR_METHOD } =
+  await import('../src/constants.js');
 
 const dueFailures = [];
 const expectDue = (label, got, want) => {
@@ -159,10 +160,13 @@ const expectDue = (label, got, want) => {
   }
 };
 
-expectDue('roster tanpa createdAt mulai dari Mei', dueMonths({})[0], MONTHS[0]);
+expectDue('roster tanpa createdAt mulai dari September', dueMonths({})[0], 'September');
+expectDue('nomor bulan pertama buku = 09', MONTH_NO.September, '09');
 expectDue('bergabung 27/10/2026 mulai dari Oktober', dueMonths({ createdAt: '27/10/2026' })[0], 'Oktober');
 expectDue('bergabung setelah periode belum menunggak', dueMonths({ createdAt: '05/01/2027' }), []);
 expectDue('bulan terakhir yang dihitung = bulan berjalan', dueMonths({}).at(-1), COLLECTION_MONTH);
+expectDue('tidak ada metode yang masih mengisi kas kecil',
+  Object.values(VAULT_FOR_METHOD).filter((v) => v === 'pettyCash'), []);
 
 // ---- report ---------------------------------------------------------------
 let failed = false;
@@ -200,5 +204,5 @@ if (failed) process.exit(1);
 console.log(
   `OK  ${files.length} files · every file parses · every import resolves · ` +
   `${provided.size} context fields verified against their consumers · ` +
-  `4 due-month rules hold`
+  `6 book rules hold`
 );

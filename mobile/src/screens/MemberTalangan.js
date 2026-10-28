@@ -215,7 +215,7 @@ export default function MemberTalangan() {
                 </TouchableOpacity>
                 <Text style={styles.submitNote}>
                   Setoran dicatat dulu sebagai ANTREAN. Sisa utang baru berkurang setelah bendahara
-                  mencocokkan uangnya dengan mutasi BSI / kas kecil.
+                  mencocokkan uangnya dengan mutasi BSI.
                 </Text>
               </>
             )}

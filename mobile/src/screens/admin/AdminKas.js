@@ -186,9 +186,6 @@ export default function AdminKas() {
           </Text>
         </View>
 
-        <Text style={styles.tableNote}>
-          Pengeluaran baru tercatat mulai September, jadi bulan sebelumnya memang kosong.
-        </Text>
       </View>
 
       <View style={[styles.card, { marginTop: 12 }]}>

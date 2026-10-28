@@ -438,9 +438,9 @@ export const ScreenA8Import = () => {
       </Card>
 
       <p className="text-[10px] text-slate-400 leading-relaxed">
-        Impor buku kas (LP) belum tersedia: model kas BSI vs kas kecil masih diputuskan,
-        dan memasukkan rupiah ke buku yang bentuknya belum final akan mengunci jawaban
-        yang salah. Iuran dan pengeluaran tetap diisi lewat layar masing-masing.
+        Impor buku kas (LP) belum tersedia: laporan itu mencampur setoran bank dan uang
+        tunai dalam satu kolom, dan memasukkan rupiah ke buku lewat tebakan akan mengunci
+        jawaban yang salah. Iuran dan pengeluaran tetap diisi lewat layar masing-masing.
       </p>
     </div>
   );

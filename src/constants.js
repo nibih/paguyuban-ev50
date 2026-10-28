@@ -8,6 +8,13 @@ export const IURAN_FEE = 100000;
 
 // The collection period, in order, and the month being collected right now.
 //
+// Starts at September on the pengurus' instruction: the book before that is
+// incomplete (only 8 of 128 drivers ever paid every month, and the expense
+// side only starts in September), so showing it invited arguments about
+// numbers nobody can verify. The rows still exist in Firestore and the rules
+// still accept Mei–Agustus keys, so this is reversible and an older phone in
+// the field keeps working.
+//
 // One list drives the matrix columns, the CSV headers, the member picker and
 // the dashboard's month rows, so a new month is one edit here.
 //
@@ -16,13 +23,13 @@ export const IURAN_FEE = 100000;
 // cannot be replaced remotely: changing the key shape would make every phone
 // in the field write months the rules reject, so the year-month migration is a
 // forced-rollout job, not a code change.
-export const MONTHS = ['Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+export const MONTHS = ['September', 'Oktober', 'November', 'Desember'];
 export const LAST_MONTH = MONTHS[MONTHS.length - 1];
 
-// Month name -> '05'..'12', derived so the two cannot drift.
-export const MONTH_NO = Object.fromEntries(
-  MONTHS.map((m, i) => [m, String(((4 + i) % 12) + 1).padStart(2, '0')])
-);
+// Month name -> '09'..'12'. Written out, not derived from the array index:
+// the derived version assumed index 0 was Mei, so prepending or removing a
+// month silently moved every expense into the wrong row.
+export const MONTH_NO = { September: '09', Oktober: '10', November: '11', Desember: '12' };
 
 // The month the depot is collecting for: the calendar month while it is inside
 // the period, otherwise the last month the list knows. Derived from the clock
@@ -36,17 +43,14 @@ export const COLLECTION_MONTH = MONTHS.find(
   (m) => MONTH_NO[m] === String(new Date().getMonth() + 1).padStart(2, '0')
 ) || LAST_MONTH;
 
-// The month before the current one, for the arrears filter.
-export const PREVIOUS_MONTH = MONTHS[Math.max(0, MONTHS.indexOf(COLLECTION_MONTH) - 1)];
-
 // The months one driver actually owes: from the month they joined until the
 // month being collected.
 //
 // New drivers arrive in batches, sometimes on the 25th of a month, and a
-// straight count of every month in the book made them look six months behind
-// on day one. `createdAt` (dd/mm/yyyy, written when the account is created) is
+// straight count of every month in the book made them look months behind on
+// day one. `createdAt` (dd/mm/yyyy, written when the account is created) is
 // the only join date the roster has; entries imported from the paper book have
-// none, and those have been paying since Mei.
+// none, and the book now starts at September.
 //
 // shortcut: only the month name is read, not the year, so a createdAt after
 // the period (e.g. Januari 2027) matches nothing and owes nothing — correct —
@@ -69,9 +73,9 @@ export const dueMonths = (user) => {
 // all, which is the honest answer for a salary deduction and forces a new
 // method to be added here deliberately instead of silently picking a vault.
 export const VAULT_FOR_METHOD = {
-  'Tunai Kasir': 'pettyCash',
-  'Cash ke Kasir Depo': 'pettyCash',
-  'Cash ke Admin': 'pettyCash',
+  'Tunai Kasir': 'bsiBalance',
+  'Cash ke Kasir Depo': 'bsiBalance',
+  'Cash ke Admin': 'bsiBalance',
   'Transfer BSI': 'bsiBalance',
   'Transfer Bank BSI': 'bsiBalance',
   'Potong Gaji': null

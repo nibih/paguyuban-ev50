@@ -399,7 +399,9 @@ export const AppProvider = ({ children }) => {
    * a cashier must never see a success state that Firestore rejected.
    * ---------------------------------------------------------------- */
 
-  const vaultKeyFor = (source) => (source.includes('Kas Kecil') ? 'pettyCash' : 'bsiBalance');
+  // One balance: cash and bank money are the same pot, so the expense source no
+// longer picks an account.
+const vaultKeyFor = () => 'bsiBalance';
 
   // A2: cashier ticks a driver's month as paid in cash.
   //
@@ -631,7 +633,7 @@ export const AppProvider = ({ children }) => {
 
     if (vaultKey && (vault[vaultKey] || 0) < nominal) {
       showToast(
-        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(nominal)}.`,
+        `Saldo kas tidak cukup untuk membatalkan ${rp(nominal)}.`,
         'error'
       );
       return false;
@@ -806,7 +808,7 @@ export const AppProvider = ({ children }) => {
 
     if (vaultKey && (vault[vaultKey] || 0) < amt) {
       showToast(
-        `Kas ${vaultKey === 'pettyCash' ? 'kecil' : 'BSI'} tidak cukup untuk membatalkan ${rp(amt)}.`,
+        `Saldo kas tidak cukup untuk membatalkan ${rp(amt)}.`,
         'error'
       );
       return false;
@@ -905,7 +907,7 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const vaultKey = vaultKeyFor(newExpense.source || 'Kas Kecil');
+    const vaultKey = vaultKeyFor(newExpense.source);
     const id = `EXP-${Date.now()}`;
 
     // A talangan grows the card the cashier picked, never a name match. The
@@ -977,7 +979,7 @@ export const AppProvider = ({ children }) => {
 
   // A3: delete an expense and refund the cash account it was drawn from.
   const deleteExpense = async (expense) => {
-    const vaultKey = vaultKeyFor(expense.source || 'Kas Kecil');
+    const vaultKey = vaultKeyFor(expense.source);
     const amount = Number(expense.amount) || 0;
 
     // If this expense grew a talangan card, take the amount back off it in the
@@ -1079,22 +1081,22 @@ export const AppProvider = ({ children }) => {
     };
 
     setDebts(prev => [item, ...prev]);
-    setVault(v => ({ ...v, pettyCash: v.pettyCash - nominal }));
+    setVault(v => ({ ...v, bsiBalance: (v.bsiBalance || 0) - nominal }));
 
     try {
       await runTransaction(db, async (tx) => {
         const debtRef = doc(db, 'debts', id);
         const vaultRef = doc(db, 'system', 'vault');
         const vaultSnap = await tx.get(vaultRef);
-        const cash = vaultSnap.exists() ? (vaultSnap.data().pettyCash || 0) : 0;
+        const cash = vaultSnap.exists() ? (vaultSnap.data().bsiBalance || 0) : 0;
         tx.set(debtRef, item);
-        tx.set(vaultRef, { pettyCash: cash - nominal }, { merge: true });
+        tx.set(vaultRef, { bsiBalance: cash - nominal }, { merge: true });
       });
       showToast(`Talangan ${rp(nominal)} untuk ${user.name} dicatat.`);
       return true;
     } catch (e) {
       setDebts(prev => prev.filter(d => d.id !== id));
-      setVault(v => ({ ...v, pettyCash: v.pettyCash + nominal }));
+      setVault(v => ({ ...v, bsiBalance: (v.bsiBalance || 0) + nominal }));
       showToast(`Talangan TIDAK tersimpan. ${fsError(e)}`, 'error');
       return false;
     }
